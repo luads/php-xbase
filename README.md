@@ -9,7 +9,7 @@ Sample code:
     
     use XBase\Table;
     
-    $table = new Table(dirname(__FILE__).'/pcores.dbf');
+    $table = new Table(dirname(__FILE__).'/test.dbf');
     
     while ($record = $table->nextRecord()) {
         echo $record->my_column;
