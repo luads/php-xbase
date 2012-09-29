@@ -4,15 +4,15 @@ namespace XBase;
 
 class Record 
 {
-	const DBFFIELD_TYPE_MEMO = 'M';		// Memo type field.
-	const DBFFIELD_TYPE_CHAR = 'C';		// Character field.
-	const DBFFIELD_TYPE_NUMERIC = 'N';	// Numeric
-	const DBFFIELD_TYPE_FLOATING = 'F';	// Floating point
-	const DBFFIELD_TYPE_DATE = 'D';		// Date
-	const DBFFIELD_TYPE_LOGICAL = 'L';	// Logical - ? Y y N n T t F f (? when not initialized).
-	const DBFFIELD_TYPE_DATETIME = 'T';	// DateTime
-	const DBFFIELD_TYPE_INDEX = 'I';    // Index 
-	const DBFFIELD_IGNORE_0 = '0';		// ignore this field
+    const DBFFIELD_TYPE_MEMO = 'M';     // Memo type field.
+    const DBFFIELD_TYPE_CHAR = 'C';     // Character field.
+    const DBFFIELD_TYPE_NUMERIC = 'N';  // Numeric
+    const DBFFIELD_TYPE_FLOATING = 'F'; // Floating point
+    const DBFFIELD_TYPE_DATE = 'D';     // Date
+    const DBFFIELD_TYPE_LOGICAL = 'L';  // Logical - ? Y y N n T t F f (? when not initialized).
+    const DBFFIELD_TYPE_DATETIME = 'T'; // DateTime
+    const DBFFIELD_TYPE_INDEX = 'I';    // Index 
+    const DBFFIELD_IGNORE_0 = '0';      // ignore this field
 
     protected $zerodate = 0x253d8c;
     protected $table;
@@ -28,25 +28,25 @@ class Record
         $this->choppedData = array();
 
         if ($rawData && strlen($rawData) > 0) {
-	        $this->inserted = false;
-        	$this->deleted = (ord($rawData[0]) != '32');
+            $this->inserted = false;
+            $this->deleted = (ord($rawData[0]) != '32');
 
-        	foreach ($table->getColumns() as $column) {
-            	$this->choppedData[] = substr($rawData, $column->getBytePos(), $column->getDataLength());
-        	}
-    	} else {
-	    	$this->inserted = true;
-	    	$this->deleted = false;
+            foreach ($table->getColumns() as $column) {
+                $this->choppedData[] = substr($rawData, $column->getBytePos(), $column->getDataLength());
+            }
+        } else {
+            $this->inserted = true;
+            $this->deleted = false;
 
-	    	foreach ($table->getColumns() as $column) {
-		    	$this->choppedData[] = str_pad('', $column->getDataLength(), chr(0));
-	    	}
-    	}
+            foreach ($table->getColumns() as $column) {
+                $this->choppedData[] = str_pad('', $column->getDataLength(), chr(0));
+            }
+        }
     }
 
     public function __get($name)
     {
-    	return $this->getStringByName($name);
+        return $this->getStringByName($name);
     }
 
     public function isDeleted() 
@@ -97,11 +97,11 @@ class Record
             $result = $this->getObject($column);
 
             if ($result && ($column->getType() == self::DBFFIELD_TYPE_DATETIME || $column->getType() == self::DBFFIELD_TYPE_DATE)) {
-            	return date('r', $result);
+                return date('r', $result);
             }
 
             if ($column->getType() == self::DBFFIELD_TYPE_LOGICAL) {
-            	return $result? '1' : '0';
+                return $result? '1' : '0';
             }
 
             return $result;
@@ -111,7 +111,7 @@ class Record
     public function forceGetString(Column $column) 
     {
         if (ord($this->choppedData[$column->getColIndex()][0]) == '0') {
-        	return false;
+            return false;
         }
 
         return trim($this->choppedData[$column->getColIndex()]);
@@ -146,14 +146,14 @@ class Record
 
     public function getDate(Column $column) 
     {
-	    if ($column->getType()!=self::DBFFIELD_TYPE_DATE) {
-	    	throw new Exception\InvalidColumnException(sprintf('%s is not a Date column', $column->getName()));
-	    }
+        if ($column->getType()!=self::DBFFIELD_TYPE_DATE) {
+            throw new Exception\InvalidColumnException(sprintf('%s is not a Date column', $column->getName()));
+        }
 
         $s = $this->forceGetString($column);
 
         if (!$s) {
-       		return false;	
+            return false;   
         }
         
         return strtotime($s);
@@ -162,7 +162,7 @@ class Record
     public function getDateTime(Column $column) 
     {
         if ($column->getType()!=self::DBFFIELD_TYPE_DATETIME) {
-        	throw new Exception\InvalidColumnException(sprintf('%s is not a DateTime column', $column->getName()));
+            throw new Exception\InvalidColumnException(sprintf('%s is not a DateTime column', $column->getName()));
         }
 
         $raw =  $this->choppedData[$column->getColIndex()];
@@ -172,7 +172,7 @@ class Record
         $inttime = $buf[1];
 
         if ($intdate == 0 && $inttime == 0) {
-        	return false;
+            return false;
         }
 
         $longdate = ($intdate - $this->zerodate) * 86400;
@@ -183,13 +183,13 @@ class Record
     public function getBoolean(Column $column) 
     {
         if ($column->getType() != self::DBFFIELD_TYPE_LOGICAL) {
-        	throw new Exception\InvalidColumnException(sprintf('%s is not a Boolean column', $column->getName()));
+            throw new Exception\InvalidColumnException(sprintf('%s is not a Boolean column', $column->getName()));
         }
 
         $s = $this->forceGetString($column);
 
         if (!$s) {
-        	return false;
+            return false;
         }
         
         switch (strtoupper($s[0])) {
@@ -205,23 +205,23 @@ class Record
 
     public function getMemo(Column $column) 
     {
-	    if ($column->getType() != self::DBFFIELD_TYPE_MEMO) {
-	    	throw new Exception\InvalidColumnException(sprintf('%s is not a Memo column', $column->getName()));
-	    }
+        if ($column->getType() != self::DBFFIELD_TYPE_MEMO) {
+            throw new Exception\InvalidColumnException(sprintf('%s is not a Memo column', $column->getName()));
+        }
 
         return $this->forceGetString($column);
     }
 
     public function getFloat(Column $column) 
     {
-	    if ($column->getType() != self::DBFFIELD_TYPE_FLOATING) {
-	    	throw new Exception\InvalidColumnException(sprintf('%s is not a Float column', $column->getName()));
-	    }
+        if ($column->getType() != self::DBFFIELD_TYPE_FLOATING) {
+            throw new Exception\InvalidColumnException(sprintf('%s is not a Float column', $column->getName()));
+        }
 
         $s = $this->forceGetString($column);
 
         if (!$s) {
-        	return false;
+            return false;
         }
         
         $s = str_replace(',', '.', $s);
@@ -231,14 +231,14 @@ class Record
 
     public function getInt(Column $column) 
     {
-	    if ($column->getType() != self::DBFFIELD_TYPE_NUMERIC) {
-	    	throw new Exception\InvalidColumnException(sprintf('%s is not a Number column', $column->getName()));
-	    }
+        if ($column->getType() != self::DBFFIELD_TYPE_NUMERIC) {
+            throw new Exception\InvalidColumnException(sprintf('%s is not a Number column', $column->getName()));
+        }
 
         $s = $this->forceGetString($column);
 
         if (!$s) {
-        	return false;
+            return false;
         }
         
         $s = str_replace(',', '.', $s);
@@ -246,29 +246,29 @@ class Record
         return intval($s);
     }
 
-	public function getIndex(Column $column) 
-	{
-		if ($column->getType() != self::DBFFIELD_TYPE_INDEX) {
-			throw new Exception\InvalidColumnException(sprintf('%s is not a Index column', $column->getName()));
-		}
-
-		$s = $this->choppedData[$column->getColIndex()];
-
-		if (!$s) {
-        	return false;
+    public function getIndex(Column $column) 
+    {
+        if ($column->getType() != self::DBFFIELD_TYPE_INDEX) {
+            throw new Exception\InvalidColumnException(sprintf('%s is not a Index column', $column->getName()));
         }
-		
-		$ret = ord($s[0]);
 
-		for ($i = 1; $i < $column->length; $i++) {
-			$ret += $i * 256 * ord($s[$i]);
-		}
+        $s = $this->choppedData[$column->getColIndex()];
 
-		return $ret;   
-	}
+        if (!$s) {
+            return false;
+        }
+        
+        $ret = ord($s[0]);
+
+        for ($i = 1; $i < $column->length; $i++) {
+            $ret += $i * 256 * ord($s[$i]);
+        }
+
+        return $ret;   
+    }
 
     protected function serializeRawData() 
     {
-	    return ($this->deleted ? '*' : ' ') . implode('', $this->choppedData);
+        return ($this->deleted ? '*' : ' ') . implode('', $this->choppedData);
     }
 }
