@@ -5,6 +5,7 @@ namespace XBase;
 class Table 
 {
     protected $tableName;
+    protected $avaliableColumns;
     protected $fp;
     protected $filePos = 0;
     protected $recordPos = -1;
@@ -20,14 +21,14 @@ class Table
     public $mdxFlag;
     public $languageCode;
     public $columns;
-    public $columnNames;
     public $headerLength;
     public $backlist;
     public $foxpro;
     
-    public function __construct($tableName)
+    public function __construct($tableName, $avaliableColumns = null)
     {
         $this->tableName = $tableName;
+        $this->avaliableColumns = $avaliableColumns;
         $this->open();
     }
     
@@ -72,13 +73,13 @@ class Table
         }
 
         /* columns */
-        $this->columnNames = array();
         $this->columns = array();
         $bytepos = 1;
+        $j = 0;
 
         for ($i=0;$i<$fieldCount;$i++) {
             $column = new Column(
-                $this->readString(11),  // name
+                strtolower($this->readString(11)), // name
                 $this->readByte(),      // type
                 $this->readInt(),       // memAddress
                 $this->readChar(),      // length
@@ -89,13 +90,16 @@ class Table
                 $this->readByte()!=0,   // setFields
                 $this->readBytes(7),    // reserved3
                 $this->readByte()!=0,   // indexed
-                $i,                     // colIndex
+                $j,                     // colIndex
                 $bytepos                // bytePos
             );
 
             $bytepos += $column->getLength();
-            $this->columnNames[$i] = $column->getName();
-            $this->columns[$i] = $column;
+
+            if (!$this->avaliableColumns || ($this->avaliableColumns && in_array($column->name, $this->avaliableColumns))) {
+                $this->columns[$column->getName()] = $column;
+                $j++;
+            }
         }
 
         if ($this->foxpro) {
@@ -119,7 +123,7 @@ class Table
             $this->open();  
         }
 
-        $valid=false;
+        $valid = false;
 
         do {
             if (($this->recordPos + 1) >= $this->recordCount) {
@@ -159,41 +163,18 @@ class Table
         return $this->record;
     }
 
-    public function getColumnNames() 
-    {
-        return $this->columnNames;
-    }
-
     public function getColumns() 
     {
         return $this->columns;
     }
 
-    public function getColumn($index) 
+    public function getColumn($name) 
     {
-        return $this->columns[$index];
-    }
-
-    public function getColumnByName($name) 
-    {
-        foreach ($this->columnNames as $i=>$n) {
-            if (strtoupper($n) == strtoupper($name)) {  
-                return $this->columns[$i];  
-            }
+        if (!array_key_exists($name, $this->columns)) {
+            throw new \Exception(sprintf('Column %s not found', $name));
         }
 
-        return false;
-    }
-
-    public function getColumnIndex($name) 
-    {
-        foreach ($this->columnNames as $i=>$n) {
-            if (strtoupper($n) == strtoupper($name)) {
-                 return $i;
-            }   
-        }
-
-        return false;
+        return $this->columns[$name];
     }
 
     public function getColumnCount() 

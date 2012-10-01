@@ -32,21 +32,21 @@ class Record
             $this->deleted = (ord($rawData[0]) != '32');
 
             foreach ($table->getColumns() as $column) {
-                $this->choppedData[] = substr($rawData, $column->getBytePos(), $column->getDataLength());
+                $this->choppedData[$column->getName()] = substr($rawData, $column->getBytePos(), $column->getDataLength());
             }
         } else {
             $this->inserted = true;
             $this->deleted = false;
 
             foreach ($table->getColumns() as $column) {
-                $this->choppedData[] = str_pad('', $column->getDataLength(), chr(0));
+                $this->choppedData[$column->getName()] = str_pad('', $column->getDataLength(), chr(0));
             }
         }
     }
 
     public function __get($name)
     {
-        return $this->getStringByName($name);
+        return $this->getString($name);
     }
 
     public function isDeleted() 
@@ -58,20 +58,10 @@ class Record
     {
         return $this->table->getColumns();
     }
-    
-    public function getColumnByName($name) 
+
+    public function getColumn($name) 
     {
-        return $this->table->getColumnByName($name);
-    }
-    
-    public function getColumn($index) 
-    {
-        return $this->table->getColumn($index);
-    }
-    
-    public function getColumnIndex($name) 
-    {
-        return $this->table->getColumnIndex($name);
+        return $this->table->getColumn($name);
     }
     
     public function getRecordIndex() 
@@ -79,20 +69,12 @@ class Record
         return $this->recordIndex;
     }
 
-    public function getStringByName($columnName) 
+    public function getString($columnName) 
     {
-        return $this->getString($this->table->getColumnByName($columnName));
-    }
+        $column = $this->table->getColumn($columnName);
 
-    public function getStringByIndex($columnIndex) 
-    {
-        return $this->getString($this->table->getColumn($columnIndex));
-    }
-
-    public function getString(Column $column) 
-    {
         if ($column->getType() == self::DBFFIELD_TYPE_CHAR) {
-            return $this->forceGetString($column);
+            return $this->forceGetString($columnName);
         } else {
             $result = $this->getObject($column);
 
@@ -108,49 +90,40 @@ class Record
         }
     }
 
-    public function forceGetString(Column $column) 
+    public function forceGetString($columnName) 
     {
-        if (ord($this->choppedData[$column->getColIndex()][0]) == '0') {
+        if (ord($this->choppedData[$columnName][0]) == '0') {
             return false;
         }
 
-        return trim($this->choppedData[$column->getColIndex()]);
-    }
-
-    public function getObjectByName($columnName) 
-    {
-        return $this->getObject($this->table->getColumnByName($columnName));
-    }
-
-    public function getObjectByIndex($columnIndex) 
-    {
-        return $this->getObject($this->table->getColumn($columnIndex));
+        return trim($this->choppedData[$columnName]);
     }
 
     public function getObject(Column $column) 
     {
         switch ($column->getType()) {
-            case self::DBFFIELD_TYPE_CHAR : return $this->getString($column);
-            case self::DBFFIELD_TYPE_DATE : return $this->getDate($column);
-            case self::DBFFIELD_TYPE_DATETIME : return $this->getDateTime($column);
-            case self::DBFFIELD_TYPE_FLOATING : return $this->getFloat($column);
-            case self::DBFFIELD_TYPE_LOGICAL : return $this->getBoolean($column);
-            case self::DBFFIELD_TYPE_MEMO : return $this->getMemo($column);
-            case self::DBFFIELD_TYPE_NUMERIC : return $this->getInt($column);
-            case self::DBFFIELD_TYPE_INDEX : return $this->getIndex($column); 
+            case self::DBFFIELD_TYPE_CHAR : return $this->getString($column->getName());
+            case self::DBFFIELD_TYPE_DATE : return $this->getDate($column->getName());
+            case self::DBFFIELD_TYPE_DATETIME : return $this->getDateTime($column->getName());
+            case self::DBFFIELD_TYPE_FLOATING : return $this->getFloat($column->getName());
+            case self::DBFFIELD_TYPE_LOGICAL : return $this->getBoolean($column->getName());
+            case self::DBFFIELD_TYPE_MEMO : return $this->getMemo($column->getName());
+            case self::DBFFIELD_TYPE_NUMERIC : return $this->getInt($column->getName());
+            case self::DBFFIELD_TYPE_INDEX : return $this->getIndex($column->getName(), $column->getLength());
             case self::DBFFIELD_IGNORE_0 : return false;
         }
 
         throw new Exception\InvalidColumnException(sprintf('Cannot handle datatype %s', $column->getType()));
     }
 
-    public function getDate(Column $column) 
+    public function getChar($columnName) 
     {
-        if ($column->getType()!=self::DBFFIELD_TYPE_DATE) {
-            throw new Exception\InvalidColumnException(sprintf('%s is not a Date column', $column->getName()));
-        }
+        return $this->forceGetString($columnName);
+    }
 
-        $s = $this->forceGetString($column);
+    public function getDate($columnName) 
+    {
+        $s = $this->forceGetString($columnName);
 
         if (!$s) {
             return false;   
@@ -159,13 +132,9 @@ class Record
         return strtotime($s);
     }
 
-    public function getDateTime(Column $column) 
+    public function getDateTime($columnName) 
     {
-        if ($column->getType()!=self::DBFFIELD_TYPE_DATETIME) {
-            throw new Exception\InvalidColumnException(sprintf('%s is not a DateTime column', $column->getName()));
-        }
-
-        $raw =  $this->choppedData[$column->getColIndex()];
+        $raw =  $this->choppedData[$columnName];
         $buf = unpack('i',substr($raw,0,4));
         $intdate = $buf[1];
         $buf = unpack('i',substr($raw,4,4));
@@ -180,13 +149,9 @@ class Record
         return $longdate + $inttime;
     }
 
-    public function getBoolean(Column $column) 
+    public function getBoolean($columnName) 
     {
-        if ($column->getType() != self::DBFFIELD_TYPE_LOGICAL) {
-            throw new Exception\InvalidColumnException(sprintf('%s is not a Boolean column', $column->getName()));
-        }
-
-        $s = $this->forceGetString($column);
+        $s = $this->forceGetString($columnName);
 
         if (!$s) {
             return false;
@@ -203,22 +168,14 @@ class Record
         }
     }
 
-    public function getMemo(Column $column) 
+    public function getMemo($columnName) 
     {
-        if ($column->getType() != self::DBFFIELD_TYPE_MEMO) {
-            throw new Exception\InvalidColumnException(sprintf('%s is not a Memo column', $column->getName()));
-        }
-
-        return $this->forceGetString($column);
+        return $this->forceGetString($columnName);
     }
 
-    public function getFloat(Column $column) 
+    public function getFloat($columnName) 
     {
-        if ($column->getType() != self::DBFFIELD_TYPE_FLOATING) {
-            throw new Exception\InvalidColumnException(sprintf('%s is not a Float column', $column->getName()));
-        }
-
-        $s = $this->forceGetString($column);
+        $s = $this->forceGetString($columnName);
 
         if (!$s) {
             return false;
@@ -229,13 +186,9 @@ class Record
         return floatval($s);
     }
 
-    public function getInt(Column $column) 
+    public function getInt($columnName) 
     {
-        if ($column->getType() != self::DBFFIELD_TYPE_NUMERIC) {
-            throw new Exception\InvalidColumnException(sprintf('%s is not a Number column', $column->getName()));
-        }
-
-        $s = $this->forceGetString($column);
+        $s = $this->forceGetString($columnName);
 
         if (!$s) {
             return false;
@@ -246,13 +199,9 @@ class Record
         return intval($s);
     }
 
-    public function getIndex(Column $column) 
+    public function getIndex($columnName, $length) 
     {
-        if ($column->getType() != self::DBFFIELD_TYPE_INDEX) {
-            throw new Exception\InvalidColumnException(sprintf('%s is not a Index column', $column->getName()));
-        }
-
-        $s = $this->choppedData[$column->getColIndex()];
+        $s = $this->choppedData[$columnName];
 
         if (!$s) {
             return false;
@@ -260,7 +209,7 @@ class Record
         
         $ret = ord($s[0]);
 
-        for ($i = 1; $i < $column->length; $i++) {
+        for ($i = 1; $i < $length; $i++) {
             $ret += $i * 256 * ord($s[$i]);
         }
 

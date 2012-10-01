@@ -14,3 +14,28 @@ Sample code:
     while ($record = $table->nextRecord()) {
         echo $record->my_column;
     }
+
+Performance
+=====
+
+You can pass an array of the columns that you need to the constructor, then if your table has columns that you don't use they will not be loaded. This way the parser can run a lot faster.
+
+
+    <?php
+    
+    use XBase\Table;
+    
+    $table = new Table(dirname(__FILE__).'/test.dbf', array('my_column', 'another_column'));
+    
+    while ($record = $table->nextRecord()) {
+        echo $record->my_column;
+        echo $record->another_column;
+    }
+
+If you know the column type already, you can also call the type-specific function for that field, which increases the speed too.
+
+    
+    while ($record = $table->nextRecord()) {
+        echo $record->getChar('my_column');
+        echo $record->getDate('another_column');
+    }
