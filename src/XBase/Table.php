@@ -158,11 +158,9 @@ class Table
 
             $this->recordPos--;
 	        
-	        fseek($this->fp, $this->headerLength + (
-$this->recordPos * $this->recordByteLength));
+	        fseek($this->fp, $this->headerLength + ($this->recordPos * $this->recordByteLength));
 	        
-            $this->record = new Record($this, $this->recordPos,
-$this->readBytes($this->recordByteLength));
+            $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
