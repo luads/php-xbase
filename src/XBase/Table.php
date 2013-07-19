@@ -143,6 +143,35 @@ class Table
         return $this->record;
     }
 
+    public function previousRecord() 
+    {
+        if (!$this->isOpen()) {
+            $this->open();  
+        }
+
+        $valid = false;
+
+        do {
+            if (($this->recordPos - 1) < 0) {
+                return false;   
+            }
+
+            $this->recordPos--;
+	        
+	        fseek($this->fp, $this->headerLength + ( $this->recordPos * $this->recordByteLength));
+	        
+            $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
+
+            if ($this->record->isDeleted()) {
+                $this->deleteCount++;
+            } else {
+                $valid=true;
+            }
+        } while (!$valid);
+
+        return $this->record;
+    }
+
     public function moveTo($index) 
     {
         $this->recordPos = $index;
