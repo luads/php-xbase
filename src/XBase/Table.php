@@ -97,7 +97,7 @@ class Table
             $bytepos += $column->getLength();
 
             if (!$this->avaliableColumns || ($this->avaliableColumns && in_array($column->name, $this->avaliableColumns))) {
-                $this->columns[$column->getName()] = $column;
+                $this->addColumn($column);
                 $j++;
             }
         }
@@ -190,6 +190,21 @@ class Table
     public function getRecord() 
     {
         return $this->record;
+    }
+
+    public function addColumn($column)
+    {
+        $name = $nameBase = $column->getName();
+        $index = 0;
+
+        while (isset($this->columns[$name]))
+        {
+            $name = $nameBase . ++$index;
+        }
+
+        $column->name = $name;
+
+        $this->columns[$name] = $column;
     }
 
     public function getColumns() 
