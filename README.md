@@ -42,3 +42,23 @@ while ($record = $table->nextRecord()) {
     echo $record->getDate('another_column');
 }
 ```
+
+Write Data
+=====
+``` php
+<?php
+
+use XBase\Table;
+
+$table = new Table(dirname(__FILE__).'/test.dbf'));
+$table->openWrite();
+
+for ($i = 0; $i < 10; $i++) {
+    $record = $table->nextRecord();
+    $record->field = 'string';
+    $table->writeRecord();
+}
+
+# optional
+$table->close();
+```

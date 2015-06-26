@@ -49,12 +49,22 @@ class Record
         return $this->getString($name);
     }
 
-    public function isDeleted() 
+    public function __set($name, $value)
+    {
+        return $this->setStringByName($name, $value);
+    }
+
+    public function isDeleted()
     {
         return $this->deleted;
     }
-    
-    public function getColumns() 
+
+    public function isInserted()
+    {
+        return $this->inserted;
+    }
+
+    public function getColumns()
     {
         return $this->table->getColumns();
     }
@@ -99,45 +109,45 @@ class Record
         return trim($this->choppedData[$columnName]);
     }
 
-    public function getObject(Column $column) 
+    public function getObject(Column $column)
     {
         switch ($column->getType()) {
-            case self::DBFFIELD_TYPE_CHAR : return $this->getString($column->getName());
-            case self::DBFFIELD_TYPE_DATE : return $this->getDate($column->getName());
-            case self::DBFFIELD_TYPE_DATETIME : return $this->getDateTime($column->getName());
-            case self::DBFFIELD_TYPE_FLOATING : return $this->getFloat($column->getName());
-            case self::DBFFIELD_TYPE_LOGICAL : return $this->getBoolean($column->getName());
-            case self::DBFFIELD_TYPE_MEMO : return $this->getMemo($column->getName());
-            case self::DBFFIELD_TYPE_NUMERIC : return $this->getInt($column->getName());
-            case self::DBFFIELD_TYPE_INDEX : return $this->getIndex($column->getName(), $column->getLength());
-            case self::DBFFIELD_IGNORE_0 : return false;
+            case self::DBFFIELD_TYPE_CHAR:return $this->getString($column->getName());
+            case self::DBFFIELD_TYPE_DATE:return $this->getDate($column->getName());
+            case self::DBFFIELD_TYPE_DATETIME:return $this->getDateTime($column->getName());
+            case self::DBFFIELD_TYPE_FLOATING:return $this->getFloat($column->getName());
+            case self::DBFFIELD_TYPE_LOGICAL:return $this->getBoolean($column->getName());
+            case self::DBFFIELD_TYPE_MEMO:return $this->getMemo($column->getName());
+            case self::DBFFIELD_TYPE_NUMERIC:return $this->getInt($column->getName());
+            case self::DBFFIELD_TYPE_INDEX:return $this->getIndex($column->getName(), $column->getLength());
+            case self::DBFFIELD_IGNORE_0:return false;
         }
 
         throw new Exception\InvalidColumnException(sprintf('Cannot handle datatype %s', $column->getType()));
     }
 
-    public function getChar($columnName) 
+    public function getChar($columnName)
     {
         return $this->forceGetString($columnName);
     }
 
-    public function getDate($columnName) 
+    public function getDate($columnName)
     {
         $s = $this->forceGetString($columnName);
 
         if (!$s) {
-            return false;   
+            return false;
         }
-        
+
         return strtotime($s);
     }
 
-    public function getDateTime($columnName) 
+    public function getDateTime($columnName)
     {
-        $raw =  $this->choppedData[$columnName];
-        $buf = unpack('i',substr($raw,0,4));
+        $raw = $this->choppedData[$columnName];
+        $buf = unpack('i', substr($raw, 0, 4));
         $intdate = $buf[1];
-        $buf = unpack('i',substr($raw,4,4));
+        $buf = unpack('i', substr($raw, 4, 4));
         $inttime = $buf[1];
 
         if ($intdate == 0 && $inttime == 0) {
@@ -149,14 +159,14 @@ class Record
         return $longdate + $inttime;
     }
 
-    public function getBoolean($columnName) 
+    public function getBoolean($columnName)
     {
         $s = $this->forceGetString($columnName);
 
         if (!$s) {
             return false;
         }
-        
+
         switch (strtoupper($s[0])) {
             case 'T':
             case 'Y':
@@ -164,59 +174,204 @@ class Record
             case '1':
                 return true;
 
-            default: return false;
+            default:return false;
         }
     }
 
-    public function getMemo($columnName) 
+    public function getMemo($columnName)
     {
         return $this->forceGetString($columnName);
     }
 
-    public function getFloat($columnName) 
+    public function getFloat($columnName)
     {
         $s = $this->forceGetString($columnName);
 
         if (!$s) {
             return false;
         }
-        
+
         $s = str_replace(',', '.', $s);
 
         return floatval($s);
     }
 
-    public function getInt($columnName) 
+    public function getInt($columnName)
     {
         $s = $this->forceGetString($columnName);
 
         if (!$s) {
             return false;
         }
-        
+
         $s = str_replace(',', '.', $s);
 
         return intval($s);
     }
 
-    public function getIndex($columnName, $length) 
+    public function getIndex($columnName, $length)
     {
         $s = $this->choppedData[$columnName];
 
         if (!$s) {
             return false;
         }
-        
+
         $ret = ord($s[0]);
 
         for ($i = 1; $i < $length; $i++) {
             $ret += $i * 256 * ord($s[$i]);
         }
 
-        return $ret;   
+        return $ret;
+    }
+    
+    public function copyFrom($record)
+    {
+        $this->choppedData = $record->choppedData;
+    }
+    public function setDeleted($b)
+    {
+        $this->deleted = $b;
+    }
+    public function setStringByName($columnName, $value)
+    {
+        $this->setString($this->table->getColumn($columnName), $value);
+    }
+    public function setStringByIndex($columnIndex, $value)
+    {
+        $this->setString($this->table->getColumn($columnIndex), $value);
+    }
+    public function setString($columnObj, $value)
+    {
+        if ($columnObj->getType() == self::DBFFIELD_TYPE_CHAR) {
+            $this->forceSetString($columnObj, $value);
+        } else {
+            if ($columnObj->getType() == self::DBFFIELD_TYPE_DATETIME || $columnObj->getType() == self::DBFFIELD_TYPE_DATE) {
+                $value = strtotime($value);
+            }
+
+            $this->setObject($columnObj, $value);
+        }
+    }
+    public function forceSetString($columnObj, $value)
+    {
+        $this->choppedData[$columnObj->getName()] = str_pad(substr($value, 0, $columnObj->getDataLength()), $columnObj->getDataLength(), " ");
+    }
+    public function setObjectByName($columnName, $value)
+    {
+        return $this->setObject($this->table->getColumn($columnName), $value);
+    }
+    public function setObjectByIndex($columnIndex, $value)
+    {
+        return $this->setObject($this->table->getColumn($columnIndex), $value);
+    }
+    public function setObject($columnObj, $value)
+    {
+        switch ($columnObj->getType()) {
+            case self::DBFFIELD_TYPE_CHAR:$this->setString($columnObj, $value);return;
+            case self::DBFFIELD_TYPE_DATE:$this->setDate($columnObj, $value);return;
+            case self::DBFFIELD_TYPE_DATETIME:$this->setDateTime($columnObj, $value);return;
+            case self::DBFFIELD_TYPE_FLOATING:$this->setFloat($columnObj, $value);return;
+            case self::DBFFIELD_TYPE_LOGICAL:$this->setBoolean($columnObj, $value);return;
+            case self::DBFFIELD_TYPE_MEMO:$this->setMemo($columnObj, $value);return;
+            case self::DBFFIELD_TYPE_NUMERIC:$this->setInt($columnObj, $value);return;
+            case self::DBFFIELD_IGNORE_0:return;
+        }
+        trigger_error("cannot handle datatype" . $columnObj->getType(), E_USER_ERROR);
+    }
+    public function setDate($columnObj, $value)
+    {
+        if ($columnObj->getType() != self::DBFFIELD_TYPE_DATE) {
+            trigger_error($columnObj->getName() . " is not a Date column", E_USER_ERROR);
+        }
+
+        if (strlen($value) == 0) {
+            $this->forceSetString($columnObj, "");
+            return;
+        }
+        $this->forceSetString($columnObj, date("Ymd", $value));
+    }
+    public function setDateTime($columnObj, $value)
+    {
+        if ($columnObj->getType() != self::DBFFIELD_TYPE_DATETIME) {
+            trigger_error($columnObj->getName() . " is not a DateTime column", E_USER_ERROR);
+        }
+
+        if (strlen($value) == 0) {
+            $this->forceSetString($columnObj, "");
+            return;
+        }
+        $a = getdate($value);
+        $d = $this->zerodate + (mktime(0, 0, 0, $a["mon"], $a["mday"], $a["year"]) / 86400);
+        $d = pack("i", $d);
+        $t = pack("i", mktime($a["hours"], $a["minutes"], $a["seconds"], 0, 0, 0));
+        $this->choppedData[$columnObj->getColIndex()] = $d . $t;
+    }
+    public function setBoolean($columnObj, $value)
+    {
+        if ($columnObj->getType() != self::DBFFIELD_TYPE_LOGICAL) {
+            trigger_error($columnObj->getName() . " is not a DateTime column", E_USER_ERROR);
+        }
+
+        switch (strtoupper($value)) {
+            case 'T':
+            case 'Y':
+            case 'J':
+            case '1':
+            case 'F':
+            case 'N':
+            case '0':
+                $this->forceSetString($columnObj, $value);
+                return;
+
+            case true:
+                $this->forceSetString($columnObj, "T");
+                return;
+            default:$this->forceSetString($columnObj, "F");
+        }
+    }
+    public function setMemo($columnObj, $value)
+    {
+        if ($columnObj->getType() != self::DBFFIELD_TYPE_MEMO) {
+            trigger_error($columnObj->getName() . " is not a Memo column", E_USER_ERROR);
+        }
+
+        return $this->forceSetString($columnObj, $value);
+    }
+    public function setFloat($columnObj, $value)
+    {
+        if ($columnObj->getType() != self::DBFFIELD_TYPE_FLOATING) {
+            trigger_error($columnObj->getName() . " is not a Float column", E_USER_ERROR);
+        }
+
+        if (strlen($value) == 0) {
+            $this->forceSetString($columnObj, "");
+            return;
+        }
+        $value = str_replace(",", ".", $value);
+        $s = $this->forceSetString($columnObj, $value);
+    }
+    public function setInt($columnObj, $value)
+    {
+        if ($columnObj->getType() != self::DBFFIELD_TYPE_NUMERIC) {
+            trigger_error($columnObj->getName() . " is not a Number column", E_USER_ERROR);
+        }
+
+        if (strlen($value) == 0) {
+            $this->forceSetString($columnObj, "");
+            return;
+        }
+        $value = str_replace(",", ".", $value);
+        //$this->forceSetString($columnObj,intval($value));
+
+        /**
+         * suggestion from Sergiu Neamt: treat number values as decimals
+         **/
+        $this->forceSetString($columnObj, number_format($value, $columnObj->getDecimalCount()));
     }
 
-    protected function serializeRawData() 
+    public function serializeRawData()
     {
         return ($this->deleted ? '*' : ' ') . implode('', $this->choppedData);
     }
