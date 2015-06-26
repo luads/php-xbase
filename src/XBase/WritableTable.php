@@ -1,10 +1,9 @@
-<?
+<?php
 
 namespace XBase;
 
 class WritableTable extends Table
 {
-    /* static */
     public function cloneFrom($table)
     {
         $result =& new WritableTable($table->tableName);
@@ -21,46 +20,50 @@ class WritableTable extends Table
         $result->headerLength=$table->headerLength;
         $result->backlist=$table->backlist;
         $result->foxpro=$table->foxpro;
+        
         return $result;
     }
 
-    /* static */
     public function create($filename, $fields)
     {
         if (!$fields || !is_array($fields)) {
             throw new Exception\TableException("cannot create xbase with no fields", $this->tableName);
         }
-        $recordByteLength=1;
-        $columns=array();
-        $columnNames=array();
-        $i=0;
+        
+        $recordByteLength = 1;
+        $columns = array();
+        $columnNames = array();
+        $i = 0;
+        
         foreach ($fields as $field) {
             if (!$field || !is_array($field) || sizeof($field)<2) {
                 throw new Exception\TableException("fields argument error, must be array of arrays", $this->tableName);
             }
             $column =& new Column($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
             $recordByteLength += $column->getDataLength();
-            $columnNames[$i]=$field[0];
-            $columns[$i]=$column;
+            $columnNames[$i] = $field[0];
+            $columns[$i] = $column;
             $i++;
         }
         
         $result =& new WritableTable($filename);
-        $result->version=131;
-        $result->modifyDate=time();
-        $result->recordCount=0;
-        $result->recordByteLength=$recordByteLength;
-        $result->inTransaction=0;
-        $result->encrypted=false;
-        $result->mdxFlag=chr(0);
-        $result->languageCode=chr(0);
-        $result->columns=$columns;
-        $result->columnNames=$columnNames;
-        $result->backlist="";
-        $result->foxpro=false;
+        $result->version = 131;
+        $result->modifyDate = time();
+        $result->recordCount = 0;
+        $result->recordByteLength = $recordByteLength;
+        $result->inTransaction = 0;
+        $result->encrypted = false;
+        $result->mdxFlag = chr(0);
+        $result->languageCode = chr(0);
+        $result->columns = $columns;
+        $result->columnNames = $columnNames;
+        $result->backlist = "";
+        $result->foxpro = false;
+        
         if ($result->openWrite($filename, true)) {
             return $result;
         }
+        
         return false;
     }
 
@@ -69,6 +72,7 @@ class WritableTable extends Table
         if (!$filename) {
             $filename = $this->tableName;
         }
+        
         if (file_exists($filename) && !$overwrite) {
             if ($this->fp = fopen($filename, "r+")) {
                 $this->readHeader();
@@ -78,13 +82,16 @@ class WritableTable extends Table
                 $this->writeHeader();
             }
         }
+        
         return $this->fp!=false;
     }
     
     public function writeHeader()
     {
         $this->headerLength=($this->foxpro?296:33) + ($this->getColumnCount()*32);
+        
         fseek($this->fp, 0);
+        
         $this->writeChar($this->version);
         $this->write3ByteDate(time());
         $this->writeInt($this->recordCount);
@@ -112,16 +119,19 @@ class WritableTable extends Table
             $this->writeBytes(str_pad("", 7, chr(0)));
             $this->writeByte(chr($column->indexed?1:0));
         }
+        
         if ($this->foxpro) {
             $this->writeBytes(str_pad($this->backlist, 263, " "));
         }
+        
         $this->writeChar(0x0d);
     }
 
     public function appendRecord()
     {
         $this->record =& new XBaseRecord($this, $this->recordCount);
-        $this->recordCount+=1;
+        $this->recordCount += 1;
+        
         return $this->record;
     }
 
@@ -130,15 +140,18 @@ class WritableTable extends Table
         fseek($this->fp, $this->headerLength+($this->record->getRecordIndex()*$this->recordByteLength));
         $data = $this->record->serializeRawData(); // removed referencing
         fwrite($this->fp, $data);
+        
         if ($this->record->isInserted()) {
             $this->writeHeader();
         }
+        
         flush($this->fp);
     }
 
     public function deleteRecord()
     {
-        $this->record->deleted=true;
+        $this->record->deleted = true;
+        
         fseek($this->fp, $this->headerLength+($this->record->getRecordIndex()*$this->recordByteLength));
         fwrite($this->fp, "!");
         flush($this->fp);
@@ -146,7 +159,8 @@ class WritableTable extends Table
 
     public function undeleteRecord()
     {
-        $this->record->deleted=false;
+        $this->record->deleted = false;
+        
         fseek($this->fp, $this->headerLength+($this->record->getRecordIndex()*$this->recordByteLength));
         fwrite($this->fp, " ");
         flush($this->fp);
@@ -156,24 +170,24 @@ class WritableTable extends Table
     {
         $newRecordCount = 0;
         $newFilepos = $this->headerLength;
-        for ($i=0;$i<$this->getRecordCount();$i++) {
+        
+        for ($i=0; $i < $this->getRecordCount(); $i++) {
             $r =& $this->moveTo($i);
+            
             if ($r->isDeleted()) {
                 continue;
             }
+            
             $r->recordIndex = $newRecordCount++;
             $this->writeRecord();
         }
+        
         $this->recordCount = $newRecordCount;
         $this->writeHeader();
+        
         ftruncate($this->fp, $this->headerLength+($this->recordCount*$this->recordByteLength));
     }
-    /**
-     * -------------------------------------------------------------------------
-     * private functions
-     * -------------------------------------------------------------------------
-     */
-     
+    
     private function writeBytes($buf)
     {
         return fwrite($this->fp, $buf);
@@ -192,36 +206,42 @@ class WritableTable extends Table
     private function writeChar($c)
     {
         $buf = pack("C", $c);
+        
         return $this->writeBytes($buf);
     }
 
     private function writeShort($s)
     {
         $buf = pack("S", $s);
+        
         return $this->writeBytes($buf);
     }
 
     private function writeInt($i)
     {
         $buf = pack("I", $i);
+        
         return $this->writeBytes($buf);
     }
 
     private function writeLong($l)
     {
         $buf = pack("L", $l);
+        
         return $this->writeBytes($buf);
     }
 
     private function write3ByteDate($d)
     {
         $t = getdate($d);
+        
         return $this->writeChar($t["year"] % 1000) + $this->writeChar($t["mon"]) + $this->writeChar($t["mday"]);
     }
 
     private function write4ByteDate($d)
     {
         $t = getdate($d);
+        
         return $this->writeShort($t["year"]) + $this->writeChar($t["mon"]) + $this->writeChar($t["mday"]);
     }
 }
