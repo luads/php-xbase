@@ -3,10 +3,10 @@
 namespace XBase;
 
 class WritableTable extends Table
-{
+{    
     public function cloneFrom($table)
     {
-        $result =& new WritableTable($table->tableName);
+        $result = new WritableTable($table->tableName);
         $result->version=$table->version;
         $result->modifyDate=$table->modifyDate;
         $result->recordCount=0;
@@ -25,7 +25,7 @@ class WritableTable extends Table
     }
 
     public function create($filename, $fields)
-    {
+    {        
         if (!$fields || !is_array($fields)) {
             throw new Exception\TableException("cannot create xbase with no fields", $this->tableName);
         }
@@ -39,14 +39,14 @@ class WritableTable extends Table
             if (!$field || !is_array($field) || sizeof($field)<2) {
                 throw new Exception\TableException("fields argument error, must be array of arrays", $this->tableName);
             }
-            $column =& new Column($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
+            $column = new Column($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
             $recordByteLength += $column->getDataLength();
             $columnNames[$i] = $field[0];
             $columns[$i] = $column;
             $i++;
         }
         
-        $result =& new WritableTable($filename);
+        $result = new WritableTable($filename);
         $result->version = 131;
         $result->modifyDate = time();
         $result->recordCount = 0;
@@ -129,7 +129,7 @@ class WritableTable extends Table
 
     public function appendRecord()
     {
-        $this->record =& new XBaseRecord($this, $this->recordCount);
+        $this->record = new XBaseRecord($this, $this->recordCount);
         $this->recordCount += 1;
         
         return $this->record;
@@ -172,7 +172,7 @@ class WritableTable extends Table
         $newFilepos = $this->headerLength;
         
         for ($i=0; $i < $this->getRecordCount(); $i++) {
-            $r =& $this->moveTo($i);
+            $r = $this->moveTo($i);
             
             if ($r->isDeleted()) {
                 continue;
@@ -188,57 +188,57 @@ class WritableTable extends Table
         ftruncate($this->fp, $this->headerLength+($this->recordCount*$this->recordByteLength));
     }
     
-    private function writeBytes($buf)
+    protected function writeBytes($buf)
     {
         return fwrite($this->fp, $buf);
     }
 
-    private function writeByte($b)
+    protected function writeByte($b)
     {
         return fwrite($this->fp, $b);
     }
 
-    private function writeString($s)
+    protected function writeString($s)
     {
         return $this->writeBytes($s);
     }
 
-    private function writeChar($c)
+    protected function writeChar($c)
     {
         $buf = pack("C", $c);
         
         return $this->writeBytes($buf);
     }
 
-    private function writeShort($s)
+    protected function writeShort($s)
     {
         $buf = pack("S", $s);
         
         return $this->writeBytes($buf);
     }
 
-    private function writeInt($i)
+    protected function writeInt($i)
     {
         $buf = pack("I", $i);
         
         return $this->writeBytes($buf);
     }
 
-    private function writeLong($l)
+    protected function writeLong($l)
     {
         $buf = pack("L", $l);
         
         return $this->writeBytes($buf);
     }
 
-    private function write3ByteDate($d)
+    protected function write3ByteDate($d)
     {
         $t = getdate($d);
         
         return $this->writeChar($t["year"] % 1000) + $this->writeChar($t["mon"]) + $this->writeChar($t["mday"]);
     }
 
-    private function write4ByteDate($d)
+    protected function write4ByteDate($d)
     {
         $t = getdate($d);
         
