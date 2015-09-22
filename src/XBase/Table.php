@@ -1,8 +1,8 @@
-<?php 
+<?php
 
 namespace XBase;
 
-class Table 
+class Table
 {
     protected $tableName;
     protected $avaliableColumns;
@@ -24,14 +24,14 @@ class Table
     public $headerLength;
     public $backlist;
     public $foxpro;
-    
+
     public function __construct($tableName, $avaliableColumns = null)
     {
         $this->tableName = $tableName;
         $this->avaliableColumns = $avaliableColumns;
         $this->open();
     }
-    
+
     protected function open()
     {
         if (!file_exists($this->tableName)) {
@@ -43,7 +43,7 @@ class Table
 
         return $this->fp != false;
     }
-    
+
     protected function readHeader()
     {
         $this->version = $this->readChar();
@@ -61,8 +61,8 @@ class Table
         $this->languageCode = $this->readByte();
         $this->readBytes(2); //reserved
 
-        $fieldCount = ($this->headerLength - ($this->foxpro?296:33) ) / 32;
-        
+        $fieldCount = floor(($this->headerLength - ($this->foxpro ? 296 : 33)) / 32);
+
         /* some checking */
         if ($this->headerLength > filesize($this->tableName)) {
             throw new Exception\TableException(sprintf('File %s is not DBF', $this->tableName));
@@ -106,28 +106,28 @@ class Table
             $this->backlist = $this->readBytes(263);
         }
 
-        $b = $this->readByte();
+        $this->setFilePos($this->headerLength);
         $this->recordPos = -1;
         $this->record = false;
         $this->deleteCount = 0;
     }
 
-    public function close() 
+    public function close()
     {
         fclose($this->fp);
     }
 
-    public function nextRecord() 
+    public function nextRecord()
     {
         if (!$this->isOpen()) {
-            $this->open();  
+            $this->open();
         }
 
         $valid = false;
 
         do {
             if (($this->recordPos + 1) >= $this->recordCount) {
-                return false;   
+                return false;
             }
 
             $this->recordPos++;
@@ -143,23 +143,23 @@ class Table
         return $this->record;
     }
 
-    public function previousRecord() 
+    public function previousRecord()
     {
         if (!$this->isOpen()) {
-            $this->open();  
+            $this->open();
         }
 
         $valid = false;
 
         do {
             if (($this->recordPos - 1) < 0) {
-                return false;   
+                return false;
             }
 
             $this->recordPos--;
-	        
+
 	        fseek($this->fp, $this->headerLength + ( $this->recordPos * $this->recordByteLength));
-	        
+
             $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
 
             if ($this->record->isDeleted()) {
@@ -172,7 +172,7 @@ class Table
         return $this->record;
     }
 
-    public function moveTo($index) 
+    public function moveTo($index)
     {
         $this->recordPos = $index;
 
@@ -183,11 +183,17 @@ class Table
         fseek($this->fp, $this->headerLength + ($index * $this->recordByteLength));
 
         $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
-        
+
         return $this->record;
     }
 
-    public function getRecord() 
+    private function setFilePos($offset)
+    {
+        $this->filePos = $offset;
+        fseek($this->fp, $this->filePos);
+    }
+
+    public function getRecord()
     {
         return $this->record;
     }
@@ -207,12 +213,12 @@ class Table
         $this->columns[$name] = $column;
     }
 
-    public function getColumns() 
+    public function getColumns()
     {
         return $this->columns;
     }
 
-    public function getColumn($name) 
+    public function getColumn($name)
     {
         if (!array_key_exists($name, $this->columns)) {
             throw new \Exception(sprintf('Column %s not found', $name));
@@ -221,133 +227,133 @@ class Table
         return $this->columns[$name];
     }
 
-    public function getColumnCount() 
+    public function getColumnCount()
     {
         return count($this->columns);
     }
 
-    public function getRecordCount() 
+    public function getRecordCount()
     {
         return $this->recordCount;
     }
 
-    public function getRecordPos() 
+    public function getRecordPos()
     {
         return $this->recordPos;
     }
 
-    public function getRecordByteLength() 
+    public function getRecordByteLength()
     {
         return $this->recordByteLength;
     }
 
-    public function getName() 
+    public function getName()
     {
         return $this->tableName;
     }
 
-    public function getDeleteCount() 
+    public function getDeleteCount()
     {
         return $this->deleteCount;
     }
-    
-    protected function isOpen() 
+
+    protected function isOpen()
     {
         return $this->fp ? true : false;
     }
 
-    
-    protected function readBytes($l) 
+
+    protected function readBytes($l)
     {
         $this->filePos += $l;
 
         return fread($this->fp, $l);
     }
-    
-    protected function writeBytes($buf) 
+
+    protected function writeBytes($buf)
     {
         return fwrite($this->fp, $buf);
     }
-    
-    protected function readByte()  
+
+    protected function readByte()
     {
         $this->filePos++;
 
         return fread($this->fp, 1);
     }
-    
-    protected function writeByte($b)  
+
+    protected function writeByte($b)
     {
         return fwrite($this->fp, $b);
     }
-    
-    protected function readString($l) 
+
+    protected function readString($l)
     {
         return $this->readBytes($l);
     }
-    
-    protected function writeString($s) 
+
+    protected function writeString($s)
     {
         return $this->writeBytes($s);
     }
-    
-    protected function readChar() 
+
+    protected function readChar()
     {
         $buf = unpack('C', $this->readBytes(1));
 
         return $buf[1];
     }
-    
-    protected function writeChar($c) 
+
+    protected function writeChar($c)
     {
         $buf = pack('C', $c);
 
         return $this->writeBytes($buf);
     }
-    
-    protected function readShort() 
+
+    protected function readShort()
     {
         $buf = unpack('S', $this->readBytes(2));
 
         return $buf[1];
     }
-    
-    protected function writeShort($s) 
+
+    protected function writeShort($s)
     {
         $buf = pack('S', $s);
 
         return $this->writeBytes($buf);
     }
-    
-    protected function readInt() 
+
+    protected function readInt()
     {
         $buf = unpack('I', $this->readBytes(4));
 
         return $buf[1];
     }
-    
-    protected function writeInt($i) 
+
+    protected function writeInt($i)
     {
         $buf = pack('I', $i);
 
         return $this->writeBytes($buf);
     }
-    
-    protected function readLong() 
+
+    protected function readLong()
     {
         $buf = unpack('L', $this->readBytes(8));
 
         return $buf[1];
     }
-    
-    protected function writeLong($l) 
+
+    protected function writeLong($l)
     {
         $buf = pack('L', $l);
 
         return $this->writeBytes($buf);
     }
-    
-    protected function read3ByteDate() 
+
+    protected function read3ByteDate()
     {
         $y = unpack('c', $this->readByte());
         $m = unpack('c', $this->readByte());
@@ -355,15 +361,15 @@ class Table
 
         return mktime(0, 0, 0, $m[1], $d[1] ,$y[1] > 70 ? 1900 + $y[1] : 2000 + $y[1]);
     }
-    
-    protected function write3ByteDate($d) 
+
+    protected function write3ByteDate($d)
     {
         $t = getdate($d);
 
         return $this->writeChar($t['year'] % 1000) + $this->writeChar($t['mon']) + $this->writeChar($t['mday']);
     }
-    
-    protected function read4ByteDate() 
+
+    protected function read4ByteDate()
     {
         $y = readShort();
         $m = unpack('c',$this->readByte());
@@ -371,8 +377,8 @@ class Table
 
         return mktime(0, 0, 0, $m[1], $d[1], $y);
     }
-    
-    protected function write4ByteDate($d) 
+
+    protected function write4ByteDate($d)
     {
         $t = getdate($d);
 
