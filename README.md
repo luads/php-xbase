@@ -43,6 +43,12 @@ while ($record = $table->nextRecord()) {
 }
 ```
 
+If the data in DB is not in UTF8 you can specify encoding to convert from.
+
+``` php
+$table = new Table(dirname(__FILE__).'/test.dbf', null, 'CP1251');
+```
+
 Write Data
 =====
 ``` php
