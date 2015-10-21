@@ -48,9 +48,9 @@ Write Data
 ``` php
 <?php
 
-use XBase\Table;
+use XBase\WritableTable;
 
-$table = new Table(dirname(__FILE__).'/test.dbf'));
+$table = new WritableTable(dirname(__FILE__).'/test.dbf'));
 $table->openWrite();
 
 for ($i = 0; $i < 10; $i++) {
