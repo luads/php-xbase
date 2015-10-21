@@ -11,6 +11,7 @@ class Table
     protected $recordPos = -1;
     protected $deleteCount = 0;
     protected $record;
+    protected $convertFrom;
 
     public $version;
     public $modifyDate;
@@ -25,10 +26,11 @@ class Table
     public $backlist;
     public $foxpro;
 
-    public function __construct($tableName, $avaliableColumns = null)
+    public function __construct($tableName, $avaliableColumns = null, $convertFrom = null)
     {
         $this->tableName = $tableName;
         $this->avaliableColumns = $avaliableColumns;
+        $this->convertFrom = $convertFrom;
         $this->open();
     }
 
@@ -131,7 +133,7 @@ class Table
             }
 
             $this->recordPos++;
-            $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
+            $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength), $this->convertFrom);
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -160,7 +162,7 @@ class Table
 
 	        fseek($this->fp, $this->headerLength + ( $this->recordPos * $this->recordByteLength));
 
-            $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
+            $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength), $this->convertFrom);
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -182,7 +184,7 @@ class Table
 
         fseek($this->fp, $this->headerLength + ($index * $this->recordByteLength));
 
-        $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
+        $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength), $this->convertFrom);
 
         return $this->record;
     }

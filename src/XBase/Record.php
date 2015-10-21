@@ -1,18 +1,20 @@
-<?php 
+<?php
 
 namespace XBase;
 
-class Record 
+class Record
 {
     const DBFFIELD_TYPE_MEMO = 'M';     // Memo type field.
     const DBFFIELD_TYPE_CHAR = 'C';     // Character field.
+    const DBFFIELD_TYPE_DOUBLE = 'B';   // Double type field.
     const DBFFIELD_TYPE_NUMERIC = 'N';  // Numeric
     const DBFFIELD_TYPE_FLOATING = 'F'; // Floating point
     const DBFFIELD_TYPE_DATE = 'D';     // Date
     const DBFFIELD_TYPE_LOGICAL = 'L';  // Logical - ? Y y N n T t F f (? when not initialized).
     const DBFFIELD_TYPE_DATETIME = 'T'; // DateTime
-    const DBFFIELD_TYPE_INDEX = 'I';    // Index 
+    const DBFFIELD_TYPE_INDEX = 'I';    // Index
     const DBFFIELD_IGNORE_0 = '0';      // ignore this field
+    const DBRECORD_ENCODING = 'UTF-8';  // Default encoding
 
     protected $zerodate = 0x253d8c;
     protected $table;
@@ -20,14 +22,15 @@ class Record
     protected $deleted;
     protected $inserted;
     protected $recordIndex;
-    
-    public function __construct(Table $table, $recordIndex, $rawData = false) 
+
+    public function __construct(Table $table, $recordIndex, $rawData = false, $convertFrom = null)
     {
         $this->table = $table;
         $this->recordIndex = $recordIndex;
         $this->choppedData = array();
 
         if ($rawData && strlen($rawData) > 0) {
+            if($convertFrom) $rawData = iconv($convertFrom, self::DBRECORD_ENCODING, $rawData);
             $this->inserted = false;
             $this->deleted = (ord($rawData[0]) != '32');
 
@@ -69,17 +72,17 @@ class Record
         return $this->table->getColumns();
     }
 
-    public function getColumn($name) 
+    public function getColumn($name)
     {
         return $this->table->getColumn($name);
     }
-    
-    public function getRecordIndex() 
+
+    public function getRecordIndex()
     {
         return $this->recordIndex;
     }
 
-    public function getString($columnName) 
+    public function getString($columnName)
     {
         $column = $this->table->getColumn($columnName);
 
@@ -100,7 +103,7 @@ class Record
         }
     }
 
-    public function forceGetString($columnName) 
+    public function forceGetString($columnName)
     {
         if (ord($this->choppedData[$columnName][0]) == '0') {
             return false;
@@ -113,6 +116,7 @@ class Record
     {
         switch ($column->getType()) {
             case self::DBFFIELD_TYPE_CHAR:return $this->getString($column->getName());
+            case self::DBFFIELD_TYPE_DOUBLE:return $this->getFloat($column->getName());
             case self::DBFFIELD_TYPE_DATE:return $this->getDate($column->getName());
             case self::DBFFIELD_TYPE_DATETIME:return $this->getDateTime($column->getName());
             case self::DBFFIELD_TYPE_FLOATING:return $this->getFloat($column->getName());
@@ -225,7 +229,7 @@ class Record
 
         return $ret;
     }
-    
+
     public function copyFrom($record)
     {
         $this->choppedData = $record->choppedData;
@@ -280,6 +284,9 @@ class Record
             case self::DBFFIELD_TYPE_CHAR:
                 $this->setString($columnObj, $value);
                 return false;
+            case self::DBFFIELD_TYPE_DOUBLE:
+                $this->setFloat($columnObj, $value);
+                return false;
             case self::DBFFIELD_TYPE_DATE:
                 $this->setDate($columnObj, $value);
                 return false;
@@ -301,7 +308,7 @@ class Record
             case self::DBFFIELD_IGNORE_0:
                 return false;
         }
-        
+
         trigger_error('cannot handle datatype' . $columnObj->getType(), E_USER_ERROR);
     }
 
