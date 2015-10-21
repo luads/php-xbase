@@ -11,6 +11,7 @@ class Table
     protected $recordPos = -1;
     protected $deleteCount = 0;
     protected $record;
+    protected $convertFrom;
 
     public $version;
     public $modifyDate;
@@ -25,10 +26,11 @@ class Table
     public $backlist;
     public $foxpro;
 
-    public function __construct($tableName, $avaliableColumns = null)
+    public function __construct($tableName, $avaliableColumns = null, $convertFrom = null)
     {
         $this->tableName = $tableName;
         $this->avaliableColumns = $avaliableColumns;
+        $this->convertFrom = $convertFrom;
         $this->open();
     }
 
@@ -255,6 +257,11 @@ class Table
     public function getDeleteCount()
     {
         return $this->deleteCount;
+    }
+
+    public function getConvertFrom()
+    {
+        return $this->convertFrom;
     }
 
     protected function isOpen()
