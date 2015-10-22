@@ -14,7 +14,6 @@ class Record
     const DBFFIELD_TYPE_DATETIME = 'T'; // DateTime
     const DBFFIELD_TYPE_INDEX = 'I';    // Index
     const DBFFIELD_IGNORE_0 = '0';      // ignore this field
-    const DBRECORD_ENCODING = 'UTF-8';  // Default encoding
 
     protected $zerodate = 0x253d8c;
     protected $table;
@@ -30,9 +29,6 @@ class Record
         $this->choppedData = array();
 
         if ($rawData && strlen($rawData) > 0) {
-            if ($this->table->getConvertFrom()) {
-                $rawData = iconv($this->table->getConvertFrom(), self::DBRECORD_ENCODING, $rawData);
-            }
             $this->inserted = false;
             $this->deleted = (ord($rawData[0]) != '32');
 
@@ -107,18 +103,24 @@ class Record
 
     public function forceGetString($columnName)
     {
-        if (ord($this->choppedData[$columnName][0]) == '0') {
+        $data = trim($this->choppedData[$columnName]);
+
+        if ($this->table->getConvertFrom()) {
+            $data = iconv($this->table->getConvertFrom(), 'utf-8', $data);
+        }
+
+        if (!$data || ord($data[0]) == '0') {
             return false;
         }
 
-        return trim($this->choppedData[$columnName]);
+        return $data;
     }
 
     public function getObject(Column $column)
     {
         switch ($column->getType()) {
             case self::DBFFIELD_TYPE_CHAR:return $this->getString($column->getName());
-            case self::DBFFIELD_TYPE_DOUBLE:return $this->getFloat($column->getName());
+            case self::DBFFIELD_TYPE_DOUBLE:return $this->getDouble($column->getName());
             case self::DBFFIELD_TYPE_DATE:return $this->getDate($column->getName());
             case self::DBFFIELD_TYPE_DATETIME:return $this->getDateTime($column->getName());
             case self::DBFFIELD_TYPE_FLOATING:return $this->getFloat($column->getName());
@@ -189,17 +191,30 @@ class Record
         return $this->forceGetString($columnName);
     }
 
-    public function getFloat($columnName)
+    public function getDouble($columnName)
     {
-        $s = $this->forceGetString($columnName);
+        $s = $this->choppedData[$columnName];
 
-        if (!$s) {
-            return false;
+        $s = unpack('d', $s);
+
+        if ($s) {
+            return $s[1];
         }
 
-        $s = str_replace(',', '.', $s);
+        return 0;
+    }
 
-        return floatval($s);
+    public function getFloat($columnName)
+    {
+        $s = $this->choppedData[$columnName];
+
+        $s = unpack('f', $s);
+
+        if ($s) {
+            return $s[1];
+        }
+
+        return 0;
     }
 
     public function getInt($columnName)
