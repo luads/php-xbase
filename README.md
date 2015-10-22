@@ -1,7 +1,7 @@
 PHP XBase
 -----
 
-A simple parser for *.dbf (dBase, foxpro). It's a port of PHPXbase class written by [Erwin Kooi](http://www.phpclasses.org/package/2673-PHP-Access-dbf-foxpro-files-without-PHP-ext-.html), updated to a 5.3 / PSR compliant code.
+A simple library for dealing with **dbf** databases like dBase and FoxPro. It's a port of PHPXbase class written by [Erwin Kooi](http://www.phpclasses.org/package/2673-PHP-Access-dbf-foxpro-files-without-PHP-ext-.html), updated to a PSR-2 compliant code and tweaked for performance and to solve some issues the original code had.
 
 Sample code:
 ``` php
@@ -16,8 +16,14 @@ while ($record = $table->nextRecord()) {
 }
 ```
 
+If the data in DB is not in UTF-8 you can specify a charset to convert the data from:
+
+``` php
+$table = new Table(dirname(__FILE__).'/test.dbf', null, 'CP1251');
+```
+
 Performance
-=====
+-----
 
 You can pass an array of the columns that you need to the constructor, then if your table has columns that you don't use they will not be loaded. This way the parser can run a lot faster.
 
@@ -43,14 +49,11 @@ while ($record = $table->nextRecord()) {
 }
 ```
 
-If the data in DB is not in UTF8 you can specify encoding to convert from.
+Writing Data
+-----
 
-``` php
-$table = new Table(dirname(__FILE__).'/test.dbf', null, 'CP1251');
-```
+To open a table for writing, you have to use a `WritableTable` object, as on this example:
 
-Write Data
-=====
 ``` php
 <?php
 
@@ -68,3 +71,8 @@ for ($i = 0; $i < 10; $i++) {
 # optional
 $table->close();
 ```
+
+Troubleshooting
+-----
+
+I'm not an expert on dBase and I don't know all the specifics of the field types and versions, so the lib may not be able to handle some situations. If you find an error, please open an issue and send me a sample table that I can reproduce your problem and I'll try to help.
