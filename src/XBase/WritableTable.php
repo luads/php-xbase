@@ -129,7 +129,7 @@ class WritableTable extends Table
 
     public function appendRecord()
     {
-        $this->record = new XBaseRecord($this, $this->recordCount);
+        $this->record = new Record($this, $this->recordCount);
         $this->recordCount += 1;
         
         return $this->record;
