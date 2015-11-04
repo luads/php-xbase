@@ -109,15 +109,15 @@ class WritableTable extends Table
         foreach ($this->columns as $column) {
             $this->writeString(str_pad(substr($column->rawname, 0, 11), 11, chr(0)));
             $this->writeByte($column->type);
-            $this->writeInt($column->memAddress);
+            $this->writeInt($column->getMemAddress());
             $this->writeChar($column->getDataLength());
-            $this->writeChar($column->decimalCount);
+            $this->writeChar($column->getDecimalCount());
             $this->writeBytes(str_pad("", 2, chr(0)));
-            $this->writeChar($column->workAreaID);
+            $this->writeChar($column->getWorkAreaID());
             $this->writeBytes(str_pad("", 2, chr(0)));
-            $this->writeByte(chr($column->setFields?1:0));
+            $this->writeByte(chr($column->isSetFields()?1:0));
             $this->writeBytes(str_pad("", 7, chr(0)));
-            $this->writeByte(chr($column->indexed?1:0));
+            $this->writeByte(chr($column->isIndexed()?1:0));
         }
         
         if ($this->foxpro) {
