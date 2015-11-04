@@ -221,11 +221,15 @@ class Table
 
     public function getColumn($name)
     {
-        if (!array_key_exists($name, $this->columns)) {
-            throw new \Exception(sprintf('Column %s not found', $name));
+        foreach ($this->columns as $column)
+        {
+            if ($column->name === $name)
+            {
+                return $column;
+            }
         }
 
-        return $this->columns[$name];
+        throw new \Exception(sprintf('Column %s not found', $name));
     }
 
     public function getColumnCount()
