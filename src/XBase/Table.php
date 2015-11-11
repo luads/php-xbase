@@ -31,6 +31,7 @@ class Table
         $this->tableName = $tableName;
         $this->avaliableColumns = $avaliableColumns;
         $this->convertFrom = $convertFrom;
+        $this->open();
     }
 
     protected function open()
