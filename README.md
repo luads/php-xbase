@@ -19,7 +19,13 @@ while ($record = $table->nextRecord()) {
 If the data in DB is not in UTF-8 you can specify a charset to convert the data from:
 
 ``` php
-$table = new Table(dirname(__FILE__).'/test.dbf', null, 'CP1251');
+$table = new Table(dirname(__FILE__).'/test.dbf', null, null, 'CP1251');
+```
+
+It is also possible to read Memos from dedicated files:
+
+``` php
+$table = new Table(dirname(__FILE__).'/test.dbf', dirname(__FILE__).'/test.fpt');
 ```
 
 Performance
@@ -32,7 +38,7 @@ You can pass an array of the columns that you need to the constructor, then if y
 
 use XBase\Table;
 
-$table = new Table(dirname(__FILE__).'/test.dbf', array('my_column', 'another_column'));
+$table = new Table(dirname(__FILE__).'/test.dbf', null, array('my_column', 'another_column'));
 
 while ($record = $table->nextRecord()) {
     echo $record->my_column;

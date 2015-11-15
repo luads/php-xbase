@@ -6,6 +6,7 @@ class Table
 {
     protected $tableName;
     protected $avaliableColumns;
+    protected $memoFileName;
     protected $fp;
     protected $filePos = 0;
     protected $recordPos = -1;
@@ -13,6 +14,7 @@ class Table
     protected $record;
     protected $convertFrom;
 
+    public $mfp;
     public $version;
     public $modifyDate;
     public $recordCount;
@@ -25,31 +27,36 @@ class Table
     public $headerLength;
     public $backlist;
     public $foxpro;
+    public $hasMemos;
 
-    public function __construct($tableName, $avaliableColumns = null, $convertFrom = null)
+    public function __construct($tableName, $memoFileName = null, $avaliableColumns = null, $convertFrom = null)
     {
         $this->tableName = $tableName;
+        $this->memoFileName = $memoFileName;
         $this->avaliableColumns = $avaliableColumns;
         $this->convertFrom = $convertFrom;
-        $this->open();
+        $this->open_foxpro_file($this->fp, $this->tableName, true);
+        $this->open_foxpro_file($this->mfp, $this->memoFileName);
     }
 
-    protected function open()
+    protected function open_foxpro_file(&$fp, $fileName, $readHeader = false)
     {
-        if (!file_exists($this->tableName)) {
-            throw new \Exception(sprintf('File %s cannot be found', $this->tableName));
+        if (!file_exists($fileName)) {
+            throw new \Exception(sprintf('File %s cannot be found', $fileName));
         }
 
-        $this->fp = fopen($this->tableName, 'rb');
-        $this->readHeader();
+        $fp = fopen($fileName, 'rb');
+        if($readHeader) {
+            $this->readHeader();
+        }
 
-        return $this->fp != false;
+        return $fp != false;
     }
 
     protected function readHeader()
     {
         $this->version = $this->readChar();
-        $this->foxpro = $this->version==48 || $this->version==49 || $this->version==245 || $this->version==251;
+        $this->foxpro = in_array($this->version, array(48, 49, 245, 251, 131, 203, 245));
         $this->modifyDate = $this->read3ByteDate();
         $this->recordCount = $this->readInt();
         $this->headerLength = $this->readShort();

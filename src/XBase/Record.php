@@ -186,9 +186,39 @@ class Record
         }
     }
 
+    public function getMemoFromFile($pointer) {
+        $Value = null;
+        if($this->table->mfp && $pointer != 0) {
+            // Getting block size
+            fseek($this->table->mfp, 6);
+            $Data = unpack("n", fread($this->table->mfp, 2));
+            $Memo_BlockSize = $Data[1];
+
+            fseek($this->table->mfp, $pointer * $Memo_BlockSize);
+            $Type = unpack("N", fread($this->table->mfp, 4));
+            if($Type[1] == "1") {
+                $Len = unpack("N", fread($this->table->mfp, 4));
+                $Value = trim(fread($this->table->mfp, $Len[1]));
+                if ($this->table->getConvertFrom()) {
+                    $Value = iconv($this->table->getConvertFrom(), 'utf-8', $Value);
+                }
+            } else {
+                // Pictures will not be shown
+                $Value = "{BINARY_PICTURE}";
+            }
+        }
+        return $Value;
+    }
+
     public function getMemo($columnName)
     {
-        return $this->forceGetString($columnName);
+        $data = $this->forceGetString($columnName);
+        if($data && strlen($data) == 2) {
+            $pointer = unpack('s', $data)[1];
+            return $this->getMemoFromFile($pointer);
+        } else {
+            return $data;
+        }
     }
 
     public function getDouble($columnName)
