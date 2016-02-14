@@ -227,7 +227,13 @@ class Record
 
         $s = str_replace(',', '.', $s);
 
-        return intval($s);
+        /**
+         * @TODO: fix it in Table
+         */
+        if (($res = intval($s)) != $s) {
+            $res = doubleval($s);
+        }
+        return $res;
     }
 
     public function getIndex($columnName, $length)
