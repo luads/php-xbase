@@ -227,9 +227,14 @@ class Record
 
         $s = str_replace(',', '.', $s);
 
-        return ($this->type == Record::DBFFIELD_TYPE_NUMERIC && ($decimalCount > 0 || $length > 9)) 
-            ? doubleval($s)
-            : intval($s);
+        $column = $this->getColumn($columnName);
+
+        if ($column->type == Record::DBFFIELD_TYPE_NUMERIC &&
+            ($column->getDecimalCount() > 0 || $column->length > 9)
+        )
+            return doubleval($s);
+        else
+            return intval($s);
     }
 
     public function getIndex($columnName, $length)
