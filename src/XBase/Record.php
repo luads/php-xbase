@@ -8,6 +8,9 @@ class Record
     const DBFFIELD_TYPE_CHAR = 'C';     // Character field
     const DBFFIELD_TYPE_DOUBLE = 'B';   // Double
     const DBFFIELD_TYPE_NUMERIC = 'N';  // Numeric
+
+    const DBFFIELD_TYPE_NUMERIC_DOUBLE = 'ND';  // Numeric double
+
     const DBFFIELD_TYPE_FLOATING = 'F'; // Floating point
     const DBFFIELD_TYPE_DATE = 'D';     // Date
     const DBFFIELD_TYPE_LOGICAL = 'L';  // Logical - ? Y y N n T t F f (? when not initialized).
@@ -127,6 +130,7 @@ class Record
             case self::DBFFIELD_TYPE_LOGICAL:return $this->getBoolean($column->getName());
             case self::DBFFIELD_TYPE_MEMO:return $this->getMemo($column->getName());
             case self::DBFFIELD_TYPE_NUMERIC:return $this->getInt($column->getName());
+            case self::DBFFIELD_TYPE_NUMERIC_DOUBLE: return $this->getNumbericDouble($column->getName());
             case self::DBFFIELD_TYPE_INDEX:return $this->getIndex($column->getName(), $column->getLength());
             case self::DBFFIELD_IGNORE_0:return false;
         }
@@ -227,14 +231,22 @@ class Record
 
         $s = str_replace(',', '.', $s);
 
-        /**
-         * @TODO: fix it in Table
-         */
-        if (($res = intval($s)) != $s) {
-            $res = doubleval($s);
-        }
-        return $res;
+        return intval($s);
     }
+
+    public function getNumbericDouble($columnName)
+    {
+        $s = $this->forceGetString($columnName);
+
+        if (!$s) {
+            return false;
+        }
+
+        $s = str_replace(',', '.', $s);
+
+        return doubleval($s);
+    }
+
 
     public function getIndex($columnName, $length)
     {
