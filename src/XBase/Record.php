@@ -4,17 +4,16 @@ namespace XBase;
 
 class Record
 {
-    const DBFFIELD_TYPE_MEMO = 'M';             // Memo type field
-    const DBFFIELD_TYPE_CHAR = 'C';             // Character field
-    const DBFFIELD_TYPE_DOUBLE = 'B';           // Double
-    const DBFFIELD_TYPE_NUMERIC = 'N';          // Numeric
-    const DBFFIELD_TYPE_NUMERIC_DOUBLE = 'ND';  // Numeric double
-    const DBFFIELD_TYPE_FLOATING = 'F';         // Floating point
-    const DBFFIELD_TYPE_DATE = 'D';             // Date
-    const DBFFIELD_TYPE_LOGICAL = 'L';          // Logical - ? Y y N n T t F f (? when not initialized).
-    const DBFFIELD_TYPE_DATETIME = 'T';         // DateTime
-    const DBFFIELD_TYPE_INDEX = 'I';            // Index
-    const DBFFIELD_IGNORE_0 = '0';              // ignore this field
+    const DBFFIELD_TYPE_MEMO = 'M';     // Memo type field
+    const DBFFIELD_TYPE_CHAR = 'C';     // Character field
+    const DBFFIELD_TYPE_DOUBLE = 'B';   // Double
+    const DBFFIELD_TYPE_NUMERIC = 'N';  // Numeric
+    const DBFFIELD_TYPE_FLOATING = 'F'; // Floating point
+    const DBFFIELD_TYPE_DATE = 'D';     // Date
+    const DBFFIELD_TYPE_LOGICAL = 'L';  // Logical - ? Y y N n T t F f (? when not initialized).
+    const DBFFIELD_TYPE_DATETIME = 'T'; // DateTime
+    const DBFFIELD_TYPE_INDEX = 'I';    // Index
+    const DBFFIELD_IGNORE_0 = '0';      // ignore this field
 
     protected $zerodate = 0x253d8c;
     protected $table;
@@ -127,8 +126,7 @@ class Record
             case self::DBFFIELD_TYPE_FLOATING:return $this->getFloat($column->getName());
             case self::DBFFIELD_TYPE_LOGICAL:return $this->getBoolean($column->getName());
             case self::DBFFIELD_TYPE_MEMO:return $this->getMemo($column->getName());
-            case self::DBFFIELD_TYPE_NUMERIC:return $this->getInt($column->getName());
-            case self::DBFFIELD_TYPE_NUMERIC_DOUBLE: return $this->getNumbericDouble($column->getName());
+            case self::DBFFIELD_TYPE_NUMERIC:return $this->getNum($column->getName());
             case self::DBFFIELD_TYPE_INDEX:return $this->getIndex($column->getName(), $column->getLength());
             case self::DBFFIELD_IGNORE_0:return false;
         }
@@ -219,7 +217,7 @@ class Record
         return 0;
     }
 
-    public function getInt($columnName)
+    public function getNum($columnName)
     {
         $s = $this->forceGetString($columnName);
 
@@ -229,20 +227,9 @@ class Record
 
         $s = str_replace(',', '.', $s);
 
-        return intval($s);
-    }
-
-    public function getNumbericDouble($columnName)
-    {
-        $s = $this->forceGetString($columnName);
-
-        if (!$s) {
-            return false;
-        }
-
-        $s = str_replace(',', '.', $s);
-
-        return doubleval($s);
+        return ($this->type == Record::DBFFIELD_TYPE_NUMERIC && ($decimalCount > 0 || $length > 9)) 
+            ? doubleval($s)
+            : intval($s);
     }
 
     public function getIndex($columnName, $length)

@@ -31,9 +31,6 @@ class Column
         $this->indexed = $indexed;
         $this->bytePos = $bytePos;
         $this->colIndex = $colIndex;
-        if ($type == Record::DBFFIELD_TYPE_NUMERIC && ($decimalCount > 0 || $length > 9)) {
-            $this->type = $type = Record::DBFFIELD_TYPE_NUMERIC_DOUBLE;
-        }
     }
 
     
