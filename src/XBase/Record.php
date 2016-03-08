@@ -245,10 +245,15 @@ class Record
             return false;
         }
 
-        $ret = ord($s[0]);
+        if($this->table->foxpro) {
+            $su = unpack("i", $s);
+            $ret = $su[1];
+        } else {
+            $ret = ord($s[0]);
 
-        for ($i = 1; $i < $length; $i++) {
-            $ret += $i * 256 * ord($s[$i]);
+            for ($i = 1; $i < $length; $i++) {
+                $ret += $i * 256 * ord($s[$i]);
+            }
         }
 
         return $ret;
