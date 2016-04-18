@@ -109,7 +109,7 @@ class Record
             $data = iconv($this->table->getConvertFrom(), 'utf-8', $data);
         }
 
-        if (ord($data[0]) === 0) {
+        if (!isset($data[0] || ord($data[0]) === 0) {
             return null;
         }
 
