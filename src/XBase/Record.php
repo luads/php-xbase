@@ -30,7 +30,7 @@ class Record
 
         if ($rawData && strlen($rawData) > 0) {
             $this->inserted = false;
-            $this->deleted = (ord($rawData[0]) != '32');
+            $this->deleted = (ord($rawData[0]) == '42');
 
             foreach ($table->getColumns() as $column) {
                 $this->choppedData[$column->getName()] = substr($rawData, $column->getBytePos(), $column->getDataLength());
