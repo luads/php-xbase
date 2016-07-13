@@ -109,8 +109,8 @@ class Record
             $data = iconv($this->table->getConvertFrom(), 'utf-8', $data);
         }
 
-        if (!$data || ord($data[0]) == '0') {
-            return false;
+        if (!isset($data[0]) || ord($data[0]) === 0) {
+            return null;
         }
 
         return $data;
@@ -126,7 +126,7 @@ class Record
             case self::DBFFIELD_TYPE_FLOATING:return $this->getFloat($column->getName());
             case self::DBFFIELD_TYPE_LOGICAL:return $this->getBoolean($column->getName());
             case self::DBFFIELD_TYPE_MEMO:return $this->getMemo($column->getName());
-            case self::DBFFIELD_TYPE_NUMERIC:return $this->getInt($column->getName());
+            case self::DBFFIELD_TYPE_NUMERIC:return $this->getNum($column->getName());
             case self::DBFFIELD_TYPE_INDEX:return $this->getIndex($column->getName(), $column->getLength());
             case self::DBFFIELD_IGNORE_0:return false;
         }
@@ -247,7 +247,7 @@ class Record
         return 0;
     }
 
-    public function getInt($columnName)
+    public function getNum($columnName)
     {
         $s = $this->forceGetString($columnName);
 
@@ -257,7 +257,14 @@ class Record
 
         $s = str_replace(',', '.', $s);
 
-        return intval($s);
+        $column = $this->getColumn($columnName);
+
+        if ($column->type == Record::DBFFIELD_TYPE_NUMERIC &&
+            ($column->getDecimalCount() > 0 || $column->length > 9)
+        )
+            return doubleval($s);
+        else
+            return intval($s);
     }
 
     public function getIndex($columnName, $length)
@@ -268,10 +275,15 @@ class Record
             return false;
         }
 
-        $ret = ord($s[0]);
+        if($this->table->foxpro) {
+            $su = unpack("i", $s);
+            $ret = $su[1];
+        } else {
+            $ret = ord($s[0]);
 
-        for ($i = 1; $i < $length; $i++) {
-            $ret += $i * 256 * ord($s[$i]);
+            for ($i = 1; $i < $length; $i++) {
+                $ret += $i * 256 * ord($s[$i]);
+            }
         }
 
         return $ret;

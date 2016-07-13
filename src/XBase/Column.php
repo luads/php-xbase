@@ -9,9 +9,9 @@ class Column
     public $rawname;
     public $type;
     public $length;
+    public $decimalCount;
 
     protected $memAddress;
-    protected $decimalCount;
     protected $workAreaID;
     protected $setFields;
     protected $indexed;

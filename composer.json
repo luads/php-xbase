@@ -1,6 +1,5 @@
 {
     "name": "hisamu/php-xbase",
-    "version": "1.0.1",
     "type": "library",
     "description": "A simple parser for *.dbf, *.fpt files using PHP",
     "keywords": ["dbase", "foxpro"],
