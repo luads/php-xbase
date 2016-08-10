@@ -14,7 +14,6 @@ class Table
     protected $convertFrom;
     protected $memoFile;
 
-    public $mfp;
     public $version;
     public $modifyDate;
     public $recordCount;
