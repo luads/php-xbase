@@ -6,13 +6,13 @@ class Table
 {
     protected $tableName;
     protected $avaliableColumns;
-    protected $memoFileName;
     protected $fp;
     protected $filePos = 0;
     protected $recordPos = -1;
     protected $deleteCount = 0;
     protected $record;
     protected $convertFrom;
+    protected $memoFile;
 
     public $mfp;
     public $version;
@@ -27,30 +27,26 @@ class Table
     public $headerLength;
     public $backlist;
     public $foxpro;
-    public $hasMemos;
 
-    public function __construct($tableName, $memoFileName = null, $avaliableColumns = null, $convertFrom = null)
+    public function __construct($tableName, $avaliableColumns = null, $convertFrom = null)
     {
         $this->tableName = $tableName;
-        $this->memoFileName = $memoFileName;
         $this->avaliableColumns = $avaliableColumns;
         $this->convertFrom = $convertFrom;
-        $this->open_foxpro_file($this->fp, $this->tableName, true);
-        $this->open_foxpro_file($this->mfp, $this->memoFileName);
+        $this->memoFile = new Memo($this);
+        $this->open();
     }
 
-    protected function open_foxpro_file(&$fp, $fileName, $readHeader = false)
+    protected function open()
     {
-        if (!file_exists($fileName)) {
-            throw new \Exception(sprintf('File %s cannot be found', $fileName));
+        if (!file_exists($this->tableName)) {
+            throw new \Exception(sprintf('File %s cannot be found', $this->tableName));
         }
 
-        $fp = fopen($fileName, 'rb');
-        if($readHeader) {
-            $this->readHeader();
-        }
+        $this->fp = fopen($this->tableName, 'rb');
+        $this->readHeader();
 
-        return $fp != false;
+        return $this->fp != false;
     }
 
     protected function readHeader()
