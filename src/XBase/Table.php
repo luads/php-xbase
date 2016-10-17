@@ -125,6 +125,11 @@ class Table
             $this->open();
         }
 
+        if ($this->record) {
+            $this->record->destroy();
+            $this->record = null;
+        }
+
         $valid = false;
 
         do {
@@ -149,6 +154,11 @@ class Table
     {
         if (!$this->isOpen()) {
             $this->open();
+        }
+
+        if ($this->record) {
+            $this->record->destroy();
+            $this->record = null;
         }
 
         $valid = false;
