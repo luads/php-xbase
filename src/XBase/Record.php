@@ -21,10 +21,12 @@ class Record
     protected $deleted;
     protected $inserted;
     protected $recordIndex;
+    protected $memoFile;
 
     public function __construct(Table $table, $recordIndex, $rawData = false)
     {
         $this->table = $table;
+        $this->memoFile = $table->memoFile;
         $this->recordIndex = $recordIndex;
         $this->choppedData = array();
 

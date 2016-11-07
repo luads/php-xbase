@@ -12,7 +12,6 @@ class Table
     protected $deleteCount = 0;
     protected $record;
     protected $convertFrom;
-    protected $memoFile;
 
     public $version;
     public $modifyDate;
@@ -26,13 +25,14 @@ class Table
     public $headerLength;
     public $backlist;
     public $foxpro;
+    public $memoFile;
 
     public function __construct($tableName, $avaliableColumns = null, $convertFrom = null)
     {
         $this->tableName = $tableName;
         $this->avaliableColumns = $avaliableColumns;
         $this->convertFrom = $convertFrom;
-        $this->memoFile = new Memo($this);
+        $this->memoFile = new Memo($this, $this->tableName);
         $this->open();
     }
 
