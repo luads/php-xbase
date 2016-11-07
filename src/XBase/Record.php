@@ -47,6 +47,11 @@ class Record
         }
     }
 
+    public function destroy() {
+        $this->table = null;
+        $this->choppedData = null;
+    }
+
     public function __get($name)
     {
         return $this->getString($name);
