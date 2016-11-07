@@ -25,12 +25,14 @@ class Table
     public $headerLength;
     public $backlist;
     public $foxpro;
+    public $memoFile;
 
     public function __construct($tableName, $avaliableColumns = null, $convertFrom = null)
     {
         $this->tableName = $tableName;
         $this->avaliableColumns = $avaliableColumns;
         $this->convertFrom = $convertFrom;
+        $this->memoFile = new Memo($this, $this->tableName);
         $this->open();
     }
 
@@ -49,7 +51,7 @@ class Table
     protected function readHeader()
     {
         $this->version = $this->readChar();
-        $this->foxpro = $this->version==48 || $this->version==49 || $this->version==245 || $this->version==251;
+        $this->foxpro = in_array($this->version, array(48, 49, 245, 251, 131, 203, 245));
         $this->modifyDate = $this->read3ByteDate();
         $this->recordCount = $this->readInt();
         $this->headerLength = $this->readShort();

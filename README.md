@@ -30,6 +30,8 @@ If the data in DB is not in UTF-8 you can specify a charset to convert the data 
 $table = new Table(dirname(__FILE__).'/test.dbf', null, 'CP1251');
 ```
 
+It is also possible to read Memos from dedicated files. Just make sure that *.fpt* file with the same name as main database exists
+
 Performance
 -----
 

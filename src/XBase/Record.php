@@ -21,10 +21,12 @@ class Record
     protected $deleted;
     protected $inserted;
     protected $recordIndex;
+    protected $memoFile;
 
     public function __construct(Table $table, $recordIndex, $rawData = false)
     {
         $this->table = $table;
+        $this->memoFile = $table->memoFile;
         $this->recordIndex = $recordIndex;
         $this->choppedData = array();
 
@@ -193,7 +195,13 @@ class Record
 
     public function getMemo($columnName)
     {
-        return $this->forceGetString($columnName);
+        $data = $this->forceGetString($columnName);
+        if($data && strlen($data) == 2) {
+            $pointer = unpack('s', $data)[1];
+            return $this->memoFile->get($pointer);
+        } else {
+            return $data;
+        }
     }
 
     public function getDouble($columnName)
