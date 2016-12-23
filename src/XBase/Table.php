@@ -51,7 +51,7 @@ class Table
     protected function readHeader()
     {
         $this->version = $this->readChar();
-        $this->foxpro = in_array($this->version, array(48, 49, 245, 251, 131, 203, 245));
+        $this->foxpro = in_array($this->version, array(48, 49, 131, 203, 245, 251));
         $this->modifyDate = $this->read3ByteDate();
         $this->recordCount = $this->readInt();
         $this->headerLength = $this->readShort();
