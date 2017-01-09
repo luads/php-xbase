@@ -17,7 +17,7 @@ class Memo
 
     protected function open()
     {
-        $fileName = preg_replace("/dbf/", "fpt", $this->tableName);
+        $fileName = str_replace(array("dbf", "DBF"), array("fpt", "FPT"), $this->tableName);
 
         if (!file_exists($fileName)) {
             return false;
