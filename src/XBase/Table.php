@@ -21,6 +21,7 @@ class Table
     public $encrypted;
     public $mdxFlag;
     public $languageCode;
+    public $languageName;
     public $columns;
     public $headerLength;
     public $backlist;
@@ -65,7 +66,13 @@ class Table
         $this->languageCode = $this->readByte();
         $this->readBytes(2); //reserved
 
-        $fieldCount = floor(($this->headerLength - ($this->foxpro ? 296 : 33)) / 32);
+        if($this->version == 4){
+            $this->languageName = $this->readString(32); //Language driver name.
+            $this->readBytes(4); //reserved
+            $fieldCount = ($this->headerLength - 69) / 48;
+        }else{
+            $fieldCount = floor(($this->headerLength - ($this->foxpro ? 296 : 33)) / 32);
+        }
 
         /* some checking */
         if ($this->headerLength > filesize($this->tableName)) {
@@ -82,21 +89,40 @@ class Table
         $j = 0;
 
         for ($i=0;$i<$fieldCount;$i++) {
-            $column = new Column(
-                strtolower($this->readString(11)), // name
-                $this->readByte(),      // type
-                $this->readInt(),       // memAddress
-                $this->readChar(),      // length
-                $this->readChar(),      // decimalCount
-                $this->readBytes(2),    // reserved1
-                $this->readChar(),      // workAreaID
-                $this->readBytes(2),    // reserved2
-                $this->readByte()!=0,   // setFields
-                $this->readBytes(7),    // reserved3
-                $this->readByte()!=0,   // indexed
-                $j,                     // colIndex
-                $bytepos                // bytePos
-            );
+
+            if($this->version == 4){
+                $column = new Column(
+                    strtolower($this->readString(32)),  // name
+                    $this->readByte(),      // type
+                    '',                     // memAddress
+                    $this->readChar(),      // length
+                    $this->readChar(),      // decimalCount
+                    $this->readBytes(2),    // reserved1
+                    $this->readChar(),      // workAreaID
+                    $this->readBytes(2),    // reserved2
+                    '',                     // setFields
+                    $this->readBytes(8),    // reserved3
+                    '',                     // indexed
+                    $j,                     // colIndex
+                    $bytepos                // bytePos
+                );
+            }else{
+                $column = new Column(
+                    strtolower($this->readString(11)), // name
+                    $this->readByte(),      // type
+                    $this->readInt(),       // memAddress
+                    $this->readChar(),      // length
+                    $this->readChar(),      // decimalCount
+                    $this->readBytes(2),    // reserved1
+                    $this->readChar(),      // workAreaID
+                    $this->readBytes(2),    // reserved2
+                    $this->readByte()!=0,   // setFields
+                    $this->readBytes(7),    // reserved3
+                    $this->readByte()!=0,   // indexed
+                    $j,                     // colIndex
+                    $bytepos                // bytePos
+                );
+            }
 
             $bytepos += $column->getLength();
 
