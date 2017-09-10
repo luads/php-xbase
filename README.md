@@ -1,4 +1,4 @@
-PHP XBase [write Patch]
+PHP XBase 
 -----
 
 A simple library for dealing with **dbf** databases like dBase and FoxPro. It's a port of PHPXbase class written by [Erwin Kooi](http://www.phpclasses.org/package/2673-PHP-Access-dbf-foxpro-files-without-PHP-ext-.html), updated to a PSR-2 compliant code and tweaked for performance and to solve some issues the original code had.
@@ -7,7 +7,7 @@ Installation
 -----
 You can install it through [Composer](https://getcomposer.org):
 ```
-$ composer require kingofnull/php-xbase
+$ composer require hisamu/php-xbase
 ```
 
 Sample usage
