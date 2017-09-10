@@ -43,8 +43,9 @@ class Table
         }
 
         $this->fp = fopen($this->tableName, 'rb');
-        $this->readHeader();
-
+		if(filesize($this->tableName)>0){
+			$this->readHeader();
+		}
         return $this->fp != false;
     }
 
@@ -126,6 +127,7 @@ class Table
         if (!$this->isOpen()) {
             $this->open();
         }
+			
 
         if ($this->record) {
             $this->record->destroy();
@@ -135,10 +137,19 @@ class Table
         $valid = false;
 
         do {
+			// var_dump($this->recordPos,$this->recordCount,$this->record);die();
             if (($this->recordPos + 1) >= $this->recordCount) {
-                return false;
+                // 	return false;
+				// if($this->recordCount==-1){
+					// $this->recordCount=1;
+				// }else{
+					$this->recordCount++;
+				// }
+				// var_dump($this->recordCount);
+				
             }
-
+			
+			
             $this->recordPos++;
             $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
 
@@ -149,6 +160,7 @@ class Table
             }
         } while (!$valid);
 
+	;
         return $this->record;
     }
 
@@ -234,6 +246,7 @@ class Table
 
     public function getColumn($name)
     {
+		
         foreach ($this->columns as $column)
         {
             if ($column->name === $name)

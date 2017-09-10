@@ -29,6 +29,12 @@ class WritableTable extends Table
         if (!$fields || !is_array($fields)) {
             throw new Exception\TableException("cannot create xbase with no fields", $this->tableName);
         }
+		
+		if (!touch($filename)) {
+            throw new Exception\TableException("cannot create file", $this->tableName);
+        }
+		
+		
         
         $recordByteLength = 1;
         $columns = array();
@@ -45,9 +51,10 @@ class WritableTable extends Table
             $columns[$i] = $column;
             $i++;
         }
+		
         
         $result = new WritableTable($filename);
-        $result->version = 131;
+        $result->version = 03;
         $result->modifyDate = time();
         $result->recordCount = 0;
         $result->recordByteLength = $recordByteLength;
@@ -94,6 +101,7 @@ class WritableTable extends Table
         
         $this->writeChar($this->version);
         $this->write3ByteDate(time());
+		// var_dump($this->recordCount);
         $this->writeInt($this->recordCount);
         $this->writeShort($this->headerLength);
         $this->writeShort($this->recordByteLength);
@@ -141,9 +149,11 @@ class WritableTable extends Table
         $data = $this->record->serializeRawData(); // removed referencing
         fwrite($this->fp, $data);
         
-        if ($this->record->isInserted()) {
+		
+		
+        // if ($this->record->isInserted()) {
             $this->writeHeader();
-        }
+        // }
 
         fflush($this->fp);
     }
