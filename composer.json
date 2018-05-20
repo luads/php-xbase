@@ -3,7 +3,7 @@
     "type": "library",
     "description": "A simple parser for *.dbf, *.fpt files using PHP",
     "keywords": ["dbase", "foxpro"],
-    "homepage": "https://github.com/hisamu/php-xbase",
+    "homepage": "https://github.com/luads/php-xbase",
     "license": "MIT",
     "authors" : [
         {
