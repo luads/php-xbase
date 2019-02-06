@@ -195,9 +195,13 @@ class Record
 
     public function getMemo($columnName)
     {
-        $data = $this->forceGetString($columnName);
+        $data = trim($this->choppedData[$columnName]);
         if($data && strlen($data) == 2) {
             $pointer = unpack('s', $data)[1];
+            return $this->memoFile->get($pointer);
+	}
+	elseif($data && strlen($data) == 4) {
+            $pointer = unpack('l', $data)[1];
             return $this->memoFile->get($pointer);
         } else {
             return $data;
