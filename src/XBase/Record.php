@@ -113,7 +113,7 @@ class Record
         $data = trim($this->choppedData[$columnName]);
 
         if ($this->table->getConvertFrom()) {
-            $data = iconv($this->table->getConvertFrom(), 'utf-8', $data);
+            $data = iconv($this->table->getConvertFrom(), 'utf-8', convert_cyr_string($data, 'd', 'w'));
         }
 
         if (!isset($data[0]) || ord($data[0]) === 0) {
