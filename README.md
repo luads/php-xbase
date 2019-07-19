@@ -69,7 +69,7 @@ To open a table for writing, you have to use a `WritableTable` object, as on thi
 
 use XBase\WritableTable;
 
-$table = new WritableTable(dirname(__FILE__).'/test.dbf'));
+$table = new WritableTable(dirname(__FILE__).'/test.dbf');
 $table->openWrite();
 
 for ($i = 0; $i < 10; $i++) {

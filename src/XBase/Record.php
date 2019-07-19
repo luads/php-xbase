@@ -307,6 +307,10 @@ class Record
 
     public function forceSetString($columnObj, $value)
     {
+        if ($this->table->getConvertFrom()) {
+            $value = iconv('utf-8', $this->table->getConvertFrom(), $value);
+        }
+
         $this->choppedData[$columnObj->getName()] = str_pad(substr($value, 0, $columnObj->getDataLength()), $columnObj->getDataLength(), " ");
     }
 
