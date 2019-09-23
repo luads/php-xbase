@@ -1,10 +1,9 @@
-<?php 
+<?php
 
 namespace XBase;
 
-class Column 
+class Column
 {
-
     public $name;
     public $rawname;
     public $type;
@@ -18,10 +17,10 @@ class Column
     protected $bytePos;
     protected $colIndex;
 
-    public function __construct($name, $type, $memAddress, $length, $decimalCount, $reserved1, $workAreaID, $reserved2, $setFields, $reserved3, $indexed, $colIndex, $bytePos) 
+    public function __construct($name, $type, $memAddress, $length, $decimalCount, $reserved1, $workAreaID, $reserved2, $setFields, $reserved3, $indexed, $colIndex, $bytePos)
     {
         $this->rawname = $name;
-        $this->name = (strpos($name, 0x00) !== false ) ? substr($name, 0, strpos($name, 0x00)) : $name;
+        $this->name = (strpos($name, 0x00) !== false) ? substr($name, 0, strpos($name, 0x00)) : $name;
         $this->type = $type;
         $this->memAddress = $memAddress;
         $this->length = $length;
@@ -33,74 +32,78 @@ class Column
         $this->colIndex = $colIndex;
     }
 
-    
-    public function getDecimalCount() 
+
+    public function getDecimalCount()
     {
         return $this->decimalCount;
     }
-    
-    public function isIndexed() 
+
+    public function isIndexed()
     {
         return $this->indexed;
     }
-    
-    public function getLength() 
+
+    public function getLength()
     {
         return $this->length;
     }
-    
-    public function getDataLength() 
+
+    public function getDataLength()
     {
         switch ($this->type) {
-            case Record::DBFFIELD_TYPE_DATE : return 8;
-            case Record::DBFFIELD_TYPE_DATETIME : return 8;
-            case Record::DBFFIELD_TYPE_LOGICAL : return 1;
-            case Record::DBFFIELD_TYPE_MEMO : return 10;
-            default : return $this->length;
+            case Record::DBFFIELD_TYPE_DATE:
+            case Record::DBFFIELD_TYPE_DATETIME:
+                return 8;
+            case Record::DBFFIELD_TYPE_LOGICAL:
+                return 1;
+            case Record::DBFFIELD_TYPE_MEMO:
+                return 10;
+            default:
+                return $this->length;
         }
     }
-    
-    public function getMemAddress() 
+
+    public function getMemAddress()
     {
         return $this->memAddress;
     }
-    
-    public function getName() 
+
+    public function getName()
     {
         return $this->name;
     }
-    
-    public function isSetFields() 
+
+    public function isSetFields()
     {
         return $this->setFields;
     }
-    
-    public function getType() 
+
+    public function getType()
     {
         return $this->type;
     }
-    
-    public function getWorkAreaID() 
+
+    public function getWorkAreaID()
     {
         return $this->workAreaID;
     }
-    
-    public function toString() 
+
+    public function toString()
     {
         return $this->name;
     }
-    
-    public function getBytePos() 
+
+    public function getBytePos()
     {
         return $this->bytePos;
     }
-    
-    public function getRawname() 
+
+    public function getRawname()
     {
         return $this->rawname;
     }
-    
-    public function getColIndex() 
+
+    public function getColIndex()
     {
         return $this->colIndex;
     }

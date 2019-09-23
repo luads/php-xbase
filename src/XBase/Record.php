@@ -47,7 +47,8 @@ class Record
         }
     }
 
-    public function destroy() {
+    public function destroy()
+    {
         $this->table = null;
         $this->choppedData = null;
     }
@@ -101,7 +102,7 @@ class Record
             }
 
             if ($column->getType() == self::DBFFIELD_TYPE_LOGICAL) {
-                return $result? '1' : '0';
+                return $result ? '1' : '0';
             }
 
             return $result;
@@ -126,16 +127,26 @@ class Record
     public function getObject(Column $column)
     {
         switch ($column->getType()) {
-            case self::DBFFIELD_TYPE_CHAR:return $this->getString($column->getName());
-            case self::DBFFIELD_TYPE_DOUBLE:return $this->getDouble($column->getName());
-            case self::DBFFIELD_TYPE_DATE:return $this->getDate($column->getName());
-            case self::DBFFIELD_TYPE_DATETIME:return $this->getDateTime($column->getName());
-            case self::DBFFIELD_TYPE_FLOATING:return $this->getFloat($column->getName());
-            case self::DBFFIELD_TYPE_LOGICAL:return $this->getBoolean($column->getName());
-            case self::DBFFIELD_TYPE_MEMO:return $this->getMemo($column->getName());
-            case self::DBFFIELD_TYPE_NUMERIC:return $this->getNum($column->getName());
-            case self::DBFFIELD_TYPE_INDEX:return $this->getIndex($column->getName(), $column->getLength());
-            case self::DBFFIELD_IGNORE_0:return false;
+            case self::DBFFIELD_TYPE_CHAR:
+                return $this->getString($column->getName());
+            case self::DBFFIELD_TYPE_DOUBLE:
+                return $this->getDouble($column->getName());
+            case self::DBFFIELD_TYPE_DATE:
+                return $this->getDate($column->getName());
+            case self::DBFFIELD_TYPE_DATETIME:
+                return $this->getDateTime($column->getName());
+            case self::DBFFIELD_TYPE_FLOATING:
+                return $this->getFloat($column->getName());
+            case self::DBFFIELD_TYPE_LOGICAL:
+                return $this->getBoolean($column->getName());
+            case self::DBFFIELD_TYPE_MEMO:
+                return $this->getMemo($column->getName());
+            case self::DBFFIELD_TYPE_NUMERIC:
+                return $this->getNum($column->getName());
+            case self::DBFFIELD_TYPE_INDEX:
+                return $this->getIndex($column->getName(), $column->getLength());
+            case self::DBFFIELD_IGNORE_0:
+                return false;
         }
 
         throw new Exception\InvalidColumnException(sprintf('Cannot handle datatype %s', $column->getType()));
@@ -189,14 +200,15 @@ class Record
             case '1':
                 return true;
 
-            default:return false;
+            default:
+                return false;
         }
     }
 
     public function getMemo($columnName)
     {
         $data = $this->forceGetString($columnName);
-        if($data && strlen($data) == 2) {
+        if ($data && strlen($data) == 2) {
             $pointer = unpack('s', $data)[1];
             return $this->memoFile->get($pointer);
         } else {
@@ -244,10 +256,11 @@ class Record
 
         if ($column->type == Record::DBFFIELD_TYPE_NUMERIC &&
             ($column->getDecimalCount() > 0 || $column->length > 9)
-        )
+        ) {
             return doubleval($s);
-        else
+        } else {
             return intval($s);
+        }
     }
 
     public function getIndex($columnName, $length)
@@ -258,7 +271,7 @@ class Record
             return false;
         }
 
-        if($this->table->foxpro) {
+        if ($this->table->foxpro) {
             $su = unpack("i", $s);
             $ret = $su[1];
         } else {
@@ -331,6 +344,7 @@ class Record
                 $this->setString($columnObj, $value);
                 return false;
             case self::DBFFIELD_TYPE_DOUBLE:
+            case self::DBFFIELD_TYPE_FLOATING:
                 $this->setFloat($columnObj, $value);
                 return false;
             case self::DBFFIELD_TYPE_DATE:
@@ -338,9 +352,6 @@ class Record
                 return false;
             case self::DBFFIELD_TYPE_DATETIME:
                 $this->setDateTime($columnObj, $value);
-                return false;
-            case self::DBFFIELD_TYPE_FLOATING:
-                $this->setFloat($columnObj, $value);
                 return false;
             case self::DBFFIELD_TYPE_LOGICAL:
                 $this->setBoolean($columnObj, $value);
