@@ -21,7 +21,7 @@ class Column
     public function __construct($name, $type, $memAddress, $length, $decimalCount, $reserved1, $workAreaID, $reserved2, $setFields, $reserved3, $indexed, $colIndex, $bytePos) 
     {
         $this->rawname = $name;
-        $this->name = (strpos($name, 0x00) !== false ) ? substr($name, 0, strpos($name, 0x00)) : $name;
+        $this->name = (strpos($name, chr(0x00)) !== false ) ? substr($name, 0, strpos($name, chr(0x00))) : $name;
         $this->type = $type;
         $this->memAddress = $memAddress;
         $this->length = $length;
