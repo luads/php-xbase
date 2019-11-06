@@ -57,8 +57,8 @@ class Table
         $this->headerLength = $this->readShort();
         $this->recordByteLength = $this->readShort();
         $this->readBytes(2); //reserved
-        $this->inTransaction = $this->readByte()!=0;
-        $this->encrypted = $this->readByte()!=0;
+        $this->inTransaction = $this->readByte() != 0;
+        $this->encrypted = $this->readByte() != 0;
         $this->readBytes(4); //Free record thread
         $this->readBytes(8); //Reserved for multi-user dBASE
         $this->mdxFlag = $this->readByte();
@@ -81,7 +81,7 @@ class Table
         $bytepos = 1;
         $j = 0;
 
-        for ($i=0;$i<$fieldCount;$i++) {
+        for ($i = 0; $i < $fieldCount; $i++) {
             $column = new Column(
                 strtolower($this->readString(11)), // name
                 $this->readByte(),      // type
@@ -91,9 +91,9 @@ class Table
                 $this->readBytes(2),    // reserved1
                 $this->readChar(),      // workAreaID
                 $this->readBytes(2),    // reserved2
-                $this->readByte()!=0,   // setFields
+                $this->readByte() != 0,   // setFields
                 $this->readBytes(7),    // reserved3
-                $this->readByte()!=0,   // indexed
+                $this->readByte() != 0,   // indexed
                 $j,                     // colIndex
                 $bytepos                // bytePos
             );
@@ -145,7 +145,7 @@ class Table
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
             } else {
-                $valid=true;
+                $valid = true;
             }
         } while (!$valid);
 
@@ -172,14 +172,14 @@ class Table
 
             $this->recordPos--;
 
-	        fseek($this->fp, $this->headerLength + ( $this->recordPos * $this->recordByteLength));
+            fseek($this->fp, $this->headerLength + ($this->recordPos * $this->recordByteLength));
 
             $this->record = new Record($this, $this->recordPos, $this->readBytes($this->recordByteLength));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
             } else {
-                $valid=true;
+                $valid = true;
             }
         } while (!$valid);
 
@@ -217,8 +217,7 @@ class Table
         $name = $nameBase = $column->getName();
         $index = 0;
 
-        while (isset($this->columns[$name]))
-        {
+        while (isset($this->columns[$name])) {
             $name = $nameBase . ++$index;
         }
 
@@ -234,10 +233,8 @@ class Table
 
     public function getColumn($name)
     {
-        foreach ($this->columns as $column)
-        {
-            if ($column->name === $name)
-            {
+        foreach ($this->columns as $column) {
+            if ($column->name === $name) {
                 return $column;
             }
         }
@@ -382,7 +379,7 @@ class Table
         $m = unpack('c', $this->readByte());
         $d = unpack('c', $this->readByte());
 
-        return mktime(0, 0, 0, $m[1], $d[1] ,$y[1] > 70 ? 1900 + $y[1] : 2000 + $y[1]);
+        return mktime(0, 0, 0, $m[1], $d[1], $y[1] > 70 ? 1900 + $y[1] : 2000 + $y[1]);
     }
 
     protected function write3ByteDate($d)
@@ -394,9 +391,9 @@ class Table
 
     protected function read4ByteDate()
     {
-        $y = readShort();
-        $m = unpack('c',$this->readByte());
-        $d = unpack('c',$this->readByte());
+        $y = $this->readShort();
+        $m = unpack('c', $this->readByte());
+        $d = unpack('c', $this->readByte());
 
         return mktime(0, 0, 0, $m[1], $d[1], $y);
     }
