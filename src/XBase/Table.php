@@ -4,38 +4,69 @@ namespace XBase;
 
 class Table
 {
+    /** @var string */
     protected $tableName;
-    protected $avaliableColumns;
+    /** @var array|null */
+    protected $availableColumns;
+    /** @var resource */
     protected $fp;
+    /** @var int */
     protected $filePos = 0;
+    /** @var int */
     protected $recordPos = -1;
+    /** @var int */
     protected $deleteCount = 0;
+    /** @var Record */
     protected $record;
+    /** @var string|null */
     protected $convertFrom;
 
+    /** @var string */
     public $version;
+    /** @var int unixtime */
     public $modifyDate;
+    /** @var int */
     public $recordCount;
+    /** @var int */
     public $recordByteLength;
+    /** @var bool */
     public $inTransaction;
+    /** @var bool */
     public $encrypted;
+    /** @var string */
     public $mdxFlag;
+    /** @var string */
     public $languageCode;
+    /** @var Column[] */
     public $columns;
+    /** @var int */
     public $headerLength;
     public $backlist;
+    /** @var bool */
     public $foxpro;
+    /** @var Memo */
     public $memoFile;
 
-    public function __construct($tableName, $avaliableColumns = null, $convertFrom = null)
+    /**
+     * Table constructor.
+     *
+     * @param string $tableName
+     * @param array|null $availableColumns
+     * @param string|null $convertFrom Encoding of file
+     * @throws \Exception
+     */
+    public function __construct($tableName, $availableColumns = null, $convertFrom = null)
     {
         $this->tableName = $tableName;
-        $this->avaliableColumns = $avaliableColumns;
+        $this->availableColumns = $availableColumns;
         $this->convertFrom = $convertFrom;
         $this->memoFile = new Memo($this, $this->tableName);
         $this->open();
     }
 
+    /**
+     * @return bool open successful
+     */
     protected function open()
     {
         if (!file_exists($this->tableName)) {
@@ -100,7 +131,7 @@ class Table
 
             $bytepos += $column->getLength();
 
-            if (!$this->avaliableColumns || ($this->avaliableColumns && in_array($column->name, $this->avaliableColumns))) {
+            if (!$this->availableColumns || ($this->availableColumns && in_array($column->name, $this->availableColumns))) {
                 $this->addColumn($column);
                 $j++;
             }
@@ -121,6 +152,9 @@ class Table
         fclose($this->fp);
     }
 
+    /**
+     * @return bool|Record
+     */
     public function nextRecord()
     {
         if (!$this->isOpen()) {
@@ -152,6 +186,9 @@ class Table
         return $this->record;
     }
 
+    /**
+     * @return bool|Record
+     */
     public function previousRecord()
     {
         if (!$this->isOpen()) {
@@ -186,6 +223,11 @@ class Table
         return $this->record;
     }
 
+    /**
+     * @param int $index
+     *
+     * @return Record|null
+     */
     public function moveTo($index)
     {
         $this->recordPos = $index;
@@ -201,17 +243,26 @@ class Table
         return $this->record;
     }
 
+    /**
+     * @param int $offset
+     */
     private function setFilePos($offset)
     {
         $this->filePos = $offset;
         fseek($this->fp, $this->filePos);
     }
 
+    /**
+     * @return Record
+     */
     public function getRecord()
     {
         return $this->record;
     }
 
+    /**
+     * @param Column $column
+     */
     public function addColumn($column)
     {
         $name = $nameBase = $column->getName();
@@ -226,11 +277,19 @@ class Table
         $this->columns[$name] = $column;
     }
 
+    /**
+     * @return Column[]
+     */
     public function getColumns()
     {
         return $this->columns;
     }
 
+    /**
+     * @param $name
+     *
+     * @return Column
+     */
     public function getColumn($name)
     {
         foreach ($this->columns as $column) {
@@ -242,59 +301,97 @@ class Table
         throw new \Exception(sprintf('Column %s not found', $name));
     }
 
+    /**
+     * @return int
+     */
     public function getColumnCount()
     {
         return count($this->columns);
     }
 
+    /**
+     * @return int
+     */
     public function getRecordCount()
     {
         return $this->recordCount;
     }
 
+    /**
+     * @return int
+     */
     public function getRecordPos()
     {
         return $this->recordPos;
     }
 
+    /**
+     * @return mixed
+     */
     public function getRecordByteLength()
     {
         return $this->recordByteLength;
     }
 
+    /**
+     * @return string
+     */
     public function getName()
     {
         return $this->tableName;
     }
 
+    /**
+     * @return int
+     */
     public function getDeleteCount()
     {
         return $this->deleteCount;
     }
 
+    /**
+     * @return string|null
+     */
     public function getConvertFrom()
     {
         return $this->convertFrom;
     }
 
+    /**
+     * @return bool
+     */
     protected function isOpen()
     {
         return $this->fp ? true : false;
     }
 
-
-    protected function readBytes($l)
+    /**
+     * @param int $length
+     *
+     * @return bool|string
+     */
+    protected function readBytes($length)
     {
-        $this->filePos += $l;
+        $this->filePos += $length;
 
-        return fread($this->fp, $l);
+        return fread($this->fp, $length);
     }
 
+    /**
+     * @param string $buf
+     *
+     * @return bool|int
+     */
     protected function writeBytes($buf)
     {
         return fwrite($this->fp, $buf);
     }
 
+    /**
+     * Read first byte
+     *
+     * @return bool|string
+     */
     protected function readByte()
     {
         $this->filePos++;
@@ -302,21 +399,39 @@ class Table
         return fread($this->fp, 1);
     }
 
-    protected function writeByte($b)
+    /**
+     * @param string $buf
+     *
+     * @return bool|int
+     */
+    protected function writeByte($buf)
     {
-        return fwrite($this->fp, $b);
+        return fwrite($this->fp, $buf);
     }
 
-    protected function readString($l)
+    /**
+     * @param int $length
+     *
+     * @return bool|string
+     */
+    protected function readString($length)
     {
-        return $this->readBytes($l);
+        return $this->readBytes($length);
     }
 
-    protected function writeString($s)
+    /**
+     * @param string $string
+     *
+     * @return bool|int
+     */
+    protected function writeString($string)
     {
-        return $this->writeBytes($s);
+        return $this->writeBytes($string);
     }
 
+    /**
+     * @return mixed
+     */
     protected function readChar()
     {
         $buf = unpack('C', $this->readBytes(1));
@@ -324,6 +439,11 @@ class Table
         return $buf[1];
     }
 
+    /**
+     * @param $c
+     *
+     * @return bool|int
+     */
     protected function writeChar($c)
     {
         $buf = pack('C', $c);
@@ -331,6 +451,9 @@ class Table
         return $this->writeBytes($buf);
     }
 
+    /**
+     * @return mixed
+     */
     protected function readShort()
     {
         $buf = unpack('S', $this->readBytes(2));
@@ -338,6 +461,11 @@ class Table
         return $buf[1];
     }
 
+    /**
+     * @param $s
+     *
+     * @return bool|int
+     */
     protected function writeShort($s)
     {
         $buf = pack('S', $s);
@@ -345,6 +473,9 @@ class Table
         return $this->writeBytes($buf);
     }
 
+    /**
+     * @return mixed
+     */
     protected function readInt()
     {
         $buf = unpack('I', $this->readBytes(4));
@@ -352,6 +483,11 @@ class Table
         return $buf[1];
     }
 
+    /**
+     * @param $i
+     *
+     * @return bool|int
+     */
     protected function writeInt($i)
     {
         $buf = pack('I', $i);
@@ -359,6 +495,9 @@ class Table
         return $this->writeBytes($buf);
     }
 
+    /**
+     * @return mixed
+     */
     protected function readLong()
     {
         $buf = unpack('L', $this->readBytes(8));
@@ -366,6 +505,9 @@ class Table
         return $buf[1];
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function writeLong($l)
     {
         $buf = pack('L', $l);
@@ -373,6 +515,9 @@ class Table
         return $this->writeBytes($buf);
     }
 
+    /**
+     * @return int unixtime
+     */
     protected function read3ByteDate()
     {
         $y = unpack('c', $this->readByte());
@@ -382,6 +527,11 @@ class Table
         return mktime(0, 0, 0, $m[1], $d[1], $y[1] > 70 ? 1900 + $y[1] : 2000 + $y[1]);
     }
 
+    /**
+     * @param $d
+     *
+     * @return bool|int
+     */
     protected function write3ByteDate($d)
     {
         $t = getdate($d);
@@ -389,6 +539,9 @@ class Table
         return $this->writeChar($t['year'] % 1000) + $this->writeChar($t['mon']) + $this->writeChar($t['mday']);
     }
 
+    /**
+     * @return false|int
+     */
     protected function read4ByteDate()
     {
         $y = $this->readShort();
@@ -398,6 +551,11 @@ class Table
         return mktime(0, 0, 0, $m[1], $d[1], $y);
     }
 
+    /**
+     * @param $d
+     *
+     * @return bool|int
+     */
     protected function write4ByteDate($d)
     {
         $t = getdate($d);

@@ -4,10 +4,19 @@ namespace XBase;
 
 class Memo
 {
+    /** @var resource */
     protected $fp;
+    /** @var Table */
     protected $table;
+    /** @var string */
     protected $tableName;
 
+    /**
+     * Memo constructor.
+     *
+     * @param Table $table
+     * @param string $tableName
+     */
     public function __construct(Table $table, $tableName)
     {
         $this->table = $table;
@@ -15,6 +24,9 @@ class Memo
         $this->open();
     }
 
+    /**
+     * @return bool
+     */
     protected function open()
     {
         $fileName = str_replace(array("dbf", "DBF"), array("fpt", "FPT"), $this->tableName);
@@ -28,6 +40,11 @@ class Memo
         return $this->fp != false;
     }
 
+    /**
+     * @param int $pointer
+     *
+     * @return false|string|null
+     */
     public function get($pointer)
     {
         $value = null;

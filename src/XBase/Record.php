@@ -2,27 +2,57 @@
 
 namespace XBase;
 
+use XBase\Exception\InvalidColumnException;
+
+/**
+ * Class Record
+ * @package XBase
+ */
 class Record
 {
-    const DBFFIELD_TYPE_MEMO = 'M';     // Memo type field
-    const DBFFIELD_TYPE_CHAR = 'C';     // Character field
-    const DBFFIELD_TYPE_DOUBLE = 'B';   // Double
-    const DBFFIELD_TYPE_NUMERIC = 'N';  // Numeric
-    const DBFFIELD_TYPE_FLOATING = 'F'; // Floating point
-    const DBFFIELD_TYPE_DATE = 'D';     // Date
-    const DBFFIELD_TYPE_LOGICAL = 'L';  // Logical - ? Y y N n T t F f (? when not initialized).
-    const DBFFIELD_TYPE_DATETIME = 'T'; // DateTime
-    const DBFFIELD_TYPE_INDEX = 'I';    // Index
-    const DBFFIELD_IGNORE_0 = '0';      // ignore this field
+    /** @var string Memo type field */
+    const DBFFIELD_TYPE_MEMO = 'M';
+    /** @var string Character field */
+    const DBFFIELD_TYPE_CHAR = 'C';
+    /** @var string Double */
+    const DBFFIELD_TYPE_DOUBLE = 'B';
+    /** @var string Numeric */
+    const DBFFIELD_TYPE_NUMERIC = 'N';
+    /** @var string Floating point */
+    const DBFFIELD_TYPE_FLOATING = 'F';
+    /** @var string Date */
+    const DBFFIELD_TYPE_DATE = 'D';
+    /** @var string Logical - ? Y y N n T t F f (? when not initialized). */
+    const DBFFIELD_TYPE_LOGICAL = 'L';
+    /** @var string DateTime */
+    const DBFFIELD_TYPE_DATETIME = 'T';
+    /** @var string Index */
+    const DBFFIELD_TYPE_INDEX = 'I';
+    /** @var string Ignore this field */
+    const DBFFIELD_IGNORE_0 = '0';
 
+    /** @var int */
     protected $zerodate = 0x253d8c;
+    /** @var Table */
     protected $table;
+    /** @var array */
     protected $choppedData;
+    /** @var bool */
     protected $deleted;
+    /** @var bool */
     protected $inserted;
+    /** @var int */
     protected $recordIndex;
+    /** @var Memo */
     protected $memoFile;
 
+    /**
+     * Record constructor.
+     *
+     * @param Table $table
+     * @param $recordIndex
+     * @param bool $rawData
+     */
     public function __construct(Table $table, $recordIndex, $rawData = false)
     {
         $this->table = $table;
@@ -63,31 +93,52 @@ class Record
         return $this->setStringByName($name, $value);
     }
 
+    /**
+     * @return bool
+     */
     public function isDeleted()
     {
         return $this->deleted;
     }
 
+    /**
+     * @return bool
+     */
     public function isInserted()
     {
         return $this->inserted;
     }
 
+    /**
+     * @return Column[]
+     */
     public function getColumns()
     {
         return $this->table->getColumns();
     }
 
+    /**
+     * @param $name
+     *
+     * @return Column
+     */
     public function getColumn($name)
     {
         return $this->table->getColumn($name);
     }
 
+    /**
+     * @return int
+     */
     public function getRecordIndex()
     {
         return $this->recordIndex;
     }
 
+    /**
+     * @param string $columnName
+     * @return mixed
+     */
     public function getString($columnName)
     {
         $column = $this->table->getColumn($columnName);
@@ -109,6 +160,11 @@ class Record
         }
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return false|string|null
+     */
     public function forceGetString($columnName)
     {
         $data = trim($this->choppedData[$columnName]);
@@ -124,6 +180,13 @@ class Record
         return $data;
     }
 
+    /**
+     * @param Column $column
+     *
+     * @return bool|false|float|int|string|null
+     *
+     * @throws InvalidColumnException If dataType not exists
+     */
     public function getObject(Column $column)
     {
         switch ($column->getType()) {
@@ -152,11 +215,21 @@ class Record
         throw new Exception\InvalidColumnException(sprintf('Cannot handle datatype %s', $column->getType()));
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return false|string|null
+     */
     public function getChar($columnName)
     {
         return $this->forceGetString($columnName);
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return bool|false|int
+     */
     public function getDate($columnName)
     {
         $s = $this->forceGetString($columnName);
@@ -168,6 +241,11 @@ class Record
         return strtotime($s);
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return bool|float|int
+     */
     public function getDateTime($columnName)
     {
         $raw = $this->choppedData[$columnName];
@@ -185,6 +263,11 @@ class Record
         return $longdate + ($inttime / 1000);
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return bool
+     */
     public function getBoolean($columnName)
     {
         $s = $this->forceGetString($columnName);
@@ -205,6 +288,11 @@ class Record
         }
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return false|string|null
+     */
     public function getMemo($columnName)
     {
         $data = $this->forceGetString($columnName);
@@ -216,6 +304,11 @@ class Record
         }
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return int
+     */
     public function getDouble($columnName)
     {
         $s = $this->choppedData[$columnName];
@@ -229,6 +322,11 @@ class Record
         return 0;
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return int
+     */
     public function getFloat($columnName)
     {
         $s = $this->choppedData[$columnName];
@@ -242,6 +340,11 @@ class Record
         return 0;
     }
 
+    /**
+     * @param string $columnName
+     *
+     * @return bool|float|int
+     */
     public function getNum($columnName)
     {
         $s = $this->forceGetString($columnName);
@@ -263,6 +366,12 @@ class Record
         }
     }
 
+    /**
+     * @param string $columnName
+     * @param $length
+     *
+     * @return bool|float|int
+     */
     public function getIndex($columnName, $length)
     {
         $s = $this->choppedData[$columnName];
@@ -285,26 +394,44 @@ class Record
         return $ret;
     }
 
+    /**
+     * @param $record
+     */
     public function copyFrom($record)
     {
         $this->choppedData = $record->choppedData;
     }
 
-    public function setDeleted($b)
+    /**
+     * @param bool $bool
+     */
+    public function setDeleted($bool)
     {
-        $this->deleted = $b;
+        $this->deleted = $bool;
     }
 
+    /**
+     * @param $columnName
+     * @param $value
+     */
     public function setStringByName($columnName, $value)
     {
         $this->setString($this->table->getColumn($columnName), $value);
     }
 
+    /**
+     * @param $columnIndex
+     * @param $value
+     */
     public function setStringByIndex($columnIndex, $value)
     {
         $this->setString($this->table->getColumn($columnIndex), $value);
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     */
     public function setString($columnObj, $value)
     {
         if ($columnObj->getType() == self::DBFFIELD_TYPE_CHAR) {
@@ -318,6 +445,10 @@ class Record
         }
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     */
     public function forceSetString($columnObj, $value)
     {
         if ($this->table->getConvertFrom()) {
@@ -327,16 +458,34 @@ class Record
         $this->choppedData[$columnObj->getName()] = str_pad(substr($value, 0, $columnObj->getDataLength()), $columnObj->getDataLength(), " ");
     }
 
+    /**
+     * @param string $columnName
+     * @param $value
+     *
+     * @return bool
+     */
     public function setObjectByName($columnName, $value)
     {
         return $this->setObject($this->table->getColumn($columnName), $value);
     }
 
+    /**
+     * @param int $columnIndex
+     * @param $value
+     *
+     * @return bool
+     */
     public function setObjectByIndex($columnIndex, $value)
     {
         return $this->setObject($this->table->getColumn($columnIndex), $value);
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     *
+     * @return bool
+     */
     public function setObject($columnObj, $value)
     {
         switch ($columnObj->getType()) {
@@ -369,6 +518,12 @@ class Record
         trigger_error('cannot handle datatype' . $columnObj->getType(), E_USER_ERROR);
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     *
+     * @return bool
+     */
     public function setDate($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_DATE) {
@@ -383,6 +538,12 @@ class Record
         $this->forceSetString($columnObj, date('Ymd', $value));
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     *
+     * @return bool
+     */
     public function setDateTime($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_DATETIME) {
@@ -401,6 +562,12 @@ class Record
         $this->choppedData[$columnObj->getColIndex()] = $d . $t;
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     *
+     * @return bool
+     */
     public function setBoolean($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_LOGICAL) {
@@ -425,6 +592,10 @@ class Record
         }
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     */
     public function setMemo($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_MEMO) {
@@ -434,6 +605,12 @@ class Record
         $this->forceSetString($columnObj, $value);
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     *
+     * @return bool
+     */
     public function setFloat($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_FLOATING) {
@@ -449,6 +626,12 @@ class Record
         $this->forceSetString($columnObj, $value);
     }
 
+    /**
+     * @param Column $columnObj
+     * @param $value
+     *
+     * @return bool
+     */
     public function setInt($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_NUMERIC) {
@@ -464,6 +647,9 @@ class Record
         $this->forceSetString($columnObj, number_format($value, $columnObj->getDecimalCount()));
     }
 
+    /**
+     * @return string
+     */
     public function serializeRawData()
     {
         return ($this->deleted ? '*' : ' ') . implode('', $this->choppedData);
