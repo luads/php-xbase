@@ -6,7 +6,7 @@ class WritableTable extends Table
 {
     /**
      * @param $table
-     * 
+     *
      * @return WritableTable
      */
     public function cloneFrom($table)
@@ -32,7 +32,7 @@ class WritableTable extends Table
     /**
      * @param $filename
      * @param $fields
-     * 
+     *
      * @return bool|WritableTable
      */
     public function create($filename, $fields)
@@ -81,7 +81,7 @@ class WritableTable extends Table
     /**
      * @param bool $filename
      * @param bool $overwrite
-     * 
+     *
      * @return bool
      */
     public function openWrite($filename = false, $overwrite = false)
