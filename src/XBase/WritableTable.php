@@ -4,6 +4,11 @@ namespace XBase;
 
 class WritableTable extends Table
 {
+    /**
+     * @param $table
+     *
+     * @return WritableTable
+     */
     public function cloneFrom($table)
     {
         $result = new WritableTable($table->tableName);
@@ -24,6 +29,12 @@ class WritableTable extends Table
         return $result;
     }
 
+    /**
+     * @param $filename
+     * @param $fields
+     *
+     * @return bool|WritableTable
+     */
     public function create($filename, $fields)
     {
         if (!$fields || !is_array($fields)) {
@@ -67,6 +78,12 @@ class WritableTable extends Table
         return false;
     }
 
+    /**
+     * @param bool $filename
+     * @param bool $overwrite
+     *
+     * @return bool
+     */
     public function openWrite($filename = false, $overwrite = false)
     {
         if (!$filename) {
@@ -127,6 +144,9 @@ class WritableTable extends Table
         $this->writeChar(0x0d);
     }
 
+    /**
+     * @return Record
+     */
     public function appendRecord()
     {
         $this->record = new Record($this, $this->recordCount);
@@ -188,21 +208,33 @@ class WritableTable extends Table
         ftruncate($this->fp, $this->headerLength + ($this->recordCount * $this->recordByteLength));
     }
 
+    /**
+     * {{@inheritdoc}}
+     */
     protected function writeBytes($buf)
     {
         return fwrite($this->fp, $buf);
     }
 
-    protected function writeByte($b)
+    /**
+     * {{@inheritdoc}}
+     */
+    protected function writeByte($buf)
     {
-        return fwrite($this->fp, $b);
+        return fwrite($this->fp, $buf);
     }
 
-    protected function writeString($s)
+    /**
+     * {{@inheritdoc}}
+     */
+    protected function writeString($string)
     {
-        return $this->writeBytes($s);
+        return $this->writeBytes($string);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function writeChar($c)
     {
         $buf = pack("C", $c);
@@ -210,6 +242,9 @@ class WritableTable extends Table
         return $this->writeBytes($buf);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function writeShort($s)
     {
         $buf = pack("S", $s);
@@ -217,6 +252,9 @@ class WritableTable extends Table
         return $this->writeBytes($buf);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function writeInt($i)
     {
         $buf = pack("I", $i);
@@ -224,6 +262,9 @@ class WritableTable extends Table
         return $this->writeBytes($buf);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function writeLong($l)
     {
         $buf = pack("L", $l);
@@ -231,6 +272,9 @@ class WritableTable extends Table
         return $this->writeBytes($buf);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function write3ByteDate($d)
     {
         $t = getdate($d);
@@ -238,6 +282,9 @@ class WritableTable extends Table
         return $this->writeChar($t["year"] % 1000) + $this->writeChar($t["mon"]) + $this->writeChar($t["mday"]);
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function write4ByteDate($d)
     {
         $t = getdate($d);
