@@ -4,10 +4,6 @@ namespace XBase;
 
 use XBase\Exception\InvalidColumnException;
 
-/**
- * Class Record
- * @package XBase
- */
 class Record
 {
     /** @var string Memo type field */
