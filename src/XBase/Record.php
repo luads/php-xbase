@@ -650,4 +650,18 @@ class Record
     {
         return ($this->deleted ? '*' : ' ') . implode('', $this->choppedData);
     }
+
+    /**
+     * @return array
+     */
+    public function getData()
+    {
+        $fields = array();
+
+        foreach ($this->choppedData as $columnName => $columnValue) {
+            $fields[$columnName] = $this->forceGetString($columnName);
+        }
+
+        return $fields;
+    }
 }
