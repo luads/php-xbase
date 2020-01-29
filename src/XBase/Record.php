@@ -650,4 +650,36 @@ class Record
     {
         return ($this->deleted ? '*' : ' ') . implode('', $this->choppedData);
     }
+
+    /**
+     * Returns typed column values according to their types
+     *
+     * @return array
+     */
+    public function getData()
+    {
+        $fields = array();
+
+        foreach ($this->getColumns() as $column) {
+            $fields[$column->name] = $this->getObject($column);
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Returns raw values trimmed and converted according to encoding
+     *
+     * @return array|string[]
+     */
+    public function getChoppedData()
+    {
+        $fields = array();
+
+        foreach ($this->choppedData as $columnName => $columnValue) {
+            $fields[$columnName] = $this->forceGetString($columnName);
+        }
+
+        return $fields;
+    }
 }
