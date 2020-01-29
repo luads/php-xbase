@@ -652,9 +652,27 @@ class Record
     }
 
     /**
+     * Returns typed column values according to their types
+     *
      * @return array
      */
     public function getData()
+    {
+        $fields = array();
+
+        foreach ($this->getColumns() as $column) {
+            $fields[$column->name] = $this->getObject($column);
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Returns raw values trimmed and converted according to encoding
+     *
+     * @return array|string[]
+     */
+    public function getChoppedData()
     {
         $fields = array();
 
