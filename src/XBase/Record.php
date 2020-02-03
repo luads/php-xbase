@@ -54,7 +54,7 @@ class Record
         $this->table = $table;
         $this->memoFile = $table->memoFile;
         $this->recordIndex = $recordIndex;
-        $this->choppedData = array();
+        $this->choppedData = [];
 
         if ($rawData && strlen($rawData) > 0) {
             $this->inserted = false;
@@ -511,7 +511,7 @@ class Record
                 return false;
         }
 
-        trigger_error('cannot handle datatype' . $columnObj->getType(), E_USER_ERROR);
+        trigger_error('cannot handle datatype'.$columnObj->getType(), E_USER_ERROR);
     }
 
     /**
@@ -523,7 +523,7 @@ class Record
     public function setDate($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_DATE) {
-            trigger_error($columnObj->getName() . ' is not a Date column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a Date column', E_USER_ERROR);
         }
 
         if (strlen($value) == 0) {
@@ -543,7 +543,7 @@ class Record
     public function setDateTime($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_DATETIME) {
-            trigger_error($columnObj->getName() . ' is not a DateTime column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a DateTime column', E_USER_ERROR);
         }
 
         if (strlen($value) == 0) {
@@ -555,7 +555,7 @@ class Record
         $d = $this->zerodate + (mktime(0, 0, 0, $a['mon'], $a['mday'], $a['year']) / 86400);
         $d = pack('i', $d);
         $t = pack('i', mktime($a['hours'], $a['minutes'], $a['seconds'], 0, 0, 0));
-        $this->choppedData[$columnObj->getColIndex()] = $d . $t;
+        $this->choppedData[$columnObj->getColIndex()] = $d.$t;
     }
 
     /**
@@ -595,7 +595,7 @@ class Record
     public function setMemo($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_MEMO) {
-            trigger_error($columnObj->getName() . ' is not a Memo column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a Memo column', E_USER_ERROR);
         }
 
         $this->forceSetString($columnObj, $value);
@@ -610,7 +610,7 @@ class Record
     public function setFloat($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_FLOATING) {
-            trigger_error($columnObj->getName() . ' is not a Float column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a Float column', E_USER_ERROR);
         }
 
         if (strlen($value) == 0) {

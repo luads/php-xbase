@@ -8,7 +8,7 @@ class Column
     public $name;
     /** @var string */
     public $rawname;
-    /** @var  */
+    /** @var string */
     public $type;
     /** @var int */
     public $length;
