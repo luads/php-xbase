@@ -2,7 +2,7 @@
     "name": "hisamu/php-xbase",
     "type": "library",
     "description": "A simple parser for *.dbf, *.fpt files using PHP",
-    "keywords": ["dbase", "foxpro"],
+    "keywords": ["dbase", "dbf","foxpro"],
     "homepage": "https://github.com/luads/php-xbase",
     "license": "MIT",
     "authors" : [
@@ -29,6 +29,11 @@
     "autoload-dev": {
         "psr-4": {
             "XBase\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.1.x-dev"
         }
     }
 }
