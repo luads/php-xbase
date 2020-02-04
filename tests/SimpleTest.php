@@ -60,6 +60,7 @@ class SimpleTest extends TestCase
         unset($column, $columns);
         //</editor-fold>
 
+        //<editor-fold desc="record">
         $record = $table->nextRecord();
         self::assertInstanceOf(Record::class, $record);
         $columns = $record->getColumns();
@@ -73,27 +74,32 @@ class SimpleTest extends TestCase
     "num_sc": "10605",
     "a_p": "1",
     "vr": 223717,
-    "vv": false,
+    "vv": 0,
     "vitg": 223717,
     "ora": 478743,
-    "ova": false,
+    "ova": 0,
     "oitga": 478743,
     "orp": 636389,
-    "ovp": false,
+    "ovp": 0,
     "oitgp": 636389,
     "ir": 66071,
-    "iv": false,
+    "iv": 0,
     "iitg": 66071,
     "dt": 1564617600,
     "priz": 1
 }
 JSON;
         self::assertJsonStringEqualsJsonString($json, json_encode($record->getData()));
+        // num
         self::assertSame(10605, $record->getNum('num_sc'));
+        self::assertSame(0.0, $record->getNum('vv'));
+        // char
         self::assertSame('А', $record->getString('plan')); //cyrilic
+        // date
         self::assertSame(1564617600, $record->getDate('dt'));
         self::assertSame(1564617600, $record->getObject($record->getColumn('dt')));
         $dt = new \DateTime($record->forceGetString('dt'));
         self::assertEquals('2019-08-01T00:00:00+00:00', $dt->format(DATE_W3C));
+        //</editor-fold>
     }
 }
