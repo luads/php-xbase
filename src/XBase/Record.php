@@ -300,7 +300,6 @@ class Record
         $data = $this->forceGetString($columnName);
         if ($data && strlen($data) == 2) {
             $pointer = unpack('s', $data)[1];
-
             return $this->memoFile->get($pointer);
         } else {
             return $data;
@@ -494,32 +493,25 @@ class Record
         switch ($columnObj->getType()) {
             case self::DBFFIELD_TYPE_CHAR:
                 $this->setString($columnObj, $value);
-
                 return false;
             case self::DBFFIELD_TYPE_DOUBLE:
             case self::DBFFIELD_TYPE_FLOATING:
                 $this->setFloat($columnObj, $value);
-
                 return false;
             case self::DBFFIELD_TYPE_DATE:
                 $this->setDate($columnObj, $value);
-
                 return false;
             case self::DBFFIELD_TYPE_DATETIME:
                 $this->setDateTime($columnObj, $value);
-
                 return false;
             case self::DBFFIELD_TYPE_LOGICAL:
                 $this->setBoolean($columnObj, $value);
-
                 return false;
             case self::DBFFIELD_TYPE_MEMO:
                 $this->setMemo($columnObj, $value);
-
                 return false;
             case self::DBFFIELD_TYPE_NUMERIC:
                 $this->setInt($columnObj, $value);
-
                 return false;
             case self::DBFFIELD_IGNORE_0:
                 return false;
@@ -540,13 +532,12 @@ class Record
             trigger_error($columnObj->getName().' is not a Date column', E_USER_ERROR);
         }
 
-        if ($value instanceof \DateTimeInterface){
+        if ($value instanceof \DateTimeInterface) {
             $value = $value->format('U');
         }
 
         if (strlen($value) == 0) {
             $this->forceSetString($columnObj, '');
-
             return false;
         }
 
@@ -567,7 +558,6 @@ class Record
 
         if (strlen($value) == 0) {
             $this->forceSetString($columnObj, '');
-
             return false;
         }
 
@@ -599,11 +589,9 @@ class Record
             case 'N':
             case '0':
                 $this->forceSetString($columnObj, $value);
-
                 return false;
             case true:
                 $this->forceSetString($columnObj, 'T');
-
                 return false;
             default:
                 $this->forceSetString($columnObj, 'F');
@@ -637,7 +625,6 @@ class Record
 
         if (strlen($value) == 0) {
             $this->forceSetString($columnObj, '');
-
             return false;
         }
 
@@ -659,7 +646,6 @@ class Record
 
         if (strlen($value) == 0) {
             $this->forceSetString($columnObj, '');
-
             return false;
         }
 
