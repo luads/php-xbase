@@ -6,14 +6,15 @@ use PHPUnit\Framework\TestCase;
 use XBase\Column;
 use XBase\Record;
 use XBase\Table;
+use XBase\WritableTable;
 
 class SimpleTest extends TestCase
 {
+    const FILEPATH = __DIR__.'/Resources/cbr_072019b1.dbf';
+
     public function testRead()
     {
-        $filepath = __DIR__.'/Resources/cbr_072019b1.dbf';
-
-        $table = new Table($filepath, null, 'cp866');
+        $table = new Table(self::FILEPATH, null, 'cp866');
 
         self::assertSame(18, $table->getColumnCount());
         self::assertSame(10, $table->getRecordCount());
@@ -61,6 +62,8 @@ class SimpleTest extends TestCase
         //</editor-fold>
 
         //<editor-fold desc="record">
+        self::assertEmpty($table->getRecord());
+
         $record = $table->nextRecord();
         self::assertInstanceOf(Record::class, $record);
         $columns = $record->getColumns();
@@ -93,13 +96,63 @@ JSON;
         // num
         self::assertSame(10605, $record->getNum('num_sc'));
         self::assertSame(0.0, $record->getNum('vv'));
+        self::assertSame(0.0, $record->vv);
         // char
         self::assertSame('А', $record->getString('plan')); //cyrilic
+        self::assertSame('А', $record->plan); //cyrilic
         // date
         self::assertSame(1564617600, $record->getDate('dt'));
         self::assertSame(1564617600, $record->getObject($record->getColumn('dt')));
+        self::assertSame('Thu, 01 Aug 2019 00:00:00 +0000', $record->dt);
         $dt = new \DateTime($record->forceGetString('dt'));
         self::assertEquals('2019-08-01T00:00:00+00:00', $dt->format(DATE_W3C));
         //</editor-fold>
+    }
+
+    /**
+     * @expectedException \Exception
+     * @expectedExceptionMessage Column none_column_value not found
+     */
+    public function testColumnNotFound()
+    {
+        $table = new Table(self::FILEPATH, null, 'cp866');
+        $record = $table->nextRecord();
+        $record->none_column_value;
+    }
+
+    public function testReadColumns()
+    {
+        $table = new Table(self::FILEPATH, null, 'cp866');
+        $processerResords = 0;
+        while ($record = $table->nextRecord()) {
+            $data = $record->getData();
+            $processerResords++;
+        }
+        self::assertSame(10, $processerResords);
+    }
+
+    public function testWritableTableSet()
+    {
+        $info = pathinfo(self::FILEPATH);
+        $newName = uniqid($info['basename']);
+        $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
+        self::assertTrue(copy(self::FILEPATH, $copyTo));
+
+        try {
+            $table = new WritableTable($copyTo, null, 'cp866');
+            $table->openWrite();
+            $record = $table->nextRecord();
+            $record->setInt($record->getColumn('regn'), 2);
+            $record->setString($record->getColumn('plan'), 'Ы');
+            $table->writeRecord();
+            $table->close();
+
+            $table = new Table($copyTo, null, 'cp866');
+            $record = $table->nextRecord();
+            self::assertSame(2, $record->getNum('regn'));
+            self::assertSame('Ы', $record->getString('plan'));
+        } finally {
+            unlink($copyTo);
+        }
     }
 }
