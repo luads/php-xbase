@@ -131,6 +131,11 @@ class Record
         return $this->recordIndex;
     }
 
+    public function setRecordIndex($index)
+    {
+        $this->recordIndex = $index;
+    }
+
     /**
      * @param string $columnName
      *
@@ -533,6 +538,10 @@ class Record
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_DATE) {
             trigger_error($columnObj->getName().' is not a Date column', E_USER_ERROR);
+        }
+
+        if ($value instanceof \DateTimeInterface){
+            $value = $value->format('U');
         }
 
         if (strlen($value) == 0) {
