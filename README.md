@@ -13,8 +13,6 @@ $ composer require hisamu/php-xbase
 Sample usage
 -----
 ``` php
-<?php
-
 use XBase\Table;
 
 $table = new Table(dirname(__FILE__).'/test.dbf');
@@ -38,8 +36,6 @@ Performance
 You can pass an array of the columns that you need to the constructor, then if your table has columns that you don't use they will not be loaded. This way the parser can run a lot faster.
 
 ``` php
-<?php
-
 use XBase\Table;
 
 $table = new Table(dirname(__FILE__).'/test.dbf', array('my_column', 'another_column'));
@@ -65,8 +61,6 @@ Writing Data
 To open a table for writing, you have to use a `WritableTable` object, as on this example:
 
 ``` php
-<?php
-
 use XBase\WritableTable;
 
 $table = new WritableTable(dirname(__FILE__).'/test.dbf');
@@ -79,6 +73,23 @@ for ($i = 0; $i < 10; $i++) {
 }
 
 # optional
+$table->close();
+```
+
+Delete record
+-----
+
+``` php
+use XBase\WritableTable;
+
+$table = new WritableTable('file.dbf');
+$table->openWrite();
+while ($record = $table->nextRecord()) {
+    if ($record->getBoolean('delete_this_row')){
+        $table->deleteRecord(); //mark record deleted
+    }    
+}
+$table->pack(); //save
 $table->close();
 ```
 
