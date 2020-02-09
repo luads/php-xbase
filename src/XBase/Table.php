@@ -2,6 +2,8 @@
 
 namespace XBase;
 
+use XBase\Exception\TableException;
+
 class Table
 {
     /** @var string */
@@ -50,9 +52,10 @@ class Table
     /**
      * Table constructor.
      *
-     * @param string $tableName
-     * @param array|null $availableColumns
+     * @param string      $tableName
+     * @param array|null  $availableColumns
      * @param string|null $convertFrom Encoding of file
+     *
      * @throws \Exception
      */
     public function __construct($tableName, $availableColumns = null, $convertFrom = null)
@@ -82,7 +85,7 @@ class Table
     protected function readHeader()
     {
         $this->version = $this->readChar();
-        $this->foxpro = in_array($this->version, array(48, 49, 131, 203, 245, 251));
+        $this->foxpro = in_array($this->version, [48, 49, 131, 203, 245, 251]);
         $this->modifyDate = $this->read3ByteDate();
         $this->recordCount = $this->readInt();
         $this->headerLength = $this->readShort();
@@ -108,7 +111,7 @@ class Table
         }
 
         /* columns */
-        $this->columns = array();
+        $this->columns = [];
         $bytepos = 1;
         $j = 0;
 
@@ -184,6 +187,30 @@ class Table
         } while (!$valid);
 
         return $this->record;
+    }
+
+    /**
+     * Get record by row index.
+     *
+     * @param int $position Zero based position
+     */
+    public function pickRecord(int $position): Record
+    {
+        if ($position >= $this->recordCount) {
+            throw new TableException("Row with index {$position} does not exists");
+        }
+
+        $curPos = ftell($this->fp);
+        $seekPos = $this->headerLength + $position * $this->recordByteLength;
+        if (0 !== fseek($this->fp, $seekPos)) {
+            throw new TableException("Failed to pick row at position {$position}");
+        }
+
+        $record = new Record($this, $position, $this->readBytes($this->recordByteLength));
+        // revert pointer
+        fseek($this->fp, $curPos);
+
+        return $record;
     }
 
     /**
@@ -269,7 +296,7 @@ class Table
         $index = 0;
 
         while (isset($this->columns[$name])) {
-            $name = $nameBase . ++$index;
+            $name = $nameBase.++$index;
         }
 
         $column->name = $name;

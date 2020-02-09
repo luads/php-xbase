@@ -1,0 +1,11 @@
+language: php
+php:
+    - '7.1'
+    - '7.2'
+    - '7.3'
+    - '7.4snapshot'
+directories:
+    - $HOME/.composer/cache/files
+script:
+    - composer install
+    - vendor/bin/phpunit --configuration phpunit.xml.dist

@@ -170,7 +170,7 @@ class WritableTable extends Table
 
     public function deleteRecord()
     {
-        $this->record->deleted = true;
+        $this->record->setDeleted(true);
 
         fseek($this->fp, $this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
         fwrite($this->fp, "!");
@@ -179,13 +179,16 @@ class WritableTable extends Table
 
     public function undeleteRecord()
     {
-        $this->record->deleted = false;
+        $this->record->setDeleted(false);
 
         fseek($this->fp, $this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
         fwrite($this->fp, " ");
         fflush($this->fp);
     }
 
+    /**
+     * Remove deleted records.
+     */
     public function pack()
     {
         $newRecordCount = 0;
@@ -198,7 +201,7 @@ class WritableTable extends Table
                 continue;
             }
 
-            $r->recordIndex = $newRecordCount++;
+            $r->setRecordIndex($newRecordCount++);
             $this->writeRecord();
         }
 

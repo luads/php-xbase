@@ -46,15 +46,15 @@ class Record
      * Record constructor.
      *
      * @param Table $table
-     * @param $recordIndex
-     * @param bool $rawData
+     * @param       $recordIndex
+     * @param bool  $rawData
      */
     public function __construct(Table $table, $recordIndex, $rawData = false)
     {
         $this->table = $table;
         $this->memoFile = $table->memoFile;
         $this->recordIndex = $recordIndex;
-        $this->choppedData = array();
+        $this->choppedData = [];
 
         if ($rawData && strlen($rawData) > 0) {
             $this->inserted = false;
@@ -131,8 +131,14 @@ class Record
         return $this->recordIndex;
     }
 
+    public function setRecordIndex($index)
+    {
+        $this->recordIndex = $index;
+    }
+
     /**
      * @param string $columnName
+     *
      * @return mixed
      */
     public function getString($columnName)
@@ -345,7 +351,7 @@ class Record
     {
         $s = $this->forceGetString($columnName);
 
-        if (!$s) {
+        if (!is_string($s)) {
             return false;
         }
 
@@ -364,7 +370,7 @@ class Record
 
     /**
      * @param string $columnName
-     * @param $length
+     * @param        $length
      *
      * @return bool|float|int
      */
@@ -426,7 +432,7 @@ class Record
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      */
     public function setString($columnObj, $value)
     {
@@ -443,7 +449,7 @@ class Record
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      */
     public function forceSetString($columnObj, $value)
     {
@@ -456,7 +462,7 @@ class Record
 
     /**
      * @param string $columnName
-     * @param $value
+     * @param        $value
      *
      * @return bool
      */
@@ -467,7 +473,7 @@ class Record
 
     /**
      * @param int $columnIndex
-     * @param $value
+     * @param     $value
      *
      * @return bool
      */
@@ -478,7 +484,7 @@ class Record
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      *
      * @return bool
      */
@@ -511,19 +517,23 @@ class Record
                 return false;
         }
 
-        trigger_error('cannot handle datatype' . $columnObj->getType(), E_USER_ERROR);
+        trigger_error('cannot handle datatype'.$columnObj->getType(), E_USER_ERROR);
     }
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      *
      * @return bool
      */
     public function setDate($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_DATE) {
-            trigger_error($columnObj->getName() . ' is not a Date column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a Date column', E_USER_ERROR);
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            $value = $value->format('U');
         }
 
         if (strlen($value) == 0) {
@@ -536,14 +546,14 @@ class Record
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      *
      * @return bool
      */
     public function setDateTime($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_DATETIME) {
-            trigger_error($columnObj->getName() . ' is not a DateTime column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a DateTime column', E_USER_ERROR);
         }
 
         if (strlen($value) == 0) {
@@ -555,19 +565,19 @@ class Record
         $d = $this->zerodate + (mktime(0, 0, 0, $a['mon'], $a['mday'], $a['year']) / 86400);
         $d = pack('i', $d);
         $t = pack('i', mktime($a['hours'], $a['minutes'], $a['seconds'], 0, 0, 0));
-        $this->choppedData[$columnObj->getColIndex()] = $d . $t;
+        $this->choppedData[$columnObj->getColIndex()] = $d.$t;
     }
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      *
      * @return bool
      */
     public function setBoolean($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_LOGICAL) {
-            trigger_error($columnObj->getName() . ' is not a DateTime column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a DateTime column', E_USER_ERROR);
         }
 
         switch (strtoupper($value)) {
@@ -590,12 +600,12 @@ class Record
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      */
     public function setMemo($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_MEMO) {
-            trigger_error($columnObj->getName() . ' is not a Memo column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a Memo column', E_USER_ERROR);
         }
 
         $this->forceSetString($columnObj, $value);
@@ -603,14 +613,14 @@ class Record
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      *
      * @return bool
      */
     public function setFloat($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_FLOATING) {
-            trigger_error($columnObj->getName() . ' is not a Float column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a Float column', E_USER_ERROR);
         }
 
         if (strlen($value) == 0) {
@@ -624,14 +634,14 @@ class Record
 
     /**
      * @param Column $columnObj
-     * @param $value
+     * @param        $value
      *
      * @return bool
      */
     public function setInt($columnObj, $value)
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_NUMERIC) {
-            trigger_error($columnObj->getName() . ' is not a Number column', E_USER_ERROR);
+            trigger_error($columnObj->getName().' is not a Number column', E_USER_ERROR);
         }
 
         if (strlen($value) == 0) {
@@ -648,7 +658,7 @@ class Record
      */
     public function serializeRawData()
     {
-        return ($this->deleted ? '*' : ' ') . implode('', $this->choppedData);
+        return ($this->deleted ? '*' : ' ').implode('', $this->choppedData);
     }
 
     /**
@@ -658,7 +668,7 @@ class Record
      */
     public function getData()
     {
-        $fields = array();
+        $fields = [];
 
         foreach ($this->getColumns() as $column) {
             $fields[$column->name] = $this->getObject($column);
@@ -674,7 +684,7 @@ class Record
      */
     public function getChoppedData()
     {
-        $fields = array();
+        $fields = [];
 
         foreach ($this->choppedData as $columnName => $columnValue) {
             $fields[$columnName] = $this->forceGetString($columnName);
