@@ -12,6 +12,9 @@ class Table
     /** @var int Record field length in bytes */
     const FIELD_LENGTH = 32;
 
+    /** @var int Visual FoxPro backlist length */
+    const VFP_BACKLIST_LENGTH = 263;
+
     /** @var string Table filepath. */
     protected $tableName;
     /** @var array|null */
@@ -43,7 +46,10 @@ class Table
     public $encrypted;
     /** @var string */
     public $mdxFlag;
-    /** @var string */
+    /**
+     * @var string Language codepage.
+     * @see https://blog.codetitans.pl/post/dbf-and-language-code-page/
+     */
     public $languageCode;
     /** @var Column[] */
     public $columns;
@@ -71,7 +77,7 @@ class Table
     {
         $this->tableName = $tableName;
         $this->availableColumns = $availableColumns;
-        $this->convertFrom = $convertFrom;
+        $this->convertFrom = $convertFrom; //todo autodetect from languageCode
         $this->memoFile = new Memo($this, $this->tableName);
         $this->open();
     }
@@ -108,7 +114,10 @@ class Table
         $this->languageCode = $this->readByte();
         $this->readBytes(2); //reserved
 
-        $fieldCount = floor(($this->headerLength - ($this->isFoxpro() ? 296 : 33)) / self::FIELD_LENGTH);
+        $fieldCount = ($this->headerLength - ((self::HEADER_LENGTH + 1) + (TableType::isVisualFoxpro($this->version) ? self::VFP_BACKLIST_LENGTH : 0))) / self::FIELD_LENGTH;
+        if (is_float($fieldCount)) {
+            trigger_error('Wrong fieldCount calculation', E_USER_WARNING);
+        }
 
         /* some checking */
         if ($this->headerLength > filesize($this->tableName)) {
@@ -149,11 +158,15 @@ class Table
             }
         }
 
-        if ($this->isFoxpro()) {
-            $this->backlist = $this->readBytes(263);
+        if (chr(0x0D) !== $this->readByte()) {
+            throw new TableException('Expected header terminator not present at position ' . ftell($this->fp));
         }
 
-        $this->setFilePos($this->headerLength);
+        if (TableType::isVisualFoxpro($this->version)) {
+            $this->backlist = $this->readBytes(self::VFP_BACKLIST_LENGTH);
+        }
+
+//        $this->setFilePos($this->headerLength);
         $this->recordPos = -1;
         $this->record = false;
         $this->deleteCount = 0;

@@ -2,6 +2,7 @@
 
 namespace XBase;
 
+use XBase\Enum\TableType;
 use XBase\Exception\InvalidColumnException;
 
 class Record
@@ -301,7 +302,11 @@ class Record
     public function getMemo($columnName)
     {
         $data = $this->forceGetString($columnName);
-        if ($data && strlen($data) == 2) {
+        if (TableType::FOXPRO_MEMO === $this->table->version) {
+            return $this->memoFile->get((int) $data);
+        }
+
+        if ($data && 2 === strlen($data)) {
             $pointer = unpack('s', $data)[1];
             return $this->memoFile->get($pointer);
         } else {

@@ -2,6 +2,9 @@
 
 namespace XBase\Enum;
 
+/**
+ * @see https://www.dbf2002.com/dbf-file-format.html
+ */
 final class TableType
 {
     /** @var int dBase II or FoxBASE */
@@ -23,7 +26,7 @@ final class TableType
     /** @var int FoxBASE+/dBase III PLUS/FoxPro, with memo (*.DBT) */
     const DBASE_III_PLUS_MEMO = 0x83;
     /** @var int dBase IV/dBase 5, with memo (*.DBT) */
-    const DBASE_IV_MEMO_PLUS_MEMO = 0x8B;
+    const DBASE_IV_MEMO = 0x8B;
     /** @var int dBase 7, with memo (*.DBT) */
     const DBASE_7_MEMO = 0x8C;
     /** @var int dBase IV/dBase 5, SQL table files, with memo (*.DBT) */
@@ -32,7 +35,7 @@ final class TableType
     const SMT = 0xE5;
     /** @var int dBase IV/dBase 5, SQL system files, with memo */
     const DBASE_IV_SQL_SYSTEM_MEMO = 0xEB;
-    /** @var int FoxPro 2.x ( or earlier) with memo (*.FTP) */
+    /** @var int FoxPro 2.x ( or earlier) with memo (*.FPT) */
     const FOXPRO_MEMO = 0xF5;
     /** @var int FoxBASE */
     const FOXBASE = 0xFB;
@@ -42,10 +45,32 @@ final class TableType
         return in_array($version, [
             self::VISUAL_FOXPRO,
             self::VISUAL_FOXPRO_AI,
+            self::VISUAL_FOXPRO_VAR,
             self::DBASE_III_PLUS_MEMO,
             self::DBASE_IV_SQL_TABLE_MEMO,
             self::FOXPRO_MEMO,
             self::FOXBASE,
+        ]);
+    }
+
+    public static function isVisualFoxpro(int $version): bool
+    {
+        return in_array($version, [
+            self::VISUAL_FOXPRO,
+            self::VISUAL_FOXPRO_AI,
+            self::VISUAL_FOXPRO_VAR,
+        ]);
+    }
+
+    public static function hasMemo(int $version): bool
+    {
+        return in_array($version, [
+            self::DBASE_III_PLUS_MEMO,
+            self::DBASE_IV_MEMO,
+            self::DBASE_IV_SQL_TABLE_MEMO,
+            self::DBASE_IV_SQL_SYSTEM_MEMO,
+            self::DBASE_7_MEMO,
+            self::FOXPRO_MEMO,
         ]);
     }
 }

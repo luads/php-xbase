@@ -28,7 +28,7 @@ class TableTypeTest extends TestCase
         self::assertSame(0x43, TableType::DBASE_IV_SQL_TABLE_NOMEMO);
         self::assertSame(0x63, TableType::DBASE_IV_SQL_SYSTEM_NOMEMO);
         self::assertSame(0x83, TableType::DBASE_III_PLUS_MEMO);
-        self::assertSame(0x8B, TableType::DBASE_IV_MEMO_PLUS_MEMO);
+        self::assertSame(0x8B, TableType::DBASE_IV_MEMO);
         self::assertSame(0x8C, TableType::DBASE_7_MEMO);
         self::assertSame(0xCB, TableType::DBASE_IV_SQL_TABLE_MEMO);
         self::assertSame(0xE5, TableType::SMT);
@@ -48,5 +48,25 @@ class TableTypeTest extends TestCase
         self::assertEquals(TableType::isFoxpro(TableType::DBASE_IV_SQL_TABLE_MEMO), true);
         self::assertEquals(TableType::isFoxpro(TableType::FOXPRO_MEMO), true);
         self::assertEquals(TableType::isFoxpro(TableType::FOXBASE), true);
+    }
+
+    public function testHasMemo()
+    {
+        self::assertSame(TableType::hasMemo(TableType::DBASE_II), false);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_III_PLUS_NOMEMO), false);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_7_NOMEMO), false);
+        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO), false);
+        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO_AI), false);
+        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO_VAR), false);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_IV_SQL_TABLE_NOMEMO), false);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_IV_SQL_SYSTEM_NOMEMO), false);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_III_PLUS_MEMO), true);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_IV_MEMO), true);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_7_MEMO), true);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_IV_SQL_TABLE_MEMO), true);
+        self::assertSame(TableType::hasMemo(TableType::SMT), false);
+        self::assertSame(TableType::hasMemo(TableType::DBASE_IV_SQL_SYSTEM_MEMO), true);
+        self::assertSame(TableType::hasMemo(TableType::FOXPRO_MEMO), true);
+        self::assertSame(TableType::hasMemo(TableType::FOXBASE), false);
     }
 }

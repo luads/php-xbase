@@ -97,3 +97,8 @@ Troubleshooting
 -----
 
 I'm not an expert on dBase and I don't know all the specifics of the field types and versions, so the lib may not be able to handle some situations. If you find an error, please open an issue and send me a sample table that I can reproduce your problem and I'll try to help.
+
+Useful links
+-----
+
+[Xbase File Format Description](http://www.manmrk.net/tutorials/database/xbase/)
