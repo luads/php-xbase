@@ -6,6 +6,9 @@ use XBase\Exception\InvalidColumnException;
 
 class Record
 {
+    const FLAG_NOT_DELETED = 0x20;
+    const FLAG_DELETED     = 0x2a;
+
     /** @var string Memo type field */
     const DBFFIELD_TYPE_MEMO = 'M';
     /** @var string Character field */
@@ -58,7 +61,7 @@ class Record
 
         if ($rawData && strlen($rawData) > 0) {
             $this->inserted = false;
-            $this->deleted = (ord($rawData[0]) != '32');
+            $this->deleted = (ord($rawData[0]) !== self::FLAG_NOT_DELETED);
 
             foreach ($table->getColumns() as $column) {
                 $this->choppedData[$column->getName()] = substr($rawData, $column->getBytePos(), $column->getDataLength());
@@ -382,7 +385,7 @@ class Record
             return false;
         }
 
-        if ($this->table->foxpro) {
+        if ($this->table->isFoxpro()) {
             $su = unpack("i", $s);
             $ret = $su[1];
         } else {
@@ -658,7 +661,7 @@ class Record
      */
     public function serializeRawData()
     {
-        return ($this->deleted ? '*' : ' ').implode('', $this->choppedData);
+        return chr($this->deleted ? self::FLAG_DELETED : self::FLAG_NOT_DELETED).implode('', $this->choppedData);
     }
 
     /**

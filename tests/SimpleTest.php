@@ -4,6 +4,8 @@ namespace XBase\Tests;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Column;
+use XBase\Enum\TableType;
+use XBase\Enum\TableFlag;
 use XBase\Record;
 use XBase\Table;
 use XBase\WritableTable;
@@ -20,12 +22,15 @@ class SimpleTest extends TestCase
         self::assertSame(10, $table->getRecordCount());
 
         self::assertSame(3, $table->version);
+        self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->version);
         self::assertSame(false, $table->foxpro);
+        self::assertSame(false, $table->isFoxpro());
         self::assertSame(1580774400, $table->modifyDate);
         self::assertSame(609, $table->headerLength);
         self::assertSame(225, $table->recordByteLength);
         self::assertSame(false, $table->inTransaction);
         self::assertSame(false, $table->encrypted);
+        self::assertSame(TableFlag::NONE, bindec($table->mdxFlag));
         self::assertSame('00', bin2hex($table->mdxFlag));
         self::assertSame('00', bin2hex($table->languageCode));
 
@@ -231,6 +236,31 @@ JSON;
     }
 
     public function testWritableTableDeleteRecord()
+    {
+        $info = pathinfo(self::FILEPATH);
+        $newName = uniqid($info['filename']);
+        $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
+        self::assertTrue(copy(self::FILEPATH, $copyTo));
+
+        try {
+            $table = new WritableTable($copyTo, null, 'cp866');
+            $table->openWrite();
+            $table->nextRecord(); // set pointer to first row
+            $table->deleteRecord();
+            $table->writeRecord();
+            $table->close();
+
+            $table = new Table($copyTo, null, 'cp866');
+            self::assertEquals(10, $table->getRecordCount());
+            $record = $table->pickRecord(0);
+            self::assertTrue($record->isDeleted());
+            $table->close();
+        } finally {
+            unlink($copyTo);
+        }
+    }
+
+    public function testWritableTableDeletePackRecord()
     {
         $info = pathinfo(self::FILEPATH);
         $newName = uniqid($info['filename']);

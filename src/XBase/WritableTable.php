@@ -2,6 +2,8 @@
 
 namespace XBase;
 
+use XBase\Enum\TableType;
+
 class WritableTable extends Table
 {
     /**
@@ -9,7 +11,7 @@ class WritableTable extends Table
      *
      * @return WritableTable
      */
-    public function cloneFrom($table)
+    public function cloneFrom(Table $table)
     {
         $result = new WritableTable($table->tableName);
         $result->version = $table->version;
@@ -24,7 +26,7 @@ class WritableTable extends Table
         $result->columnNames = $table->columnNames;
         $result->headerLength = $table->headerLength;
         $result->backlist = $table->backlist;
-        $result->foxpro = $table->foxpro;
+        $result->foxpro = $table->isFoxpro();
 
         return $result;
     }
@@ -42,8 +44,8 @@ class WritableTable extends Table
         }
 
         $recordByteLength = 1;
-        $columns = array();
-        $columnNames = array();
+        $columns = [];
+        $columnNames = [];
         $i = 0;
 
         foreach ($fields as $field) {
@@ -58,7 +60,7 @@ class WritableTable extends Table
         }
 
         $result = new WritableTable($filename);
-        $result->version = 131;
+        $result->version = TableType::DBASE_III_PLUS_MEMO;
         $result->modifyDate = time();
         $result->recordCount = 0;
         $result->recordByteLength = $recordByteLength;

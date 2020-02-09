@@ -1,0 +1,51 @@
+<?php
+
+namespace XBase\Enum;
+
+final class TableType
+{
+    /** @var int dBase II or FoxBASE */
+    const DBASE_II = 0x02;
+    /** @var int FoxBASE+/dBase III plus, no memo */
+    const DBASE_III_PLUS_NOMEMO = 0x03;
+    /** @var int dBase 7 */
+    const DBASE_7_NOMEMO = 0x04;
+    /** @var int Visual FoxPro */
+    const VISUAL_FOXPRO = 0x30;
+    /** @var int Visual FoxPro, autoincrement enabled */
+    const VISUAL_FOXPRO_AI = 0x31;
+    /** @var int Visual FoxPro, Varchar, Varbinary, or Blob-enabled */
+    const VISUAL_FOXPRO_VAR = 0x32;
+    /** @var int dBase IV/dBase 5 - SQL table files, no memo */
+    const DBASE_IV_SQL_TABLE_NOMEMO = 0x43;
+    /** @var int dBase IV/dBase 5 SQL system files, no memo */
+    const DBASE_IV_SQL_SYSTEM_NOMEMO = 0x63;
+    /** @var int FoxBASE+/dBase III PLUS/FoxPro, with memo (*.DBT) */
+    const DBASE_III_PLUS_MEMO = 0x83;
+    /** @var int dBase IV/dBase 5, with memo (*.DBT) */
+    const DBASE_IV_MEMO_PLUS_MEMO = 0x8B;
+    /** @var int dBase 7, with memo (*.DBT) */
+    const DBASE_7_MEMO = 0x8C;
+    /** @var int dBase IV/dBase 5, SQL table files, with memo (*.DBT) */
+    const DBASE_IV_SQL_TABLE_MEMO = 0xCB;
+    /** @var int (*.SMT) */
+    const SMT = 0xE5;
+    /** @var int dBase IV/dBase 5, SQL system files, with memo */
+    const DBASE_IV_SQL_SYSTEM_MEMO = 0xEB;
+    /** @var int FoxPro 2.x ( or earlier) with memo (*.FTP) */
+    const FOXPRO_MEMO = 0xF5;
+    /** @var int FoxBASE */
+    const FOXBASE = 0xFB;
+
+    public static function isFoxpro(int $version): bool
+    {
+        return in_array($version, [
+            self::VISUAL_FOXPRO,
+            self::VISUAL_FOXPRO_AI,
+            self::DBASE_III_PLUS_MEMO,
+            self::DBASE_IV_SQL_TABLE_MEMO,
+            self::FOXPRO_MEMO,
+            self::FOXBASE,
+        ]);
+    }
+}

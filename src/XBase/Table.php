@@ -2,11 +2,17 @@
 
 namespace XBase;
 
+use XBase\Enum\TableType;
 use XBase\Exception\TableException;
 
 class Table
 {
-    /** @var string */
+    /** @var int Table header length in bytes */
+    const HEADER_LENGTH = 32;
+    /** @var int Record field length in bytes */
+    const FIELD_LENGTH = 32;
+
+    /** @var string Table filepath. */
     protected $tableName;
     /** @var array|null */
     protected $availableColumns;
@@ -44,7 +50,10 @@ class Table
     /** @var int */
     public $headerLength;
     public $backlist;
-    /** @var bool */
+    /**
+     * @var bool
+     * @deprecated since 1.1 and will be removed in 2.0. Use isFoxpro method instead.
+     */
     public $foxpro;
     /** @var Memo */
     public $memoFile;
@@ -85,7 +94,7 @@ class Table
     protected function readHeader()
     {
         $this->version = $this->readChar();
-        $this->foxpro = in_array($this->version, [48, 49, 131, 203, 245, 251]);
+        $this->foxpro = TableType::isFoxpro($this->version);
         $this->modifyDate = $this->read3ByteDate();
         $this->recordCount = $this->readInt();
         $this->headerLength = $this->readShort();
@@ -99,15 +108,15 @@ class Table
         $this->languageCode = $this->readByte();
         $this->readBytes(2); //reserved
 
-        $fieldCount = floor(($this->headerLength - ($this->foxpro ? 296 : 33)) / 32);
+        $fieldCount = floor(($this->headerLength - ($this->isFoxpro() ? 296 : 33)) / self::FIELD_LENGTH);
 
         /* some checking */
         if ($this->headerLength > filesize($this->tableName)) {
-            throw new Exception\TableException(sprintf('File %s is not DBF', $this->tableName));
+            throw new TableException(sprintf('File %s is not DBF', $this->tableName));
         }
 
         if ($this->headerLength + ($this->recordCount * $this->recordByteLength) - 500 > filesize($this->tableName)) {
-            throw new Exception\TableException(sprintf('File %s is not DBF', $this->tableName));
+            throw new TableException(sprintf('File %s is not DBF', $this->tableName));
         }
 
         /* columns */
@@ -140,7 +149,7 @@ class Table
             }
         }
 
-        if ($this->foxpro) {
+        if ($this->isFoxpro()) {
             $this->backlist = $this->readBytes(263);
         }
 
@@ -390,6 +399,11 @@ class Table
     protected function isOpen()
     {
         return $this->fp ? true : false;
+    }
+
+    public function isFoxpro(): bool
+    {
+        return TableType::isFoxpro($this->version);
     }
 
     /**
