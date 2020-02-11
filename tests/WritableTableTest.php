@@ -3,6 +3,7 @@
 namespace XBase\Tests;
 
 use PHPUnit\Framework\TestCase;
+use XBase\Enum\TableType;
 use XBase\Record;
 use XBase\Table;
 use XBase\WritableTable;
@@ -11,13 +12,18 @@ class WritableTableTest extends TestCase
 {
     const FILEPATH = __DIR__.'/Resources/cbr_072019b1.dbf';
 
-    public function testSet()
+    private function duplicateFile(string $file): string
     {
-        $info = pathinfo(self::FILEPATH);
+        $info = pathinfo($file);
         $newName = uniqid($info['filename']);
         $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
-        self::assertTrue(copy(self::FILEPATH, $copyTo));
+        self::assertTrue(copy($file, $copyTo));
+        return $copyTo;
+    }
 
+    public function testSet()
+    {
+        $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
             $table = new WritableTable($copyTo, null, 'cp866');
             $table->openWrite();
@@ -42,11 +48,7 @@ class WritableTableTest extends TestCase
      */
     public function testAppendRecord()
     {
-        $info = pathinfo(self::FILEPATH);
-        $newName = uniqid($info['filename']);
-        $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
-        self::assertTrue(copy(self::FILEPATH, $copyTo));
-
+        $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
             $table = new WritableTable($copyTo, null, 'cp866');
             $table->openWrite();
@@ -64,6 +66,10 @@ class WritableTableTest extends TestCase
             $record->setInt($record->getColumn('priz'), 2);
             $table->writeRecord();
             $table->close();
+
+            clearstatcache();
+            $expectedSize = $table->headerLength + ($table->recordCount * $table->recordByteLength); // Last byte must be 0x1A
+            self::assertSame($expectedSize, filesize($copyTo));
 
             $table = new Table($copyTo, null, 'cp866');
             self::assertEquals(11, $table->getRecordCount());
@@ -85,11 +91,7 @@ class WritableTableTest extends TestCase
 
     public function testDeleteRecord()
     {
-        $info = pathinfo(self::FILEPATH);
-        $newName = uniqid($info['filename']);
-        $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
-        self::assertTrue(copy(self::FILEPATH, $copyTo));
-
+        $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
             $table = new WritableTable($copyTo, null, 'cp866');
             $table->openWrite();
@@ -110,11 +112,7 @@ class WritableTableTest extends TestCase
 
     public function testDeletePackRecord()
     {
-        $info = pathinfo(self::FILEPATH);
-        $newName = uniqid($info['filename']);
-        $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
-        self::assertTrue(copy(self::FILEPATH, $copyTo));
-
+        $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
             $table = new WritableTable($copyTo, null, 'cp866');
             $table->openWrite();
@@ -125,6 +123,58 @@ class WritableTableTest extends TestCase
 
             $table = new Table($copyTo, null, 'cp866');
             self::assertEquals(9, $table->getRecordCount());
+            $table->close();
+        } finally {
+            unlink($copyTo);
+        }
+    }
+
+    public function testIssue78()
+    {
+        $fecnacim = date("m/d/Y", 86400);
+        $fecingreso = date("m/d/Y", 86400 * 2);
+
+        $copyTo = $this->duplicateFile(__DIR__.'/Resources/socios.dbf');
+        try {
+            $table = new WritableTable($copyTo);
+            self::assertEquals(3, $table->getRecordCount());
+            $table->openWrite();
+            // fill new newRecord
+            $newRecord = $table->appendRecord();
+            $newRecord->segsocial = '000000000000';
+            $newRecord->socio = 'socio';
+            $newRecord->apellido = 'apellido';
+            $newRecord->nombre = 'nombre';
+            $newRecord->fecnacim = $fecnacim;
+            $newRecord->fecingreso = $fecingreso;
+            $newRecord->sexo = 'M';
+            $newRecord->apartado = '600';
+            $newRecord->telefonor = '12345678';
+            $newRecord->email = 'someone@email.com';
+            $newRecord->venciced = \DateTime::createFromFormat("U", -777859200);
+            $newRecord->nriesgo = "B";
+            //save
+            $table->writeRecord();
+            $table->pack();
+            $table->close();
+            unset($newRecord);
+
+            $table = new Table($copyTo);
+            self::assertEquals(4, $table->getRecordCount());
+            $record = $table->pickRecord(3);
+            self::assertEquals('000000000000', $record->segsocial);
+            self::assertSame('socio', $record->socio);
+            self::assertSame('apellido', $record->apellido);
+            self::assertSame('nombre', $record->nombre);
+            self::assertSame(86400, $record->getDate('fecnacim'));
+            self::assertSame($fecnacim, $record->getDateTimeObject('fecnacim')->format('m/d/Y'));
+            self::assertSame($fecingreso, $record->getDateTimeObject('fecingreso')->format('m/d/Y'));
+            self::assertSame('M', $record->sexo);
+            self::assertSame('600', $record->apartado);
+            self::assertSame('12345678', $record->telefonor);
+            self::assertSame('someone@email.com', $record->email);
+            self::assertSame('1945-05-09', $record->getDateTimeObject('venciced')->format('Y-m-d'));
+            self::assertSame("B", $record->nriesgo);
             $table->close();
         } finally {
             unlink($copyTo);

@@ -270,6 +270,18 @@ class Record
     }
 
     /**
+     * Get DATE(D) or DATETIME(T) data as object of \DateTime class
+     */
+    public function getDateTimeObject(string $columnName): \DateTime
+    {
+        $column = $this->getColumn($columnName);
+        if (!in_array($column->getType(), [self::DBFFIELD_TYPE_DATE, self::DBFFIELD_TYPE_DATETIME])) {
+            trigger_error($column->getName().' is not a Date or DateTime column', E_USER_ERROR);
+        }
+        return new \DateTime($this->forceGetString($columnName));
+    }
+
+    /**
      * @param string $columnName
      *
      * @return bool
@@ -447,7 +459,7 @@ class Record
         if ($columnObj->getType() == self::DBFFIELD_TYPE_CHAR) {
             $this->forceSetString($columnObj, $value);
         } else {
-            if ($columnObj->getType() == self::DBFFIELD_TYPE_DATETIME || $columnObj->getType() == self::DBFFIELD_TYPE_DATE) {
+            if (($columnObj->getType() == self::DBFFIELD_TYPE_DATETIME || $columnObj->getType() == self::DBFFIELD_TYPE_DATE) && is_string($value)) {
                 $value = strtotime($value);
             }
 
@@ -541,7 +553,8 @@ class Record
         }
 
         if ($value instanceof \DateTimeInterface) {
-            $value = $value->format('U');
+            $this->forceSetString($columnObj, $value->format('Ymd'));
+            return false;
         }
 
         if (strlen($value) == 0) {
@@ -562,6 +575,10 @@ class Record
     {
         if ($columnObj->getType() != self::DBFFIELD_TYPE_DATETIME) {
             trigger_error($columnObj->getName().' is not a DateTime column', E_USER_ERROR);
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            $value = $value->format('U');
         }
 
         if (strlen($value) == 0) {

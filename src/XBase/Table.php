@@ -120,6 +120,7 @@ class Table
         }
 
         /* some checking */
+        clearstatcache();
         if ($this->headerLength > filesize($this->tableName)) {
             throw new TableException(sprintf('File %s is not DBF', $this->tableName));
         }
