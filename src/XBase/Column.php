@@ -15,33 +15,41 @@ class Column
     /** @var int */
     public $decimalCount;
 
+    /**
+     * @var int Field address within record.
+     */
     protected $memAddress;
     protected $workAreaID;
     protected $setFields;
     protected $indexed;
+    /**
+     * @var int|null
+     * @deprecated same as memAddress
+     */
     protected $bytePos;
     protected $colIndex;
 
     /**
      * Column constructor.
      *
-     * @param string $name
-     * @param string $type
-     * @param $memAddress
-     * @param $length
-     * @param $decimalCount
-     * @param $reserved1
-     * @param $workAreaID
-     * @param $reserved2
-     * @param $setFields
-     * @param $reserved3
-     * @param $indexed
-     * @param $colIndex
-     * @param $bytePos
+     * @param string   $name
+     * @param string   $type
+     * @param int      $memAddress
+     * @param int      $length
+     * @param int      $decimalCount
+     * @param string   $reserved1
+     * @param int      $workAreaID
+     * @param string   $reserved2
+     * @param bool     $setFields
+     * @param string   $reserved3
+     * @param int      $indexed
+     * @param int      $colIndex
+     * @param int|null $bytePos
      */
-    public function __construct($name, $type, $memAddress, $length, $decimalCount, $reserved1, $workAreaID, $reserved2, $setFields, $reserved3, $indexed, $colIndex, $bytePos)
+    public function __construct($name, $type, $memAddress, $length, $decimalCount, $reserved1, $workAreaID, $reserved2, $setFields, $reserved3, $indexed, $colIndex, $bytePos = null)
     {
         $this->rawname = $name;
+        // first byte is 'deleted mark'
         $this->name = (strpos($name, chr(0x00)) !== false) ? substr($name, 0, strpos($name, chr(0x00))) : $name;
         $this->type = $type;
         $this->memAddress = $memAddress;
@@ -50,8 +58,8 @@ class Column
         $this->workAreaID = $workAreaID;
         $this->setFields = $setFields;
         $this->indexed = $indexed;
-        $this->bytePos = $bytePos;
         $this->colIndex = $colIndex;
+        $this->bytePos = $bytePos;
     }
 
     /**
@@ -97,7 +105,7 @@ class Column
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function getMemAddress()
     {
@@ -135,6 +143,10 @@ class Column
         return $this->name;
     }
 
+    /**
+     * @return int
+     * @deprecated use getMemAddress
+     */
     public function getBytePos()
     {
         return $this->bytePos;

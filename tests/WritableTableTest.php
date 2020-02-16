@@ -10,7 +10,7 @@ use XBase\WritableTable;
 
 class WritableTableTest extends TestCase
 {
-    const FILEPATH = __DIR__.'/Resources/cbr_072019b1.dbf';
+    const FILEPATH = __DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf';
 
     private function duplicateFile(string $file): string
     {

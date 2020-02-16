@@ -13,7 +13,7 @@ class WritableTable extends Table
      */
     public function cloneFrom(Table $table)
     {
-        $result = new WritableTable($table->tableName);
+        $result = new WritableTable($table->filepath);
         $result->version = $table->version;
         $result->modifyDate = $table->modifyDate;
         $result->recordCount = 0;
@@ -40,7 +40,7 @@ class WritableTable extends Table
     public function create($filename, $fields)
     {
         if (!$fields || !is_array($fields)) {
-            throw new Exception\TableException("cannot create xbase with no fields", $this->tableName);
+            throw new Exception\TableException("cannot create xbase with no fields", $this->filepath);
         }
 
         $recordByteLength = 1;
@@ -50,7 +50,7 @@ class WritableTable extends Table
 
         foreach ($fields as $field) {
             if (!$field || !is_array($field) || sizeof($field) < 2) {
-                throw new Exception\TableException("fields argument error, must be array of arrays", $this->tableName);
+                throw new Exception\TableException("fields argument error, must be array of arrays", $this->filepath);
             }
             $column = new Column($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
             $recordByteLength += $column->getDataLength();
@@ -89,7 +89,7 @@ class WritableTable extends Table
     public function openWrite($filename = false, $overwrite = false)
     {
         if (!$filename) {
-            $filename = $this->tableName;
+            $filename = $this->filepath;
         }
 
         if (file_exists($filename) && !$overwrite) {

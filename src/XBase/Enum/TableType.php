@@ -46,7 +46,7 @@ final class TableType
             self::VISUAL_FOXPRO,
             self::VISUAL_FOXPRO_AI,
             self::VISUAL_FOXPRO_VAR,
-            self::DBASE_III_PLUS_MEMO,
+//            self::DBASE_III_PLUS_MEMO,
             self::DBASE_IV_SQL_TABLE_MEMO,
             self::FOXPRO_MEMO,
             self::FOXBASE,
@@ -70,6 +70,9 @@ final class TableType
             self::DBASE_IV_SQL_TABLE_MEMO,
             self::DBASE_IV_SQL_SYSTEM_MEMO,
             self::DBASE_7_MEMO,
+            self::VISUAL_FOXPRO,
+            self::VISUAL_FOXPRO_AI,
+            self::VISUAL_FOXPRO_VAR,
             self::FOXPRO_MEMO,
         ]);
     }

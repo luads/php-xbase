@@ -4,6 +4,8 @@ namespace XBase;
 
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
+use XBase\Memo\MemoFactory;
+use XBase\Memo\MemoInterface;
 
 class Table
 {
@@ -16,7 +18,7 @@ class Table
     const VFP_BACKLIST_LENGTH = 263;
 
     /** @var string Table filepath. */
-    protected $tableName;
+    protected $filepath;
     /** @var array|null */
     protected $availableColumns;
     /** @var resource */
@@ -61,25 +63,28 @@ class Table
      * @deprecated since 1.1 and will be removed in 2.0. Use isFoxpro method instead.
      */
     public $foxpro;
-    /** @var Memo */
-    public $memoFile;
+    /** @var MemoInterface */
+    public $memo;
 
     /**
      * Table constructor.
      *
-     * @param string      $tableName
+     * @param string      $filepath
      * @param array|null  $availableColumns
      * @param string|null $convertFrom Encoding of file
      *
      * @throws \Exception
      */
-    public function __construct($tableName, $availableColumns = null, $convertFrom = null)
+    public function __construct($filepath, $availableColumns = null, $convertFrom = null)
     {
-        $this->tableName = $tableName;
+        $this->filepath = $filepath;
         $this->availableColumns = $availableColumns;
         $this->convertFrom = $convertFrom; //todo autodetect from languageCode
-        $this->memoFile = new Memo($this, $this->tableName);
         $this->open();
+
+        if (TableType::hasMemo($this->getVersion())) {
+            $this->memo = MemoFactory::create($this);
+        }
     }
 
     /**
@@ -87,11 +92,11 @@ class Table
      */
     protected function open()
     {
-        if (!file_exists($this->tableName)) {
-            throw new \Exception(sprintf('File %s cannot be found', $this->tableName));
+        if (!file_exists($this->filepath)) {
+            throw new \Exception(sprintf('File %s cannot be found', $this->filepath));
         }
 
-        $this->fp = fopen($this->tableName, 'rb');
+        $this->fp = fopen($this->filepath, 'rb');
         $this->readHeader();
 
         return $this->fp != false;
@@ -121,12 +126,12 @@ class Table
 
         /* some checking */
         clearstatcache();
-        if ($this->headerLength > filesize($this->tableName)) {
-            throw new TableException(sprintf('File %s is not DBF', $this->tableName));
+        if ($this->headerLength > filesize($this->filepath)) {
+            throw new TableException(sprintf('File %s is not DBF', $this->filepath));
         }
 
-        if ($this->headerLength + ($this->recordCount * $this->recordByteLength) - 500 > filesize($this->tableName)) {
-            throw new TableException(sprintf('File %s is not DBF', $this->tableName));
+        if ($this->headerLength + ($this->recordCount * $this->recordByteLength) - 500 > filesize($this->filepath)) {
+            throw new TableException(sprintf('File %s is not DBF', $this->filepath));
         }
 
         /* columns */
@@ -160,7 +165,7 @@ class Table
         }
 
         if (chr(0x0D) !== $this->readByte()) {
-            throw new TableException('Expected header terminator not present at position ' . ftell($this->fp));
+            throw new TableException('Expected header terminator not present at position '.ftell($this->fp));
         }
 
         if (TableType::isVisualFoxpro($this->version)) {
@@ -386,9 +391,19 @@ class Table
     /**
      * @return string
      */
-    public function getName()
+    public function getFilepath()
     {
-        return $this->tableName;
+        return $this->filepath;
+    }
+
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+    public function getMemo(): ?MemoInterface
+    {
+        return $this->memo;
     }
 
     /**

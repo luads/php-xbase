@@ -2,21 +2,18 @@
 
 namespace XBase\Tests;
 
-use PHPUnit\Framework\TestCase;
 use XBase\Column;
-use XBase\Enum\TableType;
+use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
+use XBase\Enum\TableType;
 use XBase\Record;
 use XBase\Table;
-use XBase\WritableTable;
 
-class SimpleTest extends TestCase
+class DBaseTest extends AbstractTestCase
 {
-    const FILEPATH = __DIR__.'/Resources/cbr_072019b1.dbf';
-
     public function testRead()
     {
-        $table = new Table(self::FILEPATH, null, 'cp866');
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
 
         self::assertSame(18, $table->getColumnCount());
         self::assertSame(10, $table->getRecordCount());
@@ -41,7 +38,7 @@ class SimpleTest extends TestCase
         $column = $columns['regn'];
         self::assertInstanceOf(Column::class, $column);
         self::assertSame('regn', $column->getName());
-        self::assertSame(Record::DBFFIELD_TYPE_NUMERIC, $column->getType());
+        self::assertSame(FieldType::NUMERIC, $column->getType());
         self::assertSame(4, $column->getLength());
         self::assertSame(1, $column->getBytePos());
         self::assertSame(0, $column->getColIndex());
@@ -49,7 +46,7 @@ class SimpleTest extends TestCase
         $column = $columns['plan'];
         self::assertInstanceOf(Column::class, $column);
         self::assertSame('plan', $column->getName());
-        self::assertSame(Record::DBFFIELD_TYPE_CHAR, $column->getType());
+        self::assertSame(FieldType::CHAR, $column->getType());
         self::assertSame(1, $column->getLength());
         self::assertSame(5, $column->getBytePos());
         self::assertSame(1, $column->getColIndex());
@@ -57,7 +54,7 @@ class SimpleTest extends TestCase
         $column = $columns['dt'];
         self::assertInstanceOf(Column::class, $column);
         self::assertSame('dt', $column->getName());
-        self::assertSame(Record::DBFFIELD_TYPE_DATE, $column->getType());
+        self::assertSame(FieldType::DATE, $column->getType());
         self::assertSame(8, $column->getLength());
         self::assertSame(216, $column->getBytePos());
         self::assertSame(16, $column->getColIndex());
@@ -146,20 +143,60 @@ JSON;
      */
     public function testColumnNotFound()
     {
-        $table = new Table(self::FILEPATH, null, 'cp866');
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
         $record = $table->nextRecord();
         $record->none_column_value;
     }
 
     public function testReadColumns()
     {
-        $table = new Table(self::FILEPATH, null, 'cp866');
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
         $processerResords = 0;
         while ($record = $table->nextRecord()) {
             $data = $record->getData();
             $processerResords++;
         }
         self::assertSame(10, $processerResords);
+    }
+
+    public function testDbase3()
+    {
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII.dbf');
+
+        self::assertSame(6, $table->getColumnCount());
+        self::assertSame(3, $table->getRecordCount());
+
+        self::assertSame(TableType::DBASE_III_PLUS_MEMO, $table->version);
+        self::assertSame(false, $table->foxpro); //todo why true
+        self::assertSame(false, $table->isFoxpro());
+        self::assertSame(225, $table->headerLength);
+        self::assertSame(70, $table->recordByteLength);
+        self::assertSame(false, $table->inTransaction);
+        self::assertSame(false, $table->encrypted);
+        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(0x03, ord($table->languageCode));
+
+        $this->assertRecords($table);
+    }
+
+    public function testDbase4()
+    {
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseIV.dbf');
+
+        self::assertSame(6, $table->getColumnCount());
+        self::assertSame(3, $table->getRecordCount());
+
+        self::assertSame(TableType::DBASE_IV_MEMO, $table->version);
+        self::assertSame(false, $table->foxpro);
+        self::assertSame(false, $table->isFoxpro());
+        self::assertSame(225, $table->headerLength);
+        self::assertSame(70, $table->recordByteLength);
+        self::assertSame(false, $table->inTransaction);
+        self::assertSame(false, $table->encrypted);
+        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(0x03, ord($table->languageCode));
+
+        $this->assertRecords($table);
     }
 
 }

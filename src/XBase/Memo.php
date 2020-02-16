@@ -2,50 +2,21 @@
 
 namespace XBase;
 
-class Memo
+use XBase\Memo\AbstractMemo;
+
+class Memo extends AbstractMemo
 {
-    /** @var resource */
-    protected $fp;
-    /** @var Table */
-    protected $table;
-    /** @var string */
-    protected $tableName;
-
-    /**
-     * Memo constructor.
-     *
-     * @param Table  $table
-     * @param string $tableName
-     */
-    public function __construct(Table $table, $tableName)
+    public function get($data)
     {
-        $this->table = $table;
-        $this->tableName = $tableName;
-        $this->open();
-    }
-
-    /**
-     * @return bool
-     */
-    protected function open()
-    {
-        $fileName = str_replace(["dbf", "DBF"], ["fpt", "FPT"], $this->tableName);
-
-        if (!file_exists($fileName)) {
-            return false;
+        if ($data && 2 === strlen($data)) {
+            $pointer = unpack('s', $data)[1];
+            return $this->getData($pointer);
+        } else {
+            return $data;
         }
-
-        $this->fp = fopen($fileName, 'rb');
-
-        return $this->fp != false;
     }
 
-    /**
-     * @param int $pointer
-     *
-     * @return false|string|null
-     */
-    public function get($pointer)
+    protected function getData($pointer)
     {
         $value = null;
         if ($this->fp && $pointer != 0) {
@@ -69,4 +40,5 @@ class Memo
         }
         return $value;
     }
+
 }

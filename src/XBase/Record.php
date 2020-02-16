@@ -2,6 +2,7 @@
 
 namespace XBase;
 
+use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
 use XBase\Exception\InvalidColumnException;
 
@@ -43,8 +44,6 @@ class Record
     protected $inserted;
     /** @var int */
     protected $recordIndex;
-    /** @var Memo */
-    protected $memoFile;
 
     /**
      * Record constructor.
@@ -56,7 +55,6 @@ class Record
     public function __construct(Table $table, $recordIndex, $rawData = false)
     {
         $this->table = $table;
-        $this->memoFile = $table->memoFile;
         $this->recordIndex = $recordIndex;
         $this->choppedData = [];
 
@@ -204,18 +202,26 @@ class Record
                 return $this->getDate($column->getName());
             case self::DBFFIELD_TYPE_DATETIME:
                 return $this->getDateTime($column->getName());
+            case FieldType::CURRENCY:
             case self::DBFFIELD_TYPE_FLOATING:
                 return $this->getFloat($column->getName());
             case self::DBFFIELD_TYPE_LOGICAL:
                 return $this->getBoolean($column->getName());
             case self::DBFFIELD_TYPE_MEMO:
                 return $this->getMemo($column->getName());
+            case FieldType::GENERAL:
+                return $this->getGeneral($column->getName());
             case self::DBFFIELD_TYPE_NUMERIC:
                 return $this->getNum($column->getName());
             case self::DBFFIELD_TYPE_INDEX:
                 return $this->getIndex($column->getName(), $column->getLength());
             case self::DBFFIELD_IGNORE_0:
                 return false;
+            case FieldType::BLOB:
+                return $this->forceGetString($column->getName());
+            case FieldType::VAR_FIELD:
+            case FieldType::VARBINARY:
+                return $this->getVarchar($column->getName());
         }
 
         throw new Exception\InvalidColumnException(sprintf('Cannot handle datatype %s', $column->getType()));
@@ -255,18 +261,19 @@ class Record
     public function getDateTime($columnName)
     {
         $raw = $this->choppedData[$columnName];
-        $buf = unpack('i', substr($raw, 0, 4));
-        $intdate = $buf[1];
-        $buf = unpack('i', substr($raw, 4, 4));
-        $inttime = $buf[1];
+        $buf = unpack('i*', $raw);
+//        $buf = unpack('i', substr($raw, 0, 4));
+        $intDate = $buf[1];
+//        $buf = unpack('i', substr($raw, 4, 4));
+        $inttime = $buf[2];
 
-        if ($intdate == 0 && $inttime == 0) {
+        if ($intDate == 0 && $inttime == 0) {
             return false;
         }
 
-        $longdate = ($intdate - $this->zerodate) * 86400;
+        $longDate = ($intDate - $this->zerodate) * 86400;
 
-        return $longdate + ($inttime / 1000);
+        return $longDate + ($inttime / 1000);
     }
 
     /**
@@ -278,7 +285,13 @@ class Record
         if (!in_array($column->getType(), [self::DBFFIELD_TYPE_DATE, self::DBFFIELD_TYPE_DATETIME])) {
             trigger_error($column->getName().' is not a Date or DateTime column', E_USER_ERROR);
         }
-        return new \DateTime($this->forceGetString($columnName));
+
+        $data = $this->forceGetString($columnName);
+        if (self::DBFFIELD_TYPE_DATETIME === $column->getType()) {
+            return \DateTime::createFromFormat('U', $this->getDateTime('datetime'));
+        }
+
+        return new \DateTime($data);
     }
 
     /**
@@ -313,17 +326,30 @@ class Record
      */
     public function getMemo($columnName)
     {
-        $data = $this->forceGetString($columnName);
-        if (TableType::FOXPRO_MEMO === $this->table->version) {
-            return $this->memoFile->get((int) $data);
+        if (!TableType::hasMemo($this->table->getVersion())) {
+            throw new \LogicException('Table not supports Memo');
         }
 
-        if ($data && 2 === strlen($data)) {
-            $pointer = unpack('s', $data)[1];
-            return $this->memoFile->get($pointer);
-        } else {
-            return $data;
+        return $this->table->getMemo()->get($this->choppedData[$columnName])->getData();
+    }
+
+    public function getGeneral($columnName)
+    {
+        if (TableType::isVisualFoxpro($this->table->getVersion())) {
+            $data = unpack("L", $this->choppedData[$columnName]);
+            return $data[1];
         }
+
+        return $this->table->getMemo()->get($this->choppedData[$columnName])->getData();
+    }
+
+    public function getMemoObject($columnName)
+    {
+        if (!TableType::hasMemo($this->table->getVersion())) {
+            throw new \LogicException('Table not supports Memo');
+        }
+
+        return $this->table->getMemo()->get($this->choppedData[$columnName]);
     }
 
     /**
@@ -351,6 +377,10 @@ class Record
      */
     public function getFloat($columnName)
     {
+        if (in_array($this->table->getVersion(), [TableType::FOXPRO_MEMO]) || TableType::isVisualFoxpro($this->table->getVersion())) {
+            return (float) trim($this->choppedData[$columnName]);
+        }
+
         $s = $this->choppedData[$columnName];
 
         $s = unpack('f', $s);
@@ -386,6 +416,24 @@ class Record
         } else {
             return intval($s);
         }
+    }
+
+    public function getVarchar($columnName)
+    {
+        $s = $this->forceGetString($columnName);
+        if (false !== ($pos = strpos($s, chr(0x00)))) {
+            $s = substr($s, 0, $pos);
+        }
+        return $s;
+    }
+
+    public function getVarbinary($columnName)
+    {
+        $s = $this->forceGetString($columnName);
+        if (false !== ($pos = strpos($s, chr(0x00)))) {
+            $s = substr($s, 0, $pos);
+        }
+        return $s;
     }
 
     /**

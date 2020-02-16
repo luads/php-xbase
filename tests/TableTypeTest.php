@@ -44,7 +44,7 @@ class TableTypeTest extends TestCase
         self::assertEquals(TableType::isFoxpro(TableType::DBASE_III_PLUS_NOMEMO), false);
         self::assertEquals(TableType::isFoxpro(TableType::VISUAL_FOXPRO), true);
         self::assertEquals(TableType::isFoxpro(TableType::VISUAL_FOXPRO_AI), true);
-        self::assertEquals(TableType::isFoxpro(TableType::DBASE_III_PLUS_MEMO), true);
+        self::assertEquals(TableType::isFoxpro(TableType::DBASE_III_PLUS_MEMO), false);
         self::assertEquals(TableType::isFoxpro(TableType::DBASE_IV_SQL_TABLE_MEMO), true);
         self::assertEquals(TableType::isFoxpro(TableType::FOXPRO_MEMO), true);
         self::assertEquals(TableType::isFoxpro(TableType::FOXBASE), true);
@@ -55,9 +55,9 @@ class TableTypeTest extends TestCase
         self::assertSame(TableType::hasMemo(TableType::DBASE_II), false);
         self::assertSame(TableType::hasMemo(TableType::DBASE_III_PLUS_NOMEMO), false);
         self::assertSame(TableType::hasMemo(TableType::DBASE_7_NOMEMO), false);
-        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO), false);
-        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO_AI), false);
-        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO_VAR), false);
+        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO), true);
+        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO_AI), true);
+        self::assertSame(TableType::hasMemo(TableType::VISUAL_FOXPRO_VAR), true);
         self::assertSame(TableType::hasMemo(TableType::DBASE_IV_SQL_TABLE_NOMEMO), false);
         self::assertSame(TableType::hasMemo(TableType::DBASE_IV_SQL_SYSTEM_NOMEMO), false);
         self::assertSame(TableType::hasMemo(TableType::DBASE_III_PLUS_MEMO), true);

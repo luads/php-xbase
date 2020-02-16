@@ -2,13 +2,12 @@
 
 namespace XBase\Tests;
 
-use PHPUnit\Framework\TestCase;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
 use XBase\Table;
 
-class FoxproTest extends TestCase
+class FoxproTest extends AbstractTestCase
 {
     public function testRead()
     {
@@ -50,5 +49,44 @@ class FoxproTest extends TestCase
         $table->close();
     }
 
+    public function testFoxpro2()
+    {
+        $table = new Table(__DIR__.'/Resources/foxpro/Foxpro2.dbf');
 
+        self::assertSame(8, $table->getColumnCount());
+        self::assertSame(3, $table->getRecordCount());
+
+        self::assertSame(TableType::FOXPRO_MEMO, $table->version);
+        self::assertSame(true, $table->foxpro);
+        self::assertSame(true, $table->isFoxpro());
+        self::assertSame(289, $table->headerLength);
+        self::assertSame(90, $table->recordByteLength);
+        self::assertSame(false, $table->inTransaction);
+        self::assertSame(false, $table->encrypted);
+        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(0x03, ord($table->languageCode));
+
+        $this->assertRecords($table);
+
+        $columns = $table->getColumns();
+
+        //<editor-fold desc="columns">
+        $column = $columns['rate'];
+        self::assertSame(FieldType::FLOAT, $column->getType());
+        self::assertSame(10, $column->getLength());
+        self::assertSame(2, $column->getDecimalCount());
+        $column = $columns['general'];
+        self::assertSame(FieldType::GENERAL, $column->getType());
+        self::assertSame(10, $column->getLength());
+
+        $record = $table->moveTo(0);
+        self::assertSame(1.2, $record->getFloat('rate'));
+        self::assertSame('1', $record->getString('general'));
+        $record = $table->nextRecord();
+        self::assertSame(1.23, $record->getFloat('rate'));
+        self::assertSame('2', $record->getString('general'));
+        $record = $table->nextRecord();
+        self::assertSame(15.16, $record->getFloat('rate'));
+        self::assertSame('3', $record->getString('general'));
+    }
 }
