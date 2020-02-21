@@ -203,6 +203,7 @@ class Record
             case self::DBFFIELD_TYPE_DATETIME:
                 return $this->getDateTime($column->getName());
             case FieldType::CURRENCY:
+                return $this->getCurrency($column->getName());
             case self::DBFFIELD_TYPE_FLOATING:
                 return $this->getFloat($column->getName());
             case self::DBFFIELD_TYPE_LOGICAL:
@@ -387,6 +388,19 @@ class Record
 
         if ($s) {
             return $s[1];
+        }
+
+        return 0;
+    }
+
+    public function getCurrency($columnName)
+    {
+        $s = $this->choppedData[$columnName];
+
+        $s = unpack('q', $s);
+
+        if ($s) {
+            return $s[1] / 10000;
         }
 
         return 0;

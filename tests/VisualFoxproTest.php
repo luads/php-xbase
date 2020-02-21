@@ -230,7 +230,7 @@ TEXT;
         self::assertSame(1.2, $record->getFloat('rate'));
         self::assertSame(1, $record->getString('general'));
         self::assertSame([70, 19], array_values(unpack('C*', $record->getString('blob'))));
-        self::assertSame(0.0, $record->getString('currency'));
+        self::assertSame(1.2, $record->getString('currency'));
         self::assertSame(-5364658739, $record->getDateTime('datetime'));
         self::assertSame('1800-01-01 01:01:01', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         self::assertSame(2.3, $record->getString('double'));
@@ -260,7 +260,7 @@ TEXT;
         self::assertSame(1.23, $record->getFloat('rate'));
         self::assertSame(2, $record->getString('general'));
         self::assertSame(null, $record->getString('blob'));
-        self::assertSame(0.0, $record->getString('currency'));
+        self::assertSame(1.23, $record->getString('currency'));
         self::assertSame(0, $record->getDateTime('datetime'));
         self::assertSame('1970-01-01 00:00:00', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         self::assertSame(4.56, $record->getString('double'));
@@ -292,7 +292,7 @@ TEXT;
         self::assertSame(15.16, $record->getFloat('rate'));
         self::assertSame(3, $record->getString('general'));
         self::assertSame(null, $record->getString('blob'));
-        self::assertSame(0.0, $record->getString('currency'));
+        self::assertSame(15.16, $record->getString('currency'));
         self::assertSame(1582230020, $record->getDateTime('datetime'));
         self::assertSame('2020-02-20 20:20:20', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         self::assertSame(987.654, $record->getString('double'));
@@ -303,5 +303,22 @@ TEXT;
         self::assertSame($bio, str_replace("\r\n", "\n", trim($record->getString('bio_bin'))));
         self::assertSame([0xFA, 0xCE, 0x8D], array_values(unpack('C*', $record->getString('varbinary'))));
         self::assertSame(null, $record->getString('varchar_bi'));
+    }
+
+    public function testCurrency()
+    {
+        $table = new Table(__DIR__.'/Resources/foxpro/currency.dbf');
+
+        self::assertSame(1, $table->getColumnCount());
+        self::assertSame(1, $table->getRecordCount());
+        self::assertSame(TableType::VISUAL_FOXPRO, $table->version);
+        self::assertSame(true, $table->isFoxpro());
+
+        $column = $table->getColumn('amount');
+        self::assertSame(8, $column->getLength());
+        self::assertSame(0, $column->getDecimalCount());
+
+        $record = $table->nextRecord();
+        self::assertSame(10412.1241, $record->getCurrency('amount'));
     }
 }
