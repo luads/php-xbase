@@ -2,6 +2,7 @@
 
 namespace XBase\Tests;
 
+use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
@@ -14,6 +15,7 @@ class FoxproTest extends AbstractTestCase
         $table = new Table(__DIR__.'/Resources/foxpro/1.dbf', null, 'cp852'); //todo file to big need to reduce
 
         self::assertSame(TableType::FOXPRO_MEMO, $table->version);
+        self::assertSame(Codepage::CP852, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
         self::assertSame(417, $table->headerLength);
         self::assertSame(66, $table->recordByteLength);
@@ -57,6 +59,7 @@ class FoxproTest extends AbstractTestCase
         self::assertSame(3, $table->getRecordCount());
 
         self::assertSame(TableType::FOXPRO_MEMO, $table->version);
+        self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(true, $table->foxpro);
         self::assertSame(true, $table->isFoxpro());
         self::assertSame(289, $table->headerLength);

@@ -2,6 +2,7 @@
 
 namespace XBase;
 
+use XBase\Enum\Codepage;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
 use XBase\Memo\MemoFactory;
@@ -53,6 +54,7 @@ class Table
      * @see https://blog.codetitans.pl/post/dbf-and-language-code-page/
      */
     public $languageCode;
+
     /** @var Column[] */
     public $columns;
     /** @var int */
@@ -100,6 +102,11 @@ class Table
         $this->readHeader();
 
         return $this->fp != false;
+    }
+
+    public function close()
+    {
+        fclose($this->fp);
     }
 
     protected function readHeader()
@@ -176,11 +183,6 @@ class Table
         $this->recordPos = -1;
         $this->record = false;
         $this->deleteCount = 0;
-    }
-
-    public function close()
-    {
-        fclose($this->fp);
     }
 
     /**
@@ -313,6 +315,11 @@ class Table
     public function getRecord()
     {
         return $this->record;
+    }
+
+    public function getCodepage(): int
+    {
+        return unpack('c', $this->languageCode)[1];
     }
 
     /**

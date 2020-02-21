@@ -2,6 +2,7 @@
 
 namespace XBase\Tests;
 
+use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
@@ -15,6 +16,7 @@ class VisualFoxproTest extends AbstractTestCase
         $table = new Table(__DIR__.'/Resources/foxpro/visual_fox_pro6.dbf');
 
         self::assertSame(TableType::VISUAL_FOXPRO, $table->version);
+        self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
         self::assertSame(true, TableType::isVisualFoxpro($table->version));
         self::assertSame(776, $table->headerLength);
@@ -55,6 +57,7 @@ class VisualFoxproTest extends AbstractTestCase
         self::assertSame(3, $table->getRecordCount());
 
         self::assertSame(TableType::VISUAL_FOXPRO_VAR, $table->version);
+        self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
         self::assertSame(936, $table->headerLength);
         self::assertSame(164, $table->recordByteLength);
@@ -312,6 +315,7 @@ TEXT;
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(1, $table->getRecordCount());
         self::assertSame(TableType::VISUAL_FOXPRO, $table->version);
+        self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
 
         $column = $table->getColumn('amount');

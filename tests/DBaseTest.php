@@ -3,6 +3,7 @@
 namespace XBase\Tests;
 
 use XBase\Column;
+use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
@@ -20,6 +21,7 @@ class DBaseTest extends AbstractTestCase
 
         self::assertSame(3, $table->version);
         self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->version);
+        self::assertSame(Codepage::UNDEFINED, $table->getCodepage());
         self::assertSame(false, $table->foxpro);
         self::assertSame(false, $table->isFoxpro());
         self::assertSame(1580774400, $table->modifyDate);
@@ -167,6 +169,7 @@ JSON;
         self::assertSame(3, $table->getRecordCount());
 
         self::assertSame(TableType::DBASE_III_PLUS_MEMO, $table->version);
+        self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(false, $table->foxpro); //todo why true
         self::assertSame(false, $table->isFoxpro());
         self::assertSame(225, $table->headerLength);
@@ -187,6 +190,7 @@ JSON;
         self::assertSame(3, $table->getRecordCount());
 
         self::assertSame(TableType::DBASE_IV_MEMO, $table->version);
+        self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(false, $table->foxpro);
         self::assertSame(false, $table->isFoxpro());
         self::assertSame(225, $table->headerLength);
