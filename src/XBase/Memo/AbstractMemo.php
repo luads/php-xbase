@@ -32,7 +32,6 @@ abstract class AbstractMemo implements MemoInterface
 
     protected function readHeader()
     {
-
     }
 
     public static function getExtension()

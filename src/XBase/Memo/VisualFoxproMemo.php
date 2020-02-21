@@ -2,7 +2,6 @@
 
 namespace XBase\Memo;
 
-
 class VisualFoxproMemo extends FoxproMemo
 {
     /**

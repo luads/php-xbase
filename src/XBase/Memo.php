@@ -40,5 +40,4 @@ class Memo extends AbstractMemo
         }
         return $value;
     }
-
 }

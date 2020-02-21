@@ -198,5 +198,4 @@ JSON;
 
         $this->assertRecords($table);
     }
-
 }
