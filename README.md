@@ -102,3 +102,4 @@ Useful links
 -----
 
 [Xbase File Format Description](http://www.manmrk.net/tutorials/database/xbase/)
+[File Structure for dBASE 7](http://www.dbase.com/KnowledgeBase/int/db7_file_fmt.htm)
