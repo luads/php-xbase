@@ -4,6 +4,9 @@ namespace XBase;
 
 use XBase\Memo\AbstractMemo;
 
+/**
+ * @deprecated since 1.2. You should create new instance via MemoFactory.
+ */
 class Memo extends AbstractMemo
 {
     public function get($data)

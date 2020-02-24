@@ -2,7 +2,7 @@
 
 namespace XBase\Memo;
 
-class DBase4Memo extends DBase3Memo
+class DBase4Memo extends AbstractMemo
 {
     const BLOCK_SIGN          = 0xFFFF0800;
     const BLOCK_SIGN_LENGTH   = 4;
@@ -30,6 +30,9 @@ class DBase4Memo extends DBase3Memo
             $this->open();
         }
 
+        if (is_string($pointer)) {
+            $pointer = (int) ltrim($pointer, ' ');
+        }
         fseek($this->fp, $pointer * $this->blockLength);
         $sign = unpack("N", fread($this->fp, self::BLOCK_SIGN_LENGTH));
         if ($sign[1] !== self::BLOCK_SIGN) {

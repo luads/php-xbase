@@ -2,7 +2,7 @@
 
 namespace XBase\Enum;
 
-class Codepage
+final class Codepage
 {
     const UNDEFINED = 0;
     /** @var int U.S. MS-DOS */

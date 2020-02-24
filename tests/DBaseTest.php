@@ -2,12 +2,14 @@
 
 namespace XBase\Tests;
 
-use XBase\Column;
+use XBase\Column\ColumnInterface;
+use XBase\Column\DBase7Column;
 use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
-use XBase\Record;
+use XBase\Memo\MemoObject;
+use XBase\Record\RecordInterface;
 use XBase\Table;
 
 class DBaseTest extends AbstractTestCase
@@ -38,7 +40,7 @@ class DBaseTest extends AbstractTestCase
 
         //<editor-fold desc="columns">
         $column = $columns['regn'];
-        self::assertInstanceOf(Column::class, $column);
+        self::assertInstanceOf(ColumnInterface::class, $column);
         self::assertSame('regn', $column->getName());
         self::assertSame(FieldType::NUMERIC, $column->getType());
         self::assertSame(4, $column->getLength());
@@ -46,7 +48,7 @@ class DBaseTest extends AbstractTestCase
         self::assertSame(0, $column->getColIndex());
 
         $column = $columns['plan'];
-        self::assertInstanceOf(Column::class, $column);
+        self::assertInstanceOf(ColumnInterface::class, $column);
         self::assertSame('plan', $column->getName());
         self::assertSame(FieldType::CHAR, $column->getType());
         self::assertSame(1, $column->getLength());
@@ -54,7 +56,7 @@ class DBaseTest extends AbstractTestCase
         self::assertSame(1, $column->getColIndex());
 
         $column = $columns['dt'];
-        self::assertInstanceOf(Column::class, $column);
+        self::assertInstanceOf(ColumnInterface::class, $column);
         self::assertSame('dt', $column->getName());
         self::assertSame(FieldType::DATE, $column->getType());
         self::assertSame(8, $column->getLength());
@@ -68,10 +70,10 @@ class DBaseTest extends AbstractTestCase
         self::assertEmpty($table->getRecord());
 
         $record = $table->nextRecord();
-        self::assertInstanceOf(Record::class, $record);
+        self::assertInstanceOf(RecordInterface::class, $record);
         $columns = $record->getColumns();
         self::assertCount(18, $columns);
-        self::assertInstanceOf(Column::class, $record->getColumn('regn'));
+        self::assertInstanceOf(ColumnInterface::class, $record->getColumn('regn'));
 
         $json = <<<JSON
 {
@@ -180,26 +182,123 @@ JSON;
         self::assertSame(0x03, ord($table->languageCode));
 
         $this->assertRecords($table);
+        $this->assertMemoImg($table);
     }
 
     public function testDbase4()
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseIV.dbf');
 
-        self::assertSame(6, $table->getColumnCount());
+        self::assertSame(7, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
 
         self::assertSame(TableType::DBASE_IV_MEMO, $table->version);
         self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(false, $table->foxpro);
         self::assertSame(false, $table->isFoxpro());
-        self::assertSame(225, $table->headerLength);
-        self::assertSame(70, $table->recordByteLength);
+        self::assertSame(257, $table->headerLength);
+        self::assertSame(80, $table->recordByteLength);
         self::assertSame(false, $table->inTransaction);
         self::assertSame(false, $table->encrypted);
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
         self::assertSame(0x03, ord($table->languageCode));
 
         $this->assertRecords($table);
+        $this->assertMemoImg($table);
+
+        $record = $table->moveTo(0);
+        self::assertSame(1.2, $record->getFloat('rate'));
+        $record = $table->nextRecord();
+        self::assertSame(1.23, $record->getFloat('rate'));
+        $record = $table->nextRecord();
+        self::assertSame(15.16, $record->getFloat('rate'));
+    }
+
+    public function testDbase7()
+    {
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseVII.dbf');
+
+        self::assertSame(12, $table->getColumnCount());
+        self::assertSame(3, $table->getRecordCount());
+
+        self::assertSame(TableType::DBASE_7_MEMO, $table->version);
+//        self::assertSame(Codepage::CP1252, $table->getCodepage()); //todo codepage 0x26
+        self::assertSame(false, $table->isFoxpro());
+        self::assertSame(645, $table->headerLength);
+        self::assertSame(126, $table->recordByteLength);
+        self::assertSame(false, $table->inTransaction);
+        self::assertSame(false, $table->encrypted);
+        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+
+        $this->assertRecords($table);
+
+        $record = $table->moveTo(0);
+        self::assertSame(0, $record->getString('auto_inc'));
+        self::assertSame(1, $record->getInt('integer'));
+        self::assertSame(4.0, $record->getNum('large_int'));
+        self::assertNotEmpty($record->getTimestamp('datetime'));
+        self::assertSame('1800-01-01 01:01:01', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
+
+        $record = $table->nextRecord();
+        self::assertSame(1, $record->getInt('auto_inc'));
+        self::assertSame(2, $record->getInt('integer'));
+        self::assertSame(5.0, $record->getNum('large_int'));
+        self::assertSame('1970-01-01 00:00:00', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
+        $memoImg = $record->getMemoObject('image');
+        self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType()); //png
+        self::assertSame(98026, strlen($memoImg->getData())); //png
+
+        $record = $table->nextRecord();
+        self::assertSame(2, $record->getInt('auto_inc'));
+        self::assertSame(3, $record->getInt('integer'));
+        self::assertSame(6.0, $record->getNum('large_int'));
+        self::assertNotEmpty($record->getTimestamp('datetime'));
+        self::assertSame('2020-02-20 20:20:20', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
+        $memoImg = $record->getMemoObject('image');
+        self::assertSame(169745, strlen($memoImg->getData()));
+    }
+
+    public function testDbase7ts()
+    {
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_ts.dbf');
+        self::assertSame(1, $table->getColumnCount());
+        self::assertSame(15, $table->getRecordCount()); //has deleted
+        self::assertSame(TableType::DBASE_7_NOMEMO, $table->version);
+
+        /** @var DBase7Column $record */
+        self::assertSame('1900-01-01 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+        self::assertSame('1900-01-02 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+        self::assertSame('1900-01-03 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+        self::assertSame('2000-01-01 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+        self::assertSame('2000-01-02 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+        self::assertSame('2000-01-03 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+        self::assertSame('2000-01-04 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+        self::assertSame('2000-01-05 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+        self::assertSame('2000-01-10 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
+    }
+
+    public function testDbase7int()
+    {
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_int.dbf');
+        self::assertSame(1, $table->getColumnCount());
+        self::assertSame(6, $table->getRecordCount());
+        self::assertSame(TableType::DBASE_7_NOMEMO, $table->version);
+
+        self::assertSame(1, $table->nextRecord()->getInt('int'));
+        self::assertSame(-1, $table->nextRecord()->getInt('int'));
+        self::assertSame(5000000, $table->nextRecord()->getInt('int'));
+        self::assertSame(-5000000, $table->nextRecord()->getInt('int'));
+        self::assertSame(2147483647, $table->nextRecord()->getInt('int'));
+        self::assertSame(-2147483647, $table->nextRecord()->getInt('int'));
+    }
+
+    protected function assertMemoImg(Table $table)
+    {
+        $record = $table->moveTo(1);
+        $memoImg = $record->getMemoObject('image');
+        self::assertSame(95714, strlen($memoImg->getData())); //png
+        $record = $table->nextRecord();
+        $memoImg = $record->getMemoObject('image');
+        self::assertSame(187811, strlen($memoImg->getData()));
     }
 }

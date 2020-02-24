@@ -3,7 +3,6 @@
 namespace XBase\Tests;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Enum\TableType;
 use XBase\Record;
 use XBase\Table;
 use XBase\WritableTable;
@@ -28,7 +27,7 @@ class WritableTableTest extends TestCase
             $table = new WritableTable($copyTo, null, 'cp866');
             $table->openWrite();
             $record = $table->nextRecord();
-            $record->setInt($record->getColumn('regn'), 2);
+            $record->setNum($record->getColumn('regn'), 2);
             $record->setString($record->getColumn('plan'), 'Ы');
             $table->writeRecord();
             $table->close();
