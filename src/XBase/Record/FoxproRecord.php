@@ -25,11 +25,9 @@ class FoxproRecord extends AbstractRecord
     }
 
     /**
-     * @param string $columnName
-     *
      * @return int
      */
-    public function getFloat($columnName)
+    public function getFloat(string $columnName)
     {
         return (float) ltrim($this->choppedData[$columnName]);
     }

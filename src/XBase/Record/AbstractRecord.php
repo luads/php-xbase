@@ -137,11 +137,9 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param string $columnName
-     *
      * @return false|string|null
      */
-    public function forceGetString($columnName)
+    public function forceGetString(string $columnName)
     {
         $data = trim($this->choppedData[$columnName]);
 
@@ -184,21 +182,17 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param string $columnName
-     *
      * @return false|string|null
      */
-    public function getChar($columnName)
+    public function getChar(string $columnName)
     {
         return $this->forceGetString($columnName);
     }
 
     /**
-     * @param string $columnName
-     *
      * @return bool|float|int
      */
-    public function getNum($columnName)
+    public function getNum(string $columnName)
     {
         $s = $this->forceGetString($columnName);
 
@@ -238,11 +232,9 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param string $columnName
-     *
      * @return bool|false|int
      */
-    public function getDate($columnName)
+    public function getDate(string $columnName)
     {
         $s = $this->forceGetString($columnName);
 
@@ -269,11 +261,9 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param string $columnName
-     *
      * @return bool
      */
-    public function getBoolean($columnName)
+    public function getBoolean(string $columnName)
     {
         $s = $this->forceGetString($columnName);
 
@@ -294,11 +284,9 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param string $columnName
-     *
      * @return false|string|null
      */
-    public function getMemo($columnName)
+    public function getMemo(string $columnName)
     {
         if (!TableType::hasMemo($this->table->getVersion())) {
             throw new \LogicException('Table not supports Memo');
@@ -336,7 +324,7 @@ class AbstractRecord implements RecordInterface
      * @param $columnName
      * @param $value
      */
-    public function setStringByName($columnName, $value)
+    public function setStringByName(string $columnName, $value)
     {
         $this->setString($this->table->getColumn($columnName), $value);
     }
@@ -379,12 +367,11 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param string $columnName
-     * @param        $value
+     * @param $value
      *
      * @return bool
      */
-    public function setObjectByName($columnName, $value)
+    public function setObjectByName(string $columnName, $value)
     {
         return $this->setObject($this->table->getColumn($columnName), $value);
     }

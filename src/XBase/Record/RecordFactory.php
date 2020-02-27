@@ -3,7 +3,6 @@
 namespace XBase\Record;
 
 use XBase\Enum\TableType;
-use XBase\Record;
 use XBase\Table;
 
 class RecordFactory
@@ -22,10 +21,6 @@ class RecordFactory
     private static function getClass(string $version): string
     {
         switch ($version) {
-            case TableType::DBASE_III_PLUS_MEMO:
-            case TableType::DBASE_III_PLUS_NOMEMO:
-                return DBaseRecord::class;
-
             case TableType::DBASE_IV_MEMO:
                 return DBase4Record::class;
 
@@ -41,8 +36,10 @@ class RecordFactory
             case TableType::VISUAL_FOXPRO_VAR:
                 return VisualFoxproRecord::class;
 
+            case TableType::DBASE_III_PLUS_MEMO:
+            case TableType::DBASE_III_PLUS_NOMEMO:
             default:
-                return Record::class;
+                return DBaseRecord::class;
         }
     }
 }

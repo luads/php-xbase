@@ -65,19 +65,4 @@ class DBase7Column extends AbstractColumn
         $this->colIndex = $colIndex;
         $this->bytePos = $bytePos;
     }
-
-    public function getDataLength()
-    {
-        switch ($this->type) {
-            case FieldType::DATE:
-            case FieldType::DATETIME:
-                return 8;
-            case FieldType::LOGICAL:
-                return 1;
-            case FieldType::MEMO:
-                return 10;
-            default:
-                return $this->length;
-        }
-    }
 }
