@@ -14,9 +14,6 @@ class MemoObject
 
     /**
      * MemoObject constructor.
-     *
-     * @param int    $type
-     * @param string $data
      */
     public function __construct(int $type, string $data)
     {
@@ -24,17 +21,11 @@ class MemoObject
         $this->data = $data;
     }
 
-    /**
-     * @return int
-     */
     public function getType(): int
     {
         return $this->type;
     }
 
-    /**
-     * @return string
-     */
     public function getData(): string
     {
         return $this->data;

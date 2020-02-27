@@ -12,7 +12,7 @@ class FoxproMemo extends AbstractMemo
     protected function readHeader()
     {
         fseek($this->fp, 6);
-        $bytes = unpack("n", fread($this->fp, 2));
+        $bytes = unpack('n', fread($this->fp, 2));
         $this->blockSize = $bytes[1];
     }
 
@@ -32,10 +32,13 @@ class FoxproMemo extends AbstractMemo
             $this->open();
         }
 
+        if (is_string($pointer)) {
+            $pointer = (int) ltrim($pointer, ' ');
+        }
         fseek($this->fp, $pointer * $this->blockSize);
-        $type = unpack("N", fread($this->fp, 4)); //todo
+        $type = unpack('N', fread($this->fp, 4)); //todo
 
-        $memoLength = unpack("N", fread($this->fp, self::BLOCK_LENGTH_LENGTH));
+        $memoLength = unpack('N', fread($this->fp, self::BLOCK_LENGTH_LENGTH));
         $result = fread($this->fp, $memoLength[1]);
 
         $type = $this->guessDataType($result);

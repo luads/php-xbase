@@ -6,17 +6,15 @@ class DBase3Memo extends AbstractMemo
 {
     const BLOCK_LENGTH = 512;
 
-    public static function getExtension()
-    {
-        return 'dbt';
-    }
-
     public function get($pointer)
     {
         if (!$this->isOpen()) {
             $this->open();
         }
 
+        if (is_string($pointer)) {
+            $pointer = (int) ltrim($pointer, ' ');
+        }
         fseek($this->fp, $pointer * self::BLOCK_LENGTH);
 
         $endMarker = chr(0x1A).chr(0x1A).chr(0x00);

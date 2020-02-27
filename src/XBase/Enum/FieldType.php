@@ -19,7 +19,8 @@ final class FieldType
     /** @var string Logical - ? Y y N n T t F f (? when not initialized). */
     const LOGICAL = 'L';
     /** @var string DateTime */
-    const DATETIME = 'T';
+    const DATETIME  = 'T';
+    const TIMESTAMP = '@';
     /** @var string Integer */
     const INTEGER = 'I';
     /** @var string Ignore this field */
@@ -31,4 +32,32 @@ final class FieldType
     const CURRENCY  = 'Y';
     const VAR_FIELD = 'V';
     const VARBINARY = 'Q';
+    /** @var string dBase7 */
+    const AUTO_INCREMENT = '+';
+
+    public static function has($type): bool
+    {
+        return in_array($type, self::all());
+    }
+
+    protected static function all(): array
+    {
+        return [
+            self::MEMO,
+            self::CHAR,
+            self::DOUBLE,
+            self::NUMERIC,
+            self::FLOAT,
+            self::DATE,
+            self::LOGICAL,
+            self::DATETIME,
+            self::INTEGER,
+            self::IGNORE,
+            self::GENERAL,
+            self::BLOB,
+            self::CURRENCY,
+            self::VAR_FIELD,
+            self::VARBINARY,
+        ];
+    }
 }

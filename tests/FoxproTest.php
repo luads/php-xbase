@@ -70,6 +70,7 @@ class FoxproTest extends AbstractTestCase
         self::assertSame(0x03, ord($table->languageCode));
 
         $this->assertRecords($table);
+        $this->assertMemoImg($table);
 
         $columns = $table->getColumns();
 
@@ -91,5 +92,15 @@ class FoxproTest extends AbstractTestCase
         $record = $table->nextRecord();
         self::assertSame(15.16, $record->getFloat('rate'));
         self::assertSame('3', $record->getString('general'));
+    }
+
+    protected function assertMemoImg(Table $table)
+    {
+        $record = $table->moveTo(1);
+        $memoImg = $record->getMemoObject('image');
+        self::assertSame(95714, strlen($memoImg->getData()));
+        $record = $table->nextRecord();
+        $memoImg = $record->getMemoObject('image');
+        self::assertSame(187811, strlen($memoImg->getData()));
     }
 }
