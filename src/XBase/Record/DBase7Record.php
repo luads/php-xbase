@@ -91,7 +91,7 @@ class DBase7Record extends AbstractRecord
         $len = strlen($bin);
         $result = '';
         for ($i = 0; $i < $len; $i++) {
-            $result .= $bin[$i] === '0' ? '1' : '0';
+            $result .= '0' === $bin[$i] ? '1' : '0';
         }
 
         return $result;

@@ -41,7 +41,7 @@ class AbstractRecord implements RecordInterface
 
         if ($rawData && strlen($rawData) > 0) {
             $this->inserted = false;
-            $this->deleted = (ord($rawData[0]) !== self::FLAG_NOT_DELETED);
+            $this->deleted = (self::FLAG_NOT_DELETED !== ord($rawData[0]));
 
             foreach ($table->getColumns() as $column) {
                 $this->choppedData[$column->getName()] = substr($rawData, $column->getBytePos(), $column->getDataLength());
@@ -120,16 +120,16 @@ class AbstractRecord implements RecordInterface
     {
         $column = $this->table->getColumn($columnName);
 
-        if ($column->getType() == FieldType::CHAR) {
+        if (FieldType::CHAR == $column->getType()) {
             return $this->forceGetString($columnName);
         } else {
             $result = $this->getObject($column);
 
-            if ($result && ($column->getType() == FieldType::DATETIME || $column->getType() == FieldType::DATE)) {
+            if ($result && (FieldType::DATETIME == $column->getType() || FieldType::DATE == $column->getType())) {
                 return date('r', $result);
             }
 
-            if ($column->getType() == FieldType::LOGICAL) {
+            if (FieldType::LOGICAL == $column->getType()) {
                 return $result ? '1' : '0';
             }
 
@@ -150,7 +150,7 @@ class AbstractRecord implements RecordInterface
             $data = iconv($this->table->getConvertFrom(), 'utf-8', $data);
         }
 
-        if (!isset($data[0]) || ord($data[0]) === 0) {
+        if (!isset($data[0]) || 0 === ord($data[0])) {
             return null;
         }
 
@@ -213,7 +213,7 @@ class AbstractRecord implements RecordInterface
 
         $column = $this->getColumn($columnName);
 
-        if ($column->getType() == FieldType::NUMERIC && ($column->getDecimalCount() > 0 || $column->getLength() > 9)) {
+        if (FieldType::NUMERIC == $column->getType() && ($column->getDecimalCount() > 0 || $column->getLength() > 9)) {
             return doubleval($s);
         } else {
             return intval($s);
@@ -228,11 +228,11 @@ class AbstractRecord implements RecordInterface
      */
     public function setNum($columnObj, $value)
     {
-        if ($columnObj->getType() != FieldType::NUMERIC) {
+        if (FieldType::NUMERIC != $columnObj->getType()) {
             trigger_error($columnObj->getName().' is not a Number column', E_USER_ERROR);
         }
 
-        if (strlen($value) == 0) {
+        if (0 == strlen($value)) {
             $this->forceSetString($columnObj, '');
             return false;
         }
@@ -360,10 +360,10 @@ class AbstractRecord implements RecordInterface
      */
     public function setString($columnObj, $value)
     {
-        if ($columnObj->getType() == FieldType::CHAR) {
+        if (FieldType::CHAR == $columnObj->getType()) {
             $this->forceSetString($columnObj, $value);
         } else {
-            if (($columnObj->getType() == FieldType::DATETIME || $columnObj->getType() == FieldType::DATE) && is_string($value)) {
+            if ((FieldType::DATETIME == $columnObj->getType() || FieldType::DATE == $columnObj->getType()) && is_string($value)) {
                 $value = strtotime($value);
             }
 
@@ -381,7 +381,7 @@ class AbstractRecord implements RecordInterface
             $value = iconv('utf-8', $this->table->getConvertFrom(), $value);
         }
 
-        $this->choppedData[$columnObj->getName()] = str_pad(substr($value, 0, $columnObj->getDataLength()), $columnObj->getDataLength(), " ");
+        $this->choppedData[$columnObj->getName()] = str_pad(substr($value, 0, $columnObj->getDataLength()), $columnObj->getDataLength(), ' ');
     }
 
     /**
@@ -452,7 +452,7 @@ class AbstractRecord implements RecordInterface
      */
     public function setDate($columnObj, $value)
     {
-        if ($columnObj->getType() != FieldType::DATE) {
+        if (FieldType::DATE != $columnObj->getType()) {
             trigger_error($columnObj->getName().' is not a Date column', E_USER_ERROR);
         }
 
@@ -461,7 +461,7 @@ class AbstractRecord implements RecordInterface
             return false;
         }
 
-        if (strlen($value) == 0) {
+        if (0 == strlen($value)) {
             $this->forceSetString($columnObj, '');
             return false;
         }
@@ -477,7 +477,7 @@ class AbstractRecord implements RecordInterface
      */
     public function setBoolean($columnObj, $value)
     {
-        if ($columnObj->getType() != FieldType::LOGICAL) {
+        if (FieldType::LOGICAL != $columnObj->getType()) {
             trigger_error($columnObj->getName().' is not a DateTime column', E_USER_ERROR);
         }
 
@@ -505,7 +505,7 @@ class AbstractRecord implements RecordInterface
      */
     public function setMemo($columnObj, $value)
     {
-        if ($columnObj->getType() != FieldType::MEMO) {
+        if (FieldType::MEMO != $columnObj->getType()) {
             trigger_error($columnObj->getName().' is not a Memo column', E_USER_ERROR);
         }
 

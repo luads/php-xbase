@@ -130,8 +130,8 @@ class WritableTableTest extends TestCase
 
     public function testIssue78()
     {
-        $fecnacim = date("m/d/Y", 86400);
-        $fecingreso = date("m/d/Y", 86400 * 2);
+        $fecnacim = date('m/d/Y', 86400);
+        $fecingreso = date('m/d/Y', 86400 * 2);
 
         $copyTo = $this->duplicateFile(__DIR__.'/Resources/socios.dbf');
         try {
@@ -150,8 +150,8 @@ class WritableTableTest extends TestCase
             $newRecord->apartado = '600';
             $newRecord->telefonor = '12345678';
             $newRecord->email = 'someone@email.com';
-            $newRecord->venciced = \DateTime::createFromFormat("U", -777859200);
-            $newRecord->nriesgo = "B";
+            $newRecord->venciced = \DateTime::createFromFormat('U', -777859200);
+            $newRecord->nriesgo = 'B';
             //save
             $table->writeRecord();
             $table->pack();
@@ -173,7 +173,7 @@ class WritableTableTest extends TestCase
             self::assertSame('12345678', $record->telefonor);
             self::assertSame('someone@email.com', $record->email);
             self::assertSame('1945-05-09', $record->getDateTimeObject('venciced')->format('Y-m-d'));
-            self::assertSame("B", $record->nriesgo);
+            self::assertSame('B', $record->nriesgo);
             $table->close();
         } finally {
             unlink($copyTo);

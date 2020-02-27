@@ -36,7 +36,7 @@ class VisualFoxproRecord extends FoxproRecord
 
     public function getGeneral($columnName)
     {
-        $data = unpack("L", $this->choppedData[$columnName]);
+        $data = unpack('L', $this->choppedData[$columnName]);
         return $data[1];
     }
 
@@ -55,7 +55,7 @@ class VisualFoxproRecord extends FoxproRecord
         }
 
         if ($this->table->isFoxpro()) {
-            $su = unpack("i", $s);
+            $su = unpack('i', $s);
             $ret = $su[1];
         } else {
             $ret = ord($s[0]);
@@ -127,7 +127,7 @@ class VisualFoxproRecord extends FoxproRecord
      */
     public function setDateTime($columnObj, $value)
     {
-        if ($columnObj->getType() != FieldType::DATETIME) {
+        if (FieldType::DATETIME != $columnObj->getType()) {
             trigger_error($columnObj->getName().' is not a DateTime column', E_USER_ERROR);
         }
 
@@ -135,7 +135,7 @@ class VisualFoxproRecord extends FoxproRecord
             $value = $value->format('U');
         }
 
-        if (strlen($value) == 0) {
+        if (0 == strlen($value)) {
             $this->forceSetString($columnObj, '');
             return false;
         }
@@ -155,11 +155,11 @@ class VisualFoxproRecord extends FoxproRecord
      */
     public function setFloat($columnObj, $value)
     {
-        if ($columnObj->getType() != FieldType::FLOAT) {
+        if (FieldType::FLOAT != $columnObj->getType()) {
             trigger_error($columnObj->getName().' is not a Float column', E_USER_ERROR);
         }
 
-        if (strlen($value) == 0) {
+        if (0 == strlen($value)) {
             $this->forceSetString($columnObj, '');
             return false;
         }
@@ -176,11 +176,11 @@ class VisualFoxproRecord extends FoxproRecord
      */
     public function setInt($columnObj, $value)
     {
-        if ($columnObj->getType() != FieldType::NUMERIC) {
+        if (FieldType::NUMERIC != $columnObj->getType()) {
             trigger_error($columnObj->getName().' is not a Number column', E_USER_ERROR);
         }
 
-        if (strlen($value) == 0) {
+        if (0 == strlen($value)) {
             $this->forceSetString($columnObj, '');
             return false;
         }
@@ -199,7 +199,7 @@ class VisualFoxproRecord extends FoxproRecord
         $intDate = $buf[1];
         $inttime = $buf[2];
 
-        if ($intDate == 0 && $inttime == 0) {
+        if (0 == $intDate && 0 == $inttime) {
             return false;
         }
 

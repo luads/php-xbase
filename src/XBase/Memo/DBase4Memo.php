@@ -16,11 +16,11 @@ class DBase4Memo extends AbstractMemo
     protected function readHeader()
     {
         fseek($this->fp, 4);
-        $bytes = unpack("N", fread($this->fp, 4));
+        $bytes = unpack('N', fread($this->fp, 4));
         $this->blockSize = $bytes[1];
 
         fseek($this->fp, 20);
-        $bytes = unpack("S", fread($this->fp, 2));
+        $bytes = unpack('S', fread($this->fp, 2));
         $this->blockLength = $bytes[1];
     }
 
@@ -34,12 +34,12 @@ class DBase4Memo extends AbstractMemo
             $pointer = (int) ltrim($pointer, ' ');
         }
         fseek($this->fp, $pointer * $this->blockLength);
-        $sign = unpack("N", fread($this->fp, self::BLOCK_SIGN_LENGTH));
-        if ($sign[1] !== self::BLOCK_SIGN) {
+        $sign = unpack('N', fread($this->fp, self::BLOCK_SIGN_LENGTH));
+        if (self::BLOCK_SIGN !== $sign[1]) {
             throw new \LogicException('Wrong dBaseIV block sign/');
         }
 
-        $memoLength = unpack("L", fread($this->fp, self::BLOCK_LENGTH_LENGTH));
+        $memoLength = unpack('L', fread($this->fp, self::BLOCK_LENGTH_LENGTH));
         $result = fread($this->fp, $memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
 
         $type = $this->guessDataType($result);

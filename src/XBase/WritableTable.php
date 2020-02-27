@@ -42,7 +42,7 @@ class WritableTable extends Table
     public function create($filename, $fields)
     {
         if (!$fields || !is_array($fields)) {
-            throw new Exception\TableException("cannot create xbase with no fields", $this->filepath);
+            throw new Exception\TableException('cannot create xbase with no fields', $this->filepath);
         }
 
         $recordByteLength = 1;
@@ -52,7 +52,7 @@ class WritableTable extends Table
 
         foreach ($fields as $field) {
             if (!$field || !is_array($field) || sizeof($field) < 2) {
-                throw new Exception\TableException("fields argument error, must be array of arrays", $this->filepath);
+                throw new Exception\TableException('fields argument error, must be array of arrays', $this->filepath);
             }
             $column = new DBaseColumn($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
             $recordByteLength += $column->getDataLength();
@@ -72,7 +72,7 @@ class WritableTable extends Table
         $result->languageCode = chr(0);
         $result->columns = $columns;
         $result->columnNames = $columnNames;
-        $result->backlist = "";
+        $result->backlist = '';
         $result->foxpro = false;
 
         if ($result->openWrite($filename, true)) {
@@ -95,16 +95,16 @@ class WritableTable extends Table
         }
 
         if (file_exists($filename) && !$overwrite) {
-            if ($this->fp = Stream::createFromFile($filename, "r+")) {
+            if ($this->fp = Stream::createFromFile($filename, 'r+')) {
                 $this->readHeader();
             }
         } else {
-            if ($this->fp = Stream::createFromFile($filename, "w+")) {
+            if ($this->fp = Stream::createFromFile($filename, 'w+')) {
                 $this->writeHeader();
             }
         }
 
-        return $this->fp != false;
+        return false != $this->fp;
     }
 
     public function writeHeader()
@@ -118,14 +118,14 @@ class WritableTable extends Table
         $this->fp->writeUInt($this->recordCount);
         $this->fp->writeUShort($this->headerLength);
         $this->fp->writeUShort($this->recordByteLength);
-        $this->fp->write(str_pad("", 2, chr(0)));
+        $this->fp->write(str_pad('', 2, chr(0)));
         $this->fp->write(chr($this->inTransaction ? 1 : 0));
         $this->fp->write(chr($this->encrypted ? 1 : 0));
-        $this->fp->write(str_pad("", 4, chr(0)));
-        $this->fp->write(str_pad("", 8, chr(0)));
+        $this->fp->write(str_pad('', 4, chr(0)));
+        $this->fp->write(str_pad('', 8, chr(0)));
         $this->fp->write($this->mdxFlag);
         $this->fp->write($this->languageCode);
-        $this->fp->write(str_pad("", 2, chr(0)));
+        $this->fp->write(str_pad('', 2, chr(0)));
 
         foreach ($this->columns as $column) {
             $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0)));
@@ -133,16 +133,16 @@ class WritableTable extends Table
             $this->fp->writeUInt($column->getMemAddress());
             $this->fp->writeUChar($column->getDataLength());
             $this->fp->writeUChar($column->getDecimalCount());
-            $this->fp->write(str_pad("", 2, chr(0)));
+            $this->fp->write(str_pad('', 2, chr(0)));
             $this->fp->writeUChar($column->getWorkAreaID());
-            $this->fp->write(str_pad("", 2, chr(0)));
+            $this->fp->write(str_pad('', 2, chr(0)));
             $this->fp->write(chr($column->isSetFields() ? 1 : 0));
-            $this->fp->write(str_pad("", 7, chr(0)));
+            $this->fp->write(str_pad('', 7, chr(0)));
             $this->fp->write(chr($column->isIndexed() ? 1 : 0));
         }
 
         if ($this->foxpro) {
-            $this->fp->write(str_pad($this->backlist, 263, " "));
+            $this->fp->write(str_pad($this->backlist, 263, ' '));
         }
 
         $this->fp->writeUChar(0x0d);
@@ -177,7 +177,7 @@ class WritableTable extends Table
         $this->record->setDeleted(true);
 
         $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
-        $this->fp->write("!");
+        $this->fp->write('!');
         $this->fp->flush();
     }
 
@@ -186,7 +186,7 @@ class WritableTable extends Table
         $this->record->setDeleted(false);
 
         $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
-        $this->fp->write(" ");
+        $this->fp->write(' ');
         $this->fp->flush();
     }
 
