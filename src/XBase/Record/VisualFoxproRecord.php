@@ -34,16 +34,13 @@ class VisualFoxproRecord extends FoxproRecord
         }
     }
 
-    public function getGeneral($columnName)
+    public function getGeneral(string $columnName)
     {
         $data = unpack('L', $this->choppedData[$columnName]);
         return $data[1];
     }
 
     /**
-     * @param string $columnName
-     * @param        $length
-     *
      * @return bool|float|int
      */
     public function getInt(string $columnName)
@@ -71,11 +68,9 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * @param string $columnName
-     *
      * @return int
      */
-    public function getDouble($columnName)
+    public function getDouble(string $columnName)
     {
         $s = $this->choppedData[$columnName];
 
@@ -88,7 +83,7 @@ class VisualFoxproRecord extends FoxproRecord
         return 0;
     }
 
-    public function getCurrency($columnName)
+    public function getCurrency(string $columnName)
     {
         $s = $this->choppedData[$columnName];
 
@@ -101,7 +96,7 @@ class VisualFoxproRecord extends FoxproRecord
         return 0;
     }
 
-    public function getVarchar($columnName)
+    public function getVarchar(string $columnName)
     {
         $s = $this->forceGetString($columnName);
         if (false !== ($pos = strpos($s, chr(0x00)))) {
@@ -110,7 +105,7 @@ class VisualFoxproRecord extends FoxproRecord
         return $s;
     }
 
-    public function getVarbinary($columnName)
+    public function getVarbinary(string $columnName)
     {
         $s = $this->forceGetString($columnName);
         if (false !== ($pos = strpos($s, chr(0x00)))) {
@@ -120,15 +115,14 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      *
      * @return bool
      */
-    public function setDateTime($columnObj, $value)
+    public function setDateTime(ColumnInterface $column, $value)
     {
-        if (FieldType::DATETIME != $columnObj->getType()) {
-            trigger_error($columnObj->getName().' is not a DateTime column', E_USER_ERROR);
+        if (FieldType::DATETIME != $column->getType()) {
+            trigger_error($column->getName().' is not a DateTime column', E_USER_ERROR);
         }
 
         if ($value instanceof \DateTimeInterface) {
@@ -136,7 +130,7 @@ class VisualFoxproRecord extends FoxproRecord
         }
 
         if (0 == strlen($value)) {
-            $this->forceSetString($columnObj, '');
+            $this->forceSetString($column, '');
             return false;
         }
 
@@ -144,49 +138,47 @@ class VisualFoxproRecord extends FoxproRecord
         $d = $this->zeroDate + (mktime(0, 0, 0, $a['mon'], $a['mday'], $a['year']) / 86400);
         $d = pack('i', $d);
         $t = pack('i', mktime($a['hours'], $a['minutes'], $a['seconds'], 0, 0, 0));
-        $this->choppedData[$columnObj->getColIndex()] = $d.$t;
+        $this->choppedData[$column->getColIndex()] = $d.$t;
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      *
      * @return bool
      */
-    public function setFloat($columnObj, $value)
+    public function setFloat(ColumnInterface $column, $value)
     {
-        if (FieldType::FLOAT != $columnObj->getType()) {
-            trigger_error($columnObj->getName().' is not a Float column', E_USER_ERROR);
+        if (FieldType::FLOAT != $column->getType()) {
+            trigger_error($column->getName().' is not a Float column', E_USER_ERROR);
         }
 
         if (0 == strlen($value)) {
-            $this->forceSetString($columnObj, '');
+            $this->forceSetString($column, '');
             return false;
         }
 
         $value = str_replace(',', '.', $value);
-        $this->forceSetString($columnObj, $value);
+        $this->forceSetString($column, $value);
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      *
      * @return bool
      */
-    public function setInt($columnObj, $value)
+    public function setInt(ColumnInterface $column, $value)
     {
-        if (FieldType::NUMERIC != $columnObj->getType()) {
-            trigger_error($columnObj->getName().' is not a Number column', E_USER_ERROR);
+        if (FieldType::NUMERIC != $column->getType()) {
+            trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
         }
 
         if (0 == strlen($value)) {
-            $this->forceSetString($columnObj, '');
+            $this->forceSetString($column, '');
             return false;
         }
 
         $value = str_replace(',', '.', $value);
-        $this->forceSetString($columnObj, number_format($value, $columnObj->getDecimalCount(), '.', ''));
+        $this->forceSetString($column, number_format($value, $column->getDecimalCount(), '.', ''));
     }
 
     /**
@@ -197,15 +189,15 @@ class VisualFoxproRecord extends FoxproRecord
         $raw = $this->choppedData[$columnName];
         $buf = unpack('i*', $raw);
         $intDate = $buf[1];
-        $inttime = $buf[2];
+        $intTime = $buf[2];
 
-        if (0 == $intDate && 0 == $inttime) {
+        if (0 == $intDate && 0 == $intTime) {
             return false;
         }
 
         $longDate = ($intDate - $this->zeroDate) * 86400;
 
-        return $longDate + ($inttime / 1000);
+        return $longDate + ($intTime / 1000);
     }
 
     /**

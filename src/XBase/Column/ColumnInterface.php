@@ -13,9 +13,6 @@ interface ColumnInterface
      */
     public static function create(string $memoryChunk, int $colIndex, ?int $bytePos = null);
 
-    /**
-     * @return mixed
-     */
     public function getDecimalCount();
 
     /**

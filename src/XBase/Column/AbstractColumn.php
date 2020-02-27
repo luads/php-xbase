@@ -56,9 +56,6 @@ abstract class AbstractColumn implements ColumnInterface
         return $this->workAreaID;
     }
 
-    /**
-     * @return mixed
-     */
     public function getDecimalCount()
     {
         return $this->decimalCount;

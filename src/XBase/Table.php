@@ -78,7 +78,7 @@ class Table
      *
      * @param string      $filepath
      * @param array|null  $availableColumns
-     * @param string|null $convertFrom Encoding of file
+     * @param string|null $convertFrom      Encoding of file
      *
      * @throws \Exception
      */
@@ -284,9 +284,6 @@ class Table
         return $this->record;
     }
 
-    /**
-     * @param int $index
-     */
     public function moveTo(int $index): ?RecordInterface
     {
         $this->recordPos = $index;
@@ -324,9 +321,6 @@ class Table
         return ord($this->languageCode);
     }
 
-    /**
-     * @param ColumnInterface $column
-     */
     public function addColumn(ColumnInterface $column)
     {
         $name = $nameBase = $column->getName();
@@ -387,9 +381,6 @@ class Table
         return $this->recordPos;
     }
 
-    /**
-     * @return mixed
-     */
     public function getRecordByteLength()
     {
         return $this->recordByteLength;

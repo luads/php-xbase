@@ -85,8 +85,6 @@ class StreamWrapper
     }
 
     /**
-     * @param int $length
-     *
      * @return bool|string
      */
     public function read(int $length = 1)

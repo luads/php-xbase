@@ -29,9 +29,8 @@ class AbstractRecord implements RecordInterface
     /**
      * Record constructor.
      *
-     * @param Table $table
-     * @param       $recordIndex
-     * @param bool  $rawData
+     * @param      $recordIndex
+     * @param bool $rawData
      */
     public function __construct(Table $table, $recordIndex, $rawData = false)
     {
@@ -158,8 +157,6 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param ColumnInterface $column
-     *
      * @return bool|false|float|int|string|null
      *
      * @throws InvalidColumnException If dataType not exists
@@ -221,24 +218,23 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      *
      * @return bool
      */
-    public function setNum($columnObj, $value)
+    public function setNum(ColumnInterface $column, $value)
     {
-        if (FieldType::NUMERIC != $columnObj->getType()) {
-            trigger_error($columnObj->getName().' is not a Number column', E_USER_ERROR);
+        if (FieldType::NUMERIC != $column->getType()) {
+            trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
         }
 
         if (0 == strlen($value)) {
-            $this->forceSetString($columnObj, '');
+            $this->forceSetString($column, '');
             return false;
         }
 
         $value = str_replace(',', '.', $value);
-        $this->forceSetString($columnObj, number_format($value, $columnObj->getDecimalCount(), '.', ''));
+        $this->forceSetString($column, number_format($value, $column->getDecimalCount(), '.', ''));
     }
 
     /**
@@ -355,33 +351,31 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      */
-    public function setString($columnObj, $value)
+    public function setString(ColumnInterface $column, $value)
     {
-        if (FieldType::CHAR == $columnObj->getType()) {
-            $this->forceSetString($columnObj, $value);
+        if (FieldType::CHAR == $column->getType()) {
+            $this->forceSetString($column, $value);
         } else {
-            if ((FieldType::DATETIME == $columnObj->getType() || FieldType::DATE == $columnObj->getType()) && is_string($value)) {
+            if ((FieldType::DATETIME == $column->getType() || FieldType::DATE == $column->getType()) && is_string($value)) {
                 $value = strtotime($value);
             }
 
-            $this->setObject($columnObj, $value);
+            $this->setObject($column, $value);
         }
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      */
-    public function forceSetString($columnObj, $value)
+    public function forceSetString(ColumnInterface $column, $value)
     {
         if ($this->table->getConvertFrom()) {
             $value = iconv('utf-8', $this->table->getConvertFrom(), $value);
         }
 
-        $this->choppedData[$columnObj->getName()] = str_pad(substr($value, 0, $columnObj->getDataLength()), $columnObj->getDataLength(), ' ');
+        $this->choppedData[$column->getName()] = str_pad(substr($value, 0, $column->getDataLength()), $column->getDataLength(), ' ');
     }
 
     /**
@@ -407,78 +401,75 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      *
      * @return bool
      */
-    public function setObject($columnObj, $value)
+    public function setObject(ColumnInterface $column, $value)
     {
-        switch ($columnObj->getType()) {
+        switch ($column->getType()) {
             case FieldType::CHAR:
-                $this->setString($columnObj, $value);
+                $this->setString($column, $value);
                 return false;
             case FieldType::DOUBLE:
             case FieldType::FLOAT:
-                $this->setFloat($columnObj, $value);
+                $this->setFloat($column, $value);
                 return false;
             case FieldType::DATE:
-                $this->setDate($columnObj, $value);
+                $this->setDate($column, $value);
                 return false;
             case FieldType::DATETIME:
-                $this->setDateTime($columnObj, $value);
+                $this->setDateTime($column, $value);
                 return false;
             case FieldType::LOGICAL:
-                $this->setBoolean($columnObj, $value);
+                $this->setBoolean($column, $value);
                 return false;
             case FieldType::MEMO:
-                $this->setMemo($columnObj, $value);
+                $this->setMemo($column, $value);
                 return false;
             case FieldType::NUMERIC:
-                $this->setNum($columnObj, $value);
+                $this->setNum($column, $value);
                 return false;
             case FieldType::IGNORE:
                 return false;
         }
 
-        trigger_error('cannot handle datatype'.$columnObj->getType(), E_USER_ERROR);
+        trigger_error('cannot handle datatype'.$column->getType(), E_USER_ERROR);
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      *
      * @return bool
      */
-    public function setDate($columnObj, $value)
+    public function setDate(ColumnInterface $column, $value)
     {
-        if (FieldType::DATE != $columnObj->getType()) {
-            trigger_error($columnObj->getName().' is not a Date column', E_USER_ERROR);
+        if (FieldType::DATE != $column->getType()) {
+            trigger_error($column->getName().' is not a Date column', E_USER_ERROR);
         }
 
         if ($value instanceof \DateTimeInterface) {
-            $this->forceSetString($columnObj, $value->format('Ymd'));
+            $this->forceSetString($column, $value->format('Ymd'));
             return false;
         }
 
         if (0 == strlen($value)) {
-            $this->forceSetString($columnObj, '');
+            $this->forceSetString($column, '');
             return false;
         }
 
-        $this->forceSetString($columnObj, date('Ymd', $value));
+        $this->forceSetString($column, date('Ymd', $value));
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      *
      * @return bool
      */
-    public function setBoolean($columnObj, $value)
+    public function setBoolean(ColumnInterface $column, $value)
     {
-        if (FieldType::LOGICAL != $columnObj->getType()) {
-            trigger_error($columnObj->getName().' is not a DateTime column', E_USER_ERROR);
+        if (FieldType::LOGICAL != $column->getType()) {
+            trigger_error($column->getName().' is not a DateTime column', E_USER_ERROR);
         }
 
         switch (strtoupper($value)) {
@@ -489,27 +480,26 @@ class AbstractRecord implements RecordInterface
             case 'F':
             case 'N':
             case '0':
-                $this->forceSetString($columnObj, $value);
+                $this->forceSetString($column, $value);
                 return false;
             case true:
-                $this->forceSetString($columnObj, 'T');
+                $this->forceSetString($column, 'T');
                 return false;
             default:
-                $this->forceSetString($columnObj, 'F');
+                $this->forceSetString($column, 'F');
         }
     }
 
     /**
-     * @param ColumnInterface $columnObj
-     * @param                 $value
+     * @param $value
      */
-    public function setMemo($columnObj, $value)
+    public function setMemo(ColumnInterface $column, $value)
     {
-        if (FieldType::MEMO != $columnObj->getType()) {
-            trigger_error($columnObj->getName().' is not a Memo column', E_USER_ERROR);
+        if (FieldType::MEMO != $column->getType()) {
+            trigger_error($column->getName().' is not a Memo column', E_USER_ERROR);
         }
 
-        $this->forceSetString($columnObj, $value);
+        $this->forceSetString($column, $value);
     }
 
     /**

@@ -19,7 +19,7 @@ class FoxproRecord extends AbstractRecord
         }
     }
 
-    public function getGeneral($columnName)
+    public function getGeneral(string $columnName)
     {
         return $this->table->getMemo()->get($this->choppedData[$columnName])->getData();
     }
