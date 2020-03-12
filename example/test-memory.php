@@ -1,28 +1,35 @@
 <?php
+// php test-memory.php ../tests/Resources/foxpro/1.dbf
+
+use XBase\Table;
+
+require_once '../vendor/autoload.php';
 
 /**
-* CLI usage: php test-memory.php db=[path to a dbf file]
-**/
+ * CLI usage: php test-memory.php db=[path to a dbf file]
+ **/
 
-parse_str(implode('&', array_slice($argv, 1)), $_GET);
-if (empty($_GET['db'])) die('db?');
+if (empty($argv[1])) {
+    die('database file argument not defined?');
+}
+$filepath = realpath($argv[1]);
+if (false === $filepath || !is_file($filepath)) {
+    die('Bad path to file realpath '.$argv[1]);
+}
 
-chdir(dirname(__FILE__).'/../src');
-require 'XBase/Table.php';
-require 'XBase/Column.php';
-require 'XBase/Record.php';
+$table = new Table($filepath);
+echo 'Record count: '.$table->getRecordCount();
 
-$table = new \Xbase\Table($_GET['db']);
 $columns = $table->getColumns();
 
-$i=0;
+$i = 0;
 while ($record = $table->nextRecord()) {
     $s = [];
     foreach ($columns as $column) {
-        $s[] = $record->forceGetString($column->name);
+        $s[] = $record->forceGetString($column->getName());
     }
-    $str = implode(',',$s);
+    $str = implode(',', $s);
     if (++$i % 1000 == 0) {
-        echo "{$i} >> ".round(memory_get_usage()/(1024*1024))." MB\n";
+        echo "{$i} >> ".round(memory_get_usage() / (1024 * 1024))." MB\n";
     }
 }
