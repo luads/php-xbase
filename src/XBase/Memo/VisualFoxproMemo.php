@@ -9,7 +9,7 @@ class VisualFoxproMemo extends FoxproMemo
      */
     public function get($pointer)
     {
-        $decPointer = unpack('s', $pointer)[1];
+        $decPointer = unpack('l', $pointer)[1];
         return parent::get($decPointer);
     }
 }
