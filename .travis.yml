@@ -6,10 +6,19 @@ php:
     - '7.4snapshot'
 directories:
     - $HOME/.composer/cache/files
+env:
+    global:
+        - CC_TEST_REPORTER_ID=e33b74ed1f59947df361652193b6575db0afc663dcbc73af89a0cf16f2443d24
 install:
     - composer install
+    - composer dump-autoload -o
+before_script:
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+    - chmod +x ./cc-test-reporter
+    - ./cc-test-reporter before-build
 script:
     - mkdir -p build/logs
     - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
 after_script:
     - travis_retry php vendor/bin/php-coveralls -v
+    - ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT
