@@ -1,6 +1,12 @@
 PHP XBase
 -----
 
+[![Build Status](https://travis-ci.org/luads/php-xbase.svg?branch=master&t=202003171723)](https://travis-ci.org/luads/php-xbase)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/a3df6ca519b4cee98c6d/test_coverage)](https://codeclimate.com/github/hisamu/php-xbase/test_coverage)
+[![Latest Stable Version](https://poser.pugx.org/hisamu/php-xbase/v/stable)](https://packagist.org/packages/hisamu/php-xbase)
+[![Total Downloads](https://poser.pugx.org/hisamu/php-xbase/downloads)](https://packagist.org/packages/hisamu/php-xbase)
+[![License](https://poser.pugx.org/hisamu/php-xbase/license)](https://packagist.org/packages/hisamu/php-xbase)
+
 A simple library for dealing with **dbf** databases like dBase and FoxPro. It's a port of PHPXbase class written by [Erwin Kooi](http://www.phpclasses.org/package/2673-PHP-Access-dbf-foxpro-files-without-PHP-ext-.html), updated to a PSR-2 compliant code and tweaked for performance and to solve some issues the original code had.
 
 Installation
