@@ -6,6 +6,10 @@ php:
     - '7.4snapshot'
 directories:
     - $HOME/.composer/cache/files
-script:
+install:
     - composer install
-    - vendor/bin/phpunit --configuration phpunit.xml.dist
+script:
+    - mkdir -p build/logs
+    - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+after_script:
+    - travis_retry php vendor/bin/php-coveralls -v
