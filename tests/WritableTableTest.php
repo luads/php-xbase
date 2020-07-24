@@ -4,6 +4,7 @@ namespace XBase\Tests;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Record;
+use XBase\Record\DBaseRecord;
 use XBase\Table;
 use XBase\WritableTable;
 
@@ -152,6 +153,7 @@ class WritableTableTest extends TestCase
             $newRecord->email = 'someone@email.com';
             $newRecord->venciced = \DateTime::createFromFormat('U', -777859200);
             $newRecord->nriesgo = 'B';
+            $newRecord->salario = 5000;
             //save
             $table->writeRecord();
             $table->pack();
@@ -160,6 +162,7 @@ class WritableTableTest extends TestCase
 
             $table = new Table($copyTo);
             self::assertEquals(4, $table->getRecordCount());
+            /** @var DBaseRecord $record */
             $record = $table->pickRecord(3);
             self::assertEquals('000000000000', $record->segsocial);
             self::assertSame('socio', $record->socio);
@@ -174,6 +177,7 @@ class WritableTableTest extends TestCase
             self::assertSame('someone@email.com', $record->email);
             self::assertSame('1945-05-09', $record->getDateTimeObject('venciced')->format('Y-m-d'));
             self::assertSame('B', $record->nriesgo);
+            self::assertSame(5000.0, $record->getNum('salario'));
             $table->close();
         } finally {
             unlink($copyTo);
