@@ -7,7 +7,7 @@ use XBase\Table;
 
 class RecordFactory
 {
-    public static function create(Table $table, int $recordIndex, $rawData = false): RecordInterface
+    public static function create(Table $table, int $recordIndex, $rawData = false): ?RecordInterface
     {
         $class = self::getClass($table->getVersion());
         $refClass = new \ReflectionClass($class);
