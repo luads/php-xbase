@@ -141,12 +141,11 @@ JSON;
         $table->close();
     }
 
-    /**
-     * @expectedException \Exception
-     * @expectedExceptionMessage Column none_column_value not found
-     */
     public function testColumnNotFound()
     {
+        self::expectException(\Exception::class);
+        self::expectExceptionMessage('Column none_column_value not found');
+
         $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
         $record = $table->nextRecord();
         $record->none_column_value;
