@@ -20,7 +20,7 @@ class WritableTableTest extends TestCase
         return $copyTo;
     }
 
-    public function testSet()
+    public function testSet(): void
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
@@ -45,7 +45,7 @@ class WritableTableTest extends TestCase
     /**
      * Append row to table.
      */
-    public function testAppendRecord()
+    public function testAppendRecord(): void
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
@@ -88,7 +88,7 @@ class WritableTableTest extends TestCase
         }
     }
 
-    public function testDeleteRecord()
+    public function testDeleteRecord(): void
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
@@ -109,7 +109,7 @@ class WritableTableTest extends TestCase
         }
     }
 
-    public function testDeletePackRecord()
+    public function testDeletePackRecord(): void
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
@@ -128,7 +128,7 @@ class WritableTableTest extends TestCase
         }
     }
 
-    public function testIssue78()
+    public function testIssue78(): void
     {
         $fecnacim = date('m/d/Y', 86400);
         $fecingreso = date('m/d/Y', 86400 * 2);

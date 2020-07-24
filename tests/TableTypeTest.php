@@ -7,7 +7,7 @@ use XBase\Enum\TableType;
 
 class TableTypeTest extends TestCase
 {
-    public function testUnique()
+    public function testUnique(): void
     {
         $array = [];
         $refClass = new \ReflectionClass(TableType::class);
@@ -17,7 +17,7 @@ class TableTypeTest extends TestCase
         }
     }
 
-    public function testConst()
+    public function testConst(): void
     {
         self::assertSame(0x02, TableType::DBASE_II);
         self::assertSame(0x03, TableType::DBASE_III_PLUS_NOMEMO);
@@ -37,7 +37,7 @@ class TableTypeTest extends TestCase
         self::assertSame(0xFB, TableType::FOXBASE);
     }
 
-    public function testIsFoxpro()
+    public function testIsFoxpro(): void
     {
         self::assertEquals(TableType::isFoxpro(1), false);
         self::assertEquals(TableType::isFoxpro(10), false);
@@ -50,7 +50,7 @@ class TableTypeTest extends TestCase
         self::assertEquals(TableType::isFoxpro(TableType::FOXBASE), true);
     }
 
-    public function testHasMemo()
+    public function testHasMemo(): void
     {
         self::assertSame(TableType::hasMemo(TableType::DBASE_II), false);
         self::assertSame(TableType::hasMemo(TableType::DBASE_III_PLUS_NOMEMO), false);

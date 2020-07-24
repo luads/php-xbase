@@ -11,7 +11,7 @@ use XBase\Table;
 
 class VisualFoxproTest extends AbstractTestCase
 {
-    public function testRead()
+    public function testRead(): void
     {
         $table = new Table(__DIR__.'/Resources/foxpro/visual_fox_pro6.dbf');
 
@@ -49,7 +49,7 @@ class VisualFoxproTest extends AbstractTestCase
         $table->close();
     }
 
-    public function testVfp()
+    public function testVfp(): void
     {
         $table = new Table(__DIR__.'/Resources/foxpro/vfp.dbf');
 
@@ -308,7 +308,7 @@ TEXT;
         self::assertSame(null, $record->getString('varchar_bi'));
     }
 
-    public function testCurrency()
+    public function testCurrency(): void
     {
         $table = new Table(__DIR__.'/Resources/foxpro/currency.dbf');
 

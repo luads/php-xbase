@@ -10,7 +10,7 @@ use XBase\Table;
 
 class FoxproTest extends AbstractTestCase
 {
-    public function testRead()
+    public function testRead(): void
     {
         $table = new Table(__DIR__.'/Resources/foxpro/1.dbf', null, 'cp852'); //todo file to big need to reduce
 
@@ -51,7 +51,7 @@ class FoxproTest extends AbstractTestCase
         $table->close();
     }
 
-    public function testFoxpro2()
+    public function testFoxpro2(): void
     {
         $table = new Table(__DIR__.'/Resources/foxpro/Foxpro2.dbf');
 
@@ -94,7 +94,7 @@ class FoxproTest extends AbstractTestCase
         self::assertSame('3', $record->getString('general'));
     }
 
-    protected function assertMemoImg(Table $table)
+    protected function assertMemoImg(Table $table): void
     {
         $record = $table->moveTo(1);
         $memoImg = $record->getMemoObject('image');

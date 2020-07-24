@@ -7,7 +7,7 @@ use XBase\Stream\StreamWrapper;
 
 class StreamWrapperTest extends TestCase
 {
-    public function testMagickCall()
+    public function testMagickCall(): void
     {
         $stream = new StreamWrapper(fopen('php://temp', 'r+'));
         $stream->write('abcdefghiklmnopq');

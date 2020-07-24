@@ -14,7 +14,7 @@ use XBase\Table;
 
 class DBaseTest extends AbstractTestCase
 {
-    public function testRead()
+    public function testRead(): void
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
 
@@ -141,7 +141,7 @@ JSON;
         $table->close();
     }
 
-    public function testColumnNotFound()
+    public function testColumnNotFound(): void
     {
         self::expectException(\Exception::class);
         self::expectExceptionMessage('Column none_column_value not found');
@@ -151,7 +151,7 @@ JSON;
         $record->none_column_value;
     }
 
-    public function testReadColumns()
+    public function testReadColumns(): void
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
         $processerResords = 0;
@@ -162,7 +162,7 @@ JSON;
         self::assertSame(10, $processerResords);
     }
 
-    public function testDbase3()
+    public function testDbase3(): void
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseIII.dbf');
 
@@ -184,7 +184,7 @@ JSON;
         $this->assertMemoImg($table);
     }
 
-    public function testDbase4()
+    public function testDbase4(): void
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseIV.dbf');
 
@@ -213,7 +213,7 @@ JSON;
         self::assertSame(15.16, $record->getFloat('rate'));
     }
 
-    public function testDbase7()
+    public function testDbase7(): void
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseVII.dbf');
 
@@ -257,7 +257,7 @@ JSON;
         self::assertSame(169745, strlen($memoImg->getData()));
     }
 
-    public function testDbase7ts()
+    public function testDbase7ts(): void
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_ts.dbf');
         self::assertSame(1, $table->getColumnCount());
@@ -276,7 +276,7 @@ JSON;
         self::assertSame('2000-01-10 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
     }
 
-    public function testDbase7int()
+    public function testDbase7int(): void
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_int.dbf');
         self::assertSame(1, $table->getColumnCount());
