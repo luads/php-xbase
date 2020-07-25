@@ -94,7 +94,7 @@ class Table
         }
     }
 
-    protected function open()
+    protected function open(): void
     {
         if (!file_exists($this->filepath)) {
             throw new \Exception(sprintf('File %s cannot be found', $this->filepath));
@@ -108,12 +108,12 @@ class Table
         $this->readHeader();
     }
 
-    public function close()
+    public function close(): void
     {
         $this->fp->close();
     }
 
-    protected function readHeader()
+    protected function readHeader(): void
     {
         $this->version = $this->fp->readUChar();
         $this->foxpro = TableType::isFoxpro($this->version);
@@ -134,11 +134,9 @@ class Table
             $this->fp->read(4);
         }
 
-        $this->readColumns();
-
-        if (chr(0x0D) !== $this->fp->read()) {
-            throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
-        }
+        [$columnsCount, $terminatorLength] = $this->pickColumnsCount();
+        $this->readColumns($columnsCount);
+        $this->checkHeaderTerminator($terminatorLength);
 
         if (TableType::isVisualFoxpro($this->version)) {
             $this->backlist = $this->fp->read(self::VFP_BACKLIST_LENGTH);
@@ -150,13 +148,24 @@ class Table
         $this->deleteCount = 0;
     }
 
-    protected function readColumns()
+    /**
+     * @return array [$fieldCount, $terminatorLength]
+     */
+    protected function pickColumnsCount(): array
     {
-        $fieldCount = $this->getLogicalFieldCount();
-        if (is_float($fieldCount)) {
-            trigger_error('Wrong fieldCount calculation', E_USER_WARNING);
+        // some files has headers with 2byte-terminator 0xOD00
+        foreach ([1, 2] as $terminatorLength) {
+            $fieldCount = $this->getLogicalFieldCount($terminatorLength);
+            if (is_int($fieldCount)) {
+                return [$fieldCount, $terminatorLength];
+            }
         }
 
+        throw new \LogicException('Wrong fieldCount calculation');
+    }
+
+    protected function readColumns(int $columnsCount): void
+    {
         /* some checking */
         clearstatcache();
         if ($this->headerLength > filesize($this->filepath)) {
@@ -173,7 +182,7 @@ class Table
 
         $class = ColumnFactory::getClass($this->getVersion());
         $index = 0;
-        for ($i = 0; $i < $fieldCount; $i++) {
+        for ($i = 0; $i < $columnsCount; $i++) {
             /** @var ColumnInterface $column */
             $column = $class::create($this->fp->read(call_user_func([$class, 'getHeaderLength'])), $index++, $bytePos);
             $bytePos += $column->getLength();
@@ -181,9 +190,12 @@ class Table
         }
     }
 
-    protected function getLogicalFieldCount()
+    /**
+     * @return float|int
+     */
+    protected function getLogicalFieldCount(int $terminatorLength = 1)
     {
-        $headerLength = self::HEADER_LENGTH + 1; // [Terminator](1)
+        $headerLength = self::HEADER_LENGTH + $terminatorLength; // [Terminator](1)
         $fieldLength = self::FIELD_LENGTH;
         if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
             $headerLength += 36; // [Language driver name](32) + [Reserved](4) +
@@ -431,5 +443,27 @@ class Table
     public function isFoxpro(): bool
     {
         return TableType::isFoxpro($this->version);
+    }
+
+    /**
+     * @throws TableException
+     */
+    private function checkHeaderTerminator(int $terminatorLength): void
+    {
+        $terminator = $this->fp->read($terminatorLength);
+        switch ($terminatorLength) {
+            case 1:
+                if (chr(0x0D) !== $terminator) {
+                    throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
+                }
+                break;
+
+            case 2:
+                $unpack = unpack('n', $terminator);
+                if (0x0D00 !== $unpack[1]) {
+                    throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
+                }
+                break;
+        }
     }
 }
