@@ -417,8 +417,6 @@ class Table
 
     /**
      * @see Codepage
-     *
-     * @return int
      */
     public function getLanguageCode(): int
     {

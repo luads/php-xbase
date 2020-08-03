@@ -3,7 +3,6 @@
 namespace XBase\Column;
 
 use XBase\Enum\FieldType;
-use XBase\Record;
 use XBase\Stream\Stream;
 
 class DBaseColumn extends AbstractColumn
@@ -40,8 +39,11 @@ class DBaseColumn extends AbstractColumn
 
     public function __construct(string $name, string $type, int $memAddress, int $length, int $decimalCount, $reserved1, int $workAreaID, $reserved2, bool $setFields, $reserved3, bool $indexed, int $colIndex, ?int $bytePos = null)
     {
+        $name = (false !== strpos($name, chr(0x00))) ? substr($name, 0, strpos($name, chr(0x00))) : $name;
+
         $this->rawName = $name;
-        $this->name = strtolower(rtrim($name, chr(0x00)));
+        // chop all garbage from 0x00
+        $this->name = strtolower($name);
         $this->type = $type;
         $this->memAddress = $memAddress;
         $this->length = $length;
