@@ -5,6 +5,7 @@ namespace XBase;
 use XBase\Column\ColumnFactory;
 use XBase\Column\ColumnInterface;
 use XBase\Column\DBase7Column;
+use XBase\Enum\Codepage;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
 use XBase\Memo\MemoFactory;
@@ -54,9 +55,12 @@ class Table
     public $encrypted;
     /** @var string */
     public $mdxFlag;
+
     /**
      * @var string Language codepage.
      * @see https://blog.codetitans.pl/post/dbf-and-language-code-page/
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use getLanguageCode() method.
      */
     public $languageCode;
 
@@ -409,6 +413,16 @@ class Table
     public function getVersion()
     {
         return $this->version;
+    }
+
+    /**
+     * @see Codepage
+     *
+     * @return int
+     */
+    public function getLanguageCode(): int
+    {
+        return ord($this->languageCode);
     }
 
     public function getMemo(): ?MemoInterface

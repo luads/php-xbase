@@ -32,7 +32,7 @@ class DBaseTest extends AbstractTestCase
         self::assertSame(false, $table->inTransaction);
         self::assertSame(false, $table->encrypted);
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
-        self::assertSame(0, ord($table->languageCode));
+        self::assertSame(0, $table->getLanguageCode());
 
         $columns = $table->getColumns();
         self::assertIsArray($columns);
@@ -178,7 +178,7 @@ JSON;
         self::assertSame(false, $table->inTransaction);
         self::assertSame(false, $table->encrypted);
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
-        self::assertSame(0x03, ord($table->languageCode));
+        self::assertSame(0x03, $table->getLanguageCode());
 
         $this->assertRecords($table);
         $this->assertMemoImg($table);
@@ -200,7 +200,7 @@ JSON;
         self::assertSame(false, $table->inTransaction);
         self::assertSame(false, $table->encrypted);
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
-        self::assertSame(0x03, ord($table->languageCode));
+        self::assertSame(0x03, $table->getLanguageCode());
 
         $this->assertRecords($table);
         $this->assertMemoImg($table);
