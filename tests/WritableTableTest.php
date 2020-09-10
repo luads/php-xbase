@@ -266,13 +266,13 @@ class WritableTableTest extends TestCase
             $record = $table->appendRecord();
             self::assertInstanceOf(VisualFoxproRecord::class, $record);
             $record->setObject($table->getColumn('name'), 'gam6itko');
-            $record->setObject($table->getColumn('birthday'), '1988-10-10');
+            $record->setObject($table->getColumn('birthday'), new \DateTime('1988-10-10'));
             $record->setObject($table->getColumn('is_man'), true);
 //            $record->setObject($table->getColumn('bio'), 'another time');
             $record->setObject($table->getColumn('money'), 100.10);
 //            $record->setObject($table->getColumn('image'), );
             $record->setObject($table->getColumn('rate'), 10.55);
-//            $record->setObject($table->getColumn('general'), );
+            $record->setObject($table->getColumn('general'), 10);
 //            $record->setObject($table->getColumn('blob'), );
 //            $record->setObject($table->getColumn('currency'), );
             $record->setObject($table->getColumn('datetime'), new \DateTime('2020-09-10'));
@@ -290,20 +290,21 @@ class WritableTableTest extends TestCase
             self::assertEquals(4, $table->getRecordCount());
 
             $record = $table->pickRecord(3);
-            $record->getObject($table->getColumn('name'), 'gam6itko');
-            $record->getObject($table->getColumn('birthday'), '1988-10-10');
-            $record->getObject($table->getColumn('is_man'), true);
+            self::assertSame('gam6itko', $record->getObject($table->getColumn('name')));
+            self::assertSame(592444800, $record->getObject($table->getColumn('birthday'))); //returns timestamp
+            self::assertSame(true, $record->getObject($table->getColumn('is_man')));
 //            $record->getObject($table->getColumn('bio'), 'another time');
-            $record->getObject($table->getColumn('money'), 100.10);
+            self::assertSame(100.10, $record->getObject($table->getColumn('money')));
 //            $record->getObject($table->getColumn('image'), );
-            $record->getObject($table->getColumn('rate'), 10.55);
-//            $record->getObject($table->getColumn('general'), );
+            self::assertSame(10.55, $record->getObject($table->getColumn('rate')));
+            self::assertSame(10, $record->getObject($table->getColumn('general')));
 //            $record->getObject($table->getColumn('blob'), );
 //            $record->getObject($table->getColumn('currency'), );
-            $record->getObject($table->getColumn('datetime'), new \DateTime('2020-09-10'));
-            $record->getObject($table->getColumn('double'), 3.1415);
-            $record->getObject($table->getColumn('integer'), 3);
-            $record->getObject($table->getColumn('varchar'), 'varchar');
+            //self::assertSame(1599696000, $record->getObject($table->getColumn('datetime')));
+            self::assertSame('2020-09-10T00:00:00+00:00', $record->getDateTimeObject($table->getColumn('datetime'))->format(DATE_ATOM));
+            self::assertSame(3.1415, $record->getObject($table->getColumn('double')));
+            self::assertSame(3, $record->getObject($table->getColumn('integer')));
+            self::assertSame('varchar', $record->getObject($table->getColumn('varchar')));
 //            $record->getObject($table->getColumn('name_bin'), );
 //            $record->getObject($table->getColumn('bio_bin'), );
 //            $record->getObject($table->getColumn('varbinary'), );

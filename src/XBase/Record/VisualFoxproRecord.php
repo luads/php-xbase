@@ -45,6 +45,8 @@ class VisualFoxproRecord extends FoxproRecord
                 return $this->setDateTime($column, $value);
             case FieldType::CURRENCY:
                 return $this->setCurrency($column, $value);
+            case FieldType::GENERAL:
+                return $this->setGeneral($column, $value);
             case FieldType::FLOAT:
                 return $this->setFloat($column, $value);
             case FieldType::VAR_FIELD:
@@ -59,6 +61,12 @@ class VisualFoxproRecord extends FoxproRecord
     {
         $data = unpack('L', $this->choppedData[$columnName]);
         return $data[1];
+    }
+
+    public function setGeneral(ColumnInterface $column, $value): self
+    {
+        $this->choppedData[$column->getName()] = pack('L', $value);
+        return $this;
     }
 
     /**
@@ -88,24 +96,19 @@ class VisualFoxproRecord extends FoxproRecord
         return $ret;
     }
 
-    /**
-     * @param $value
-     *
-     * @return bool
-     */
     public function setInt(ColumnInterface $column, $value)
     {
         if (FieldType::INTEGER !== $column->getType()) {
             trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
         }
 
-        if (0 == strlen($value)) {
-            $this->forceSetString($column, '');
-            return false;
+        if ($this->table->isFoxpro()) {
+            $this->choppedData[$column->getName()] = pack('i', $value);
+        } else {
+            //todo
         }
 
-        $value = str_replace(',', '.', $value);
-        $this->forceSetString($column, number_format($value, $column->getDecimalCount(), '.', ''));
+        return $this;
     }
 
     /**
@@ -126,7 +129,7 @@ class VisualFoxproRecord extends FoxproRecord
 
     public function setDouble(ColumnInterface $column, $value): self
     {
-        //todo
+        $this->choppedData[$column->getName()] = pack('d', $value);
 
         return $this;
     }
@@ -162,7 +165,7 @@ class VisualFoxproRecord extends FoxproRecord
 
     private function setVarchar(ColumnInterface $column, $value): self
     {
-        //todo
+        $this->choppedData[$column->getName()] = $value;
 
         return $this;
     }
@@ -174,33 +177,6 @@ class VisualFoxproRecord extends FoxproRecord
             $s = substr($s, 0, $pos);
         }
         return $s;
-    }
-
-    /**
-     * @param $value
-     *
-     * @return bool
-     */
-    public function setDateTime(ColumnInterface $column, $value)
-    {
-        if (FieldType::DATETIME !== $column->getType()) {
-            trigger_error($column->getName().' is not a DateTime column', E_USER_ERROR);
-        }
-
-        if ($value instanceof \DateTimeInterface) {
-            $value = $value->format('U');
-        }
-
-        if (0 == strlen($value)) {
-            $this->forceSetString($column, '');
-            return false;
-        }
-
-        $a = getdate($value);
-        $d = $this->zeroDate + (mktime(0, 0, 0, $a['mon'], $a['mday'], $a['year']) / 86400);
-        $d = pack('i', $d);
-        $t = pack('i', mktime($a['hours'], $a['minutes'], $a['seconds'], 0, 0, 0));
-        $this->choppedData[$column->getColIndex()] = $d.$t;
     }
 
     /**
@@ -240,6 +216,32 @@ class VisualFoxproRecord extends FoxproRecord
         $longDate = ($intDate - $this->zeroDate) * 86400;
 
         return $longDate + ($intTime / 1000);
+    }
+
+    /**
+     * @param $value
+     *
+     * @return bool
+     */
+    public function setDateTime(ColumnInterface $column, $value)
+    {
+        if (FieldType::DATETIME !== $column->getType()) {
+            trigger_error($column->getName().' is not a DateTime column', E_USER_ERROR);
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            $value = $value->format('U');
+        }
+
+        if (0 == strlen($value)) {
+            $this->forceSetString($column, '');
+            return false;
+        }
+
+        $a = getdate($value);
+        $intDate = $this->zeroDate + (mktime(0, 0, 0, $a['mon'], $a['mday'], $a['year']) / 86400);
+        $intTime = ($a['hours'] * 3600 + $a['minutes'] * 60 + $a['seconds']) * 1000;
+        $this->choppedData[$column->getName()] = pack('i', $intDate).pack('i', $intTime);
     }
 
     /**
