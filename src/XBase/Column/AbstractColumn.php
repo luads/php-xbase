@@ -6,22 +6,32 @@ abstract class AbstractColumn implements ColumnInterface
 {
     /** @var string */
     protected $name;
+
     /** @var string */
     protected $rawName;
+
     /** @var string */
     protected $type;
+
     /** @var int */
     protected $length;
+
     /** @var int */
     protected $decimalCount;
 
     /**@var int Field address within record. */
     protected $memAddress;
+
     protected $workAreaID;
+
+    /** @var bool */
     protected $setFields;
+
     protected $indexed;
+
     /** @var int|null Data starts from index */
     protected $bytePos;
+
     /** @var int */
     protected $colIndex;
 

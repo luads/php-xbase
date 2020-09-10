@@ -34,6 +34,27 @@ class VisualFoxproRecord extends FoxproRecord
         }
     }
 
+    public function setObject(ColumnInterface $column, $value)
+    {
+        switch ($column->getType()) {
+            case FieldType::INTEGER:
+                return $this->setInt($column, $value);
+            case FieldType::DOUBLE:
+                return $this->setDouble($column, $value);
+            case FieldType::DATETIME:
+                return $this->setDateTime($column, $value);
+            case FieldType::CURRENCY:
+                return $this->setCurrency($column, $value);
+            case FieldType::FLOAT:
+                return $this->setFloat($column, $value);
+            case FieldType::VAR_FIELD:
+            case FieldType::VARBINARY:
+                return $this->setVarchar($column, $value);
+            default:
+                return parent::setObject($column, $value);
+        }
+    }
+
     public function getGeneral(string $columnName)
     {
         $data = unpack('L', $this->choppedData[$columnName]);
@@ -68,6 +89,26 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
+     * @param $value
+     *
+     * @return bool
+     */
+    public function setInt(ColumnInterface $column, $value)
+    {
+        if (FieldType::INTEGER !== $column->getType()) {
+            trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
+        }
+
+        if (0 == strlen($value)) {
+            $this->forceSetString($column, '');
+            return false;
+        }
+
+        $value = str_replace(',', '.', $value);
+        $this->forceSetString($column, number_format($value, $column->getDecimalCount(), '.', ''));
+    }
+
+    /**
      * @return int
      */
     public function getDouble(string $columnName)
@@ -83,6 +124,13 @@ class VisualFoxproRecord extends FoxproRecord
         return 0;
     }
 
+    public function setDouble(ColumnInterface $column, $value): self
+    {
+        //todo
+
+        return $this;
+    }
+
     public function getCurrency(string $columnName)
     {
         $s = $this->choppedData[$columnName];
@@ -96,6 +144,13 @@ class VisualFoxproRecord extends FoxproRecord
         return 0;
     }
 
+    private function setCurrency(ColumnInterface $column, $value): self
+    {
+        //todo
+
+        return $this;
+    }
+
     public function getVarchar(string $columnName)
     {
         $s = $this->forceGetString($columnName);
@@ -103,6 +158,13 @@ class VisualFoxproRecord extends FoxproRecord
             $s = substr($s, 0, $pos);
         }
         return $s;
+    }
+
+    private function setVarchar(ColumnInterface $column, $value): self
+    {
+        //todo
+
+        return $this;
     }
 
     public function getVarbinary(string $columnName)
@@ -121,7 +183,7 @@ class VisualFoxproRecord extends FoxproRecord
      */
     public function setDateTime(ColumnInterface $column, $value)
     {
-        if (FieldType::DATETIME != $column->getType()) {
+        if (FieldType::DATETIME !== $column->getType()) {
             trigger_error($column->getName().' is not a DateTime column', E_USER_ERROR);
         }
 
@@ -148,7 +210,7 @@ class VisualFoxproRecord extends FoxproRecord
      */
     public function setFloat(ColumnInterface $column, $value)
     {
-        if (FieldType::FLOAT != $column->getType()) {
+        if (FieldType::FLOAT !== $column->getType()) {
             trigger_error($column->getName().' is not a Float column', E_USER_ERROR);
         }
 
@@ -159,26 +221,6 @@ class VisualFoxproRecord extends FoxproRecord
 
         $value = str_replace(',', '.', $value);
         $this->forceSetString($column, $value);
-    }
-
-    /**
-     * @param $value
-     *
-     * @return bool
-     */
-    public function setInt(ColumnInterface $column, $value)
-    {
-        if (FieldType::NUMERIC != $column->getType()) {
-            trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
-        }
-
-        if (0 == strlen($value)) {
-            $this->forceSetString($column, '');
-            return false;
-        }
-
-        $value = str_replace(',', '.', $value);
-        $this->forceSetString($column, number_format($value, $column->getDecimalCount(), '.', ''));
     }
 
     /**

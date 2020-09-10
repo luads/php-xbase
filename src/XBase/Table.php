@@ -37,13 +37,13 @@ class Table
     /** @var int */
     protected $filePos = 0;
 
-    /** @var int */
+    /** @var int Current record position. */
     protected $recordPos = -1;
 
     /** @var int */
     protected $deleteCount = 0;
 
-    /** @var Record */
+    /** @var RecordInterface|null */
     protected $record;
 
     /** @var string|null */
@@ -135,7 +135,6 @@ class Table
     /**
      * Table constructor.
      *
-     * @param string      $filepath
      * @param array|null  $availableColumns
      * @param string|null $convertFrom      Encoding of file
      *
@@ -539,33 +538,21 @@ class Table
         return $this->modifyDate;
     }
 
-    /**
-     * @return bool
-     */
     public function isInTransaction(): bool
     {
         return $this->inTransaction;
     }
 
-    /**
-     * @return bool
-     */
     public function isEncrypted(): bool
     {
         return $this->encrypted;
     }
 
-    /**
-     * @return string
-     */
     public function getMdxFlag(): string
     {
         return $this->mdxFlag;
     }
 
-    /**
-     * @return int
-     */
     public function getHeaderLength(): int
     {
         return $this->headerLength;

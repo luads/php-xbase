@@ -24,7 +24,7 @@ class MemoFactory
         }
         $memoFilepath = $fileInfo['dirname'].DIRECTORY_SEPARATOR.$fileInfo['filename'].$memoExt;
         if (!file_exists($memoFilepath)) {
-            return null;
+            return null; //todo create file?
         }
 
         return $refClass->newInstance($memoFilepath, $table->getConvertFrom());

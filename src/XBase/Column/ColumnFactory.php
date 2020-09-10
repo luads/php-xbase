@@ -13,6 +13,11 @@ class ColumnFactory
             case TableType::DBASE_7_NOMEMO:
                 return DBase7Column::class;
 
+            case TableType::VISUAL_FOXPRO:
+            case TableType::VISUAL_FOXPRO_AI:
+            case TableType::VISUAL_FOXPRO_VAR:
+                return VisualFoxproColumn::class;
+
             default:
                 return DBaseColumn::class;
         }

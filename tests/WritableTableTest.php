@@ -3,8 +3,9 @@
 namespace XBase\Tests;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Record;
+use XBase\Enum\TableType;
 use XBase\Record\DBaseRecord;
+use XBase\Record\VisualFoxproRecord;
 use XBase\Table;
 use XBase\WritableTable;
 
@@ -15,9 +16,19 @@ class WritableTableTest extends TestCase
     private function duplicateFile(string $file): string
     {
         $info = pathinfo($file);
-        $newName = uniqid($info['filename']);
+        $newName = uniqid($info['filename'].'_');
         $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
         self::assertTrue(copy($file, $copyTo));
+
+        $memoExt = ['fpt'];
+        foreach ($memoExt as $ext) {
+            $memoFile = "{$info['dirname']}/{$info['filename']}.$ext";
+            if (file_exists($memoFile)) {
+                $memoFileCopy = "{$info['dirname']}/$newName.$ext";
+                self::assertTrue(copy($memoFile, $memoFileCopy));
+            }
+        }
+
         return $copyTo;
     }
 
@@ -51,24 +62,33 @@ class WritableTableTest extends TestCase
         $copyTo = $this->duplicateFile(self::FILEPATH);
         try {
             $table = new WritableTable($copyTo, null, 'cp866');
+
+            self::assertSame(
+                $table->getHeaderLength() + ($table->getRecordCount() * $table->getRecordByteLength()) + 1, // Last byte must be 0x1A
+                filesize($copyTo)
+            );
+            self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->getVersion());
+            self::assertEquals(10, $table->getRecordCount());
+
             $table->openWrite();
             $record = $table->appendRecord();
-            self::assertInstanceOf(Record::class, $record);
+            self::assertInstanceOf(DBaseRecord::class, $record);
 
-            $record->setInt($record->getColumn('regn'), 3);
-            $record->setString($record->getColumn('plan'), 'Д');
-            $record->setString($record->getColumn('num_sc'), '10101');
-            $record->setString($record->getColumn('a_p'), '3');
-            $record->setInt($record->getColumn('vr'), 100);
-            $record->setInt($record->getColumn('vv'), 200);
-            $record->setInt($record->getColumn('vitg'), 300.0201);
-            $record->setDate($record->getColumn('dt'), new \DateTime('1970-01-03'));
-            $record->setInt($record->getColumn('priz'), 2);
+            $record->setNum($table->getColumn('regn'), 3);
+            $record->setString($table->getColumn('plan'), 'Д');
+            $record->setString($table->getColumn('num_sc'), '10101');
+            $record->setString($table->getColumn('a_p'), '3');
+            $record->setNum($table->getColumn('vr'), 100);
+            $record->setNum($table->getColumn('vv'), 200);
+            $record->setNum($table->getColumn('vitg'), 300.0201);
+            $record->setDate($table->getColumn('dt'), new \DateTime('1970-01-03'));
+            $record->setNum($table->getColumn('priz'), 2);
             $table->writeRecord();
+            $table->pack();
             $table->close();
 
             clearstatcache();
-            $expectedSize = $table->headerLength + ($table->recordCount * $table->recordByteLength); // Last byte must be 0x1A
+            $expectedSize = $table->getHeaderLength() + ($table->getRecordCount() * $table->getRecordByteLength()); // Last byte must be 0x1A
             self::assertSame($expectedSize, filesize($copyTo));
 
             $table = new Table($copyTo, null, 'cp866');
@@ -178,6 +198,116 @@ class WritableTableTest extends TestCase
             self::assertSame('1945-05-09', $record->getDateTimeObject('venciced')->format('Y-m-d'));
             self::assertSame('B', $record->nriesgo);
             self::assertSame(5000.0, $record->getNum('salario'));
+            $table->close();
+        } finally {
+            unlink($copyTo);
+        }
+    }
+
+    /**
+     * Not set current record. Should not fall
+     */
+    public function testVisualFoxProWriteCopy(): void
+    {
+        $original = __DIR__.'/Resources/foxpro/vfp.dbf';
+        $copyTo = $this->duplicateFile($original);
+        $table = new WritableTable($copyTo);
+        $table->writeRecord();
+        $table->close();
+        self::assertFileEquals($original, $copyTo);
+    }
+
+    /**
+     * Append and delete record immediately.
+     */
+    public function testVisualFoxProWriteCopy2(): void
+    {
+        $original = __DIR__.'/Resources/foxpro/vfp.dbf';
+        $copyTo = $this->duplicateFile($original);
+        $table = new WritableTable($copyTo);
+        $table->appendRecord();
+        $table->deleteRecord();
+        $table->writeRecord();
+        $table->close();
+        self::assertFileEquals($original, $copyTo);
+    }
+
+    /**
+     * Append and delete record immediately.
+     */
+    public function testVisualFoxProWriteCopy3(): void
+    {
+        $copyTo = $this->duplicateFile(__DIR__.'/Resources/foxpro/vfp.dbf');
+        try {
+            $table = new WritableTable($copyTo);
+            self::assertSame(3, $table->getRecordCount());
+            $table->openWrite();
+            $table->appendRecord();
+            $table->writeRecord();
+            $table->deleteRecord();
+            $table->pack();
+            $table->close();
+            self::assertSame(3, $table->getRecordCount());
+        } finally {
+            unlink($copyTo);
+        }
+    }
+
+    public function testVisualFoxProAppendRecord(): void
+    {
+        $copyTo = $this->duplicateFile(__DIR__.'/Resources/foxpro/vfp.dbf');
+        try {
+            $table = new WritableTable($copyTo);
+            self::assertEquals(3, $table->getRecordCount());
+            self::assertEquals(TableType::VISUAL_FOXPRO_VAR, $table->getVersion());
+
+            $table->openWrite();
+            /** @var VisualFoxproRecord $record */
+            $record = $table->appendRecord();
+            self::assertInstanceOf(VisualFoxproRecord::class, $record);
+            $record->setObject($table->getColumn('name'), 'gam6itko');
+            $record->setObject($table->getColumn('birthday'), '1988-10-10');
+            $record->setObject($table->getColumn('is_man'), true);
+//            $record->setObject($table->getColumn('bio'), 'another time');
+            $record->setObject($table->getColumn('money'), 100.10);
+//            $record->setObject($table->getColumn('image'), );
+            $record->setObject($table->getColumn('rate'), 10.55);
+//            $record->setObject($table->getColumn('general'), );
+//            $record->setObject($table->getColumn('blob'), );
+//            $record->setObject($table->getColumn('currency'), );
+            $record->setObject($table->getColumn('datetime'), new \DateTime('2020-09-10'));
+            $record->setObject($table->getColumn('double'), 3.1415);
+            $record->setObject($table->getColumn('integer'), 3);
+            $record->setObject($table->getColumn('varchar'), 'varchar');
+//            $record->setInt($table->getColumn('name_bin'), );
+//            $record->setInt($table->getColumn('bio_bin'), );
+//            $record->setInt($table->getColumn('varbinary'), );
+//            $record->setInt($table->getColumn('varchar_bi'), );
+            $table->writeRecord();
+            $table->close();
+
+            $table = new Table($copyTo);
+            self::assertEquals(4, $table->getRecordCount());
+
+            $record = $table->pickRecord(3);
+            $record->getObject($table->getColumn('name'), 'gam6itko');
+            $record->getObject($table->getColumn('birthday'), '1988-10-10');
+            $record->getObject($table->getColumn('is_man'), true);
+//            $record->getObject($table->getColumn('bio'), 'another time');
+            $record->getObject($table->getColumn('money'), 100.10);
+//            $record->getObject($table->getColumn('image'), );
+            $record->getObject($table->getColumn('rate'), 10.55);
+//            $record->getObject($table->getColumn('general'), );
+//            $record->getObject($table->getColumn('blob'), );
+//            $record->getObject($table->getColumn('currency'), );
+            $record->getObject($table->getColumn('datetime'), new \DateTime('2020-09-10'));
+            $record->getObject($table->getColumn('double'), 3.1415);
+            $record->getObject($table->getColumn('integer'), 3);
+            $record->getObject($table->getColumn('varchar'), 'varchar');
+//            $record->getObject($table->getColumn('name_bin'), );
+//            $record->getObject($table->getColumn('bio_bin'), );
+//            $record->getObject($table->getColumn('varbinary'), );
+//            $record->getObject($table->getColumn('varchar_bi'), );
             $table->close();
         } finally {
             unlink($copyTo);

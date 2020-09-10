@@ -4,6 +4,9 @@ namespace XBase;
 
 use XBase\Column\DBaseColumn;
 use XBase\Enum\TableType;
+use XBase\Exception\TableException;
+use XBase\Record\RecordFactory;
+use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
 
 class WritableTable extends Table
@@ -42,7 +45,7 @@ class WritableTable extends Table
     public function create($filename, $fields)
     {
         if (!$fields || !is_array($fields)) {
-            throw new Exception\TableException('cannot create xbase with no fields', $this->filepath);
+            throw new TableException('cannot create xbase with no fields', $this->filepath);
         }
 
         $recordByteLength = 1;
@@ -52,7 +55,7 @@ class WritableTable extends Table
 
         foreach ($fields as $field) {
             if (!$field || !is_array($field) || sizeof($field) < 2) {
-                throw new Exception\TableException('fields argument error, must be array of arrays', $this->filepath);
+                throw new TableException('fields argument error, must be array of arrays', $this->filepath);
             }
             $column = new DBaseColumn($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
             $recordByteLength += $column->getDataLength();
@@ -71,7 +74,7 @@ class WritableTable extends Table
         $result->mdxFlag = chr(0);
         $result->languageCode = chr(0);
         $result->columns = $columns;
-        $result->columnNames = $columnNames;
+//        $result->columnNames = $columnNames;
         $result->backlist = '';
         $result->foxpro = false;
 
@@ -107,9 +110,9 @@ class WritableTable extends Table
         return false != $this->fp;
     }
 
-    public function writeHeader()
+    public function writeHeader(): void
     {
-        $this->headerLength = ($this->foxpro ? 296 : 33) + ($this->getColumnCount() * 32);
+        $this->headerLength = ($this->isFoxpro() ? 296 : 33) + ($this->getColumnCount() * 32);
 
         $this->fp->seek(0);
 
@@ -128,52 +131,77 @@ class WritableTable extends Table
         $this->fp->write(str_pad('', 2, chr(0)));
 
         foreach ($this->columns as $column) {
-            $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0)));
-            $this->fp->write($column->getType());
-            $this->fp->writeUInt($column->getMemAddress());
-            $this->fp->writeUChar($column->getDataLength());
-            $this->fp->writeUChar($column->getDecimalCount());
-            $this->fp->write(str_pad('', 2, chr(0)));
-            $this->fp->writeUChar($column->getWorkAreaID());
-            $this->fp->write(str_pad('', 2, chr(0)));
-            $this->fp->write(chr($column->isSetFields() ? 1 : 0));
-            $this->fp->write(str_pad('', 7, chr(0)));
-            $this->fp->write(chr($column->isIndexed() ? 1 : 0));
+            $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0))); // 0-10
+            $this->fp->write($column->getType());// 11
+            $this->fp->writeUInt($column->getMemAddress());//12-15
+            $this->fp->writeUChar($column->getDataLength());//16
+            $this->fp->writeUChar($column->getDecimalCount());//17
+            $this->fp->write(
+                method_exists($column, 'getReserved1')
+                    ? call_user_func([$column, 'getReserved1'])
+                    : str_pad('', 2, chr(0))
+            );//18-19
+            $this->fp->writeUChar($column->getWorkAreaID());//20
+            $this->fp->write(
+                method_exists($column, 'getReserved2')
+                    ? call_user_func([$column, 'getReserved2'])
+                    : str_pad('', 2, chr(0))
+            );//21-22
+            $this->fp->write(chr($column->isSetFields() ? 1 : 0));//23
+            $this->fp->write(
+                method_exists($column, 'getReserved3')
+                ? call_user_func([$column, 'getReserved3'])
+                : str_pad('', 7, chr(0))
+            );//24-30
+            $this->fp->write(chr($column->isIndexed() ? 1 : 0));//31
         }
+
+        $this->fp->writeUChar(0x0d);
 
         if ($this->foxpro) {
             $this->fp->write(str_pad($this->backlist, 263, ' '));
         }
-
-        $this->fp->writeUChar(0x0d);
     }
 
     /**
-     * @return Record
+     * @return RecordInterface
      */
     public function appendRecord()
     {
-        $this->record = new Record($this, $this->recordCount);
-        $this->recordCount += 1;
+        $this->recordPos = $this->recordCount++;
+        $this->record = RecordFactory::create($this, $this->recordPos);
 
         return $this->record;
     }
 
-    public function writeRecord()
+    public function writeRecord(): void
     {
-        $p = $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
+        if (!$this->record) {
+            return;
+        }
+
+        $offset = $this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength);
+        $this->fp->seek($offset);
         $data = $this->record->serializeRawData(); // removed referencing
-        $p = $this->fp->write($data);
+        $this->fp->write($data);
 
         if ($this->record->isInserted()) {
             $this->writeHeader();
         }
 
         $this->fp->flush();
+
+        $this->record->setInserted(false);
     }
 
-    public function deleteRecord()
+    public function deleteRecord(): void
     {
+        if ($this->record->isInserted()) {
+            $this->record = null;
+            $this->recordPos = -1;
+            return;
+        }
+
         $this->record->setDeleted(true);
 
         $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
@@ -214,88 +242,4 @@ class WritableTable extends Table
 
         $this->fp->truncate($this->headerLength + ($this->recordCount * $this->recordByteLength));
     }
-
-//    /**
-//     * {{@inheritdoc}}
-//     */
-//    protected function writes($buf)
-//    {
-//        return fwrite($this->fp, $buf);
-//    }
-//
-//    /**
-//     * {{@inheritdoc}}
-//     */
-//    protected function write($buf)
-//    {
-//        return fwrite($this->fp, $buf);
-//    }
-//
-//    /**
-//     * {{@inheritdoc}}
-//     */
-//    protected function writeString($string)
-//    {
-//        return $this->fp->writes($string);
-//    }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    protected function writeChar($c)
-//    {
-//        $buf = pack("C", $c);
-//
-//        return $this->fp->writes($buf);
-//    }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    protected function writeShort($s)
-//    {
-//        $buf = pack("S", $s);
-//
-//        return $this->fp->writes($buf);
-//    }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    protected function writeInt($i)
-//    {
-//        $buf = pack("I", $i);
-//
-//        return $this->fp->writes($buf);
-//    }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    protected function writeLong($l)
-//    {
-//        $buf = pack("L", $l);
-//
-//        return $this->fp->writes($buf);
-//    }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    protected function write3ByteDate($d)
-//    {
-//        $t = getdate($d);
-//
-//        return $this->fp->writeChar($t["year"] % 1000) + $this->fp->writeChar($t["mon"]) + $this->fp->writeChar($t["mday"]);
-//    }
-//
-//    /**
-//     * {@inheritdoc}
-//     */
-//    protected function write4ByteDate($d)
-//    {
-//        $t = getdate($d);
-//
-//        return $this->fp->writeShort($t["year"]) + $this->fp->writeChar($t["mon"]) + $this->fp->writeChar($t["mday"]);
-//    }
 }

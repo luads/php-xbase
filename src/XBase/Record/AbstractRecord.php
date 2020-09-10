@@ -83,6 +83,11 @@ class AbstractRecord implements RecordInterface
         return $this->inserted;
     }
 
+    public function setInserted(bool $inserted): void
+    {
+        $this->inserted = $inserted;
+    }
+
     /**
      * @return ColumnInterface[]
      */
@@ -399,16 +404,16 @@ class AbstractRecord implements RecordInterface
             case FieldType::CHAR:
                 $this->setString($column, $value);
                 return false;
-            case FieldType::DOUBLE:
-            case FieldType::FLOAT:
-                $this->setFloat($column, $value);
-                return false;
+//            case FieldType::DOUBLE:
+//            case FieldType::FLOAT:
+//                $this->setFloat($column, $value);
+//                return false;
             case FieldType::DATE:
                 $this->setDate($column, $value);
                 return false;
-            case FieldType::DATETIME:
-                $this->setDateTime($column, $value);
-                return false;
+//            case FieldType::DATETIME:
+//                $this->setDateTime($column, $value);
+//                return false;
             case FieldType::LOGICAL:
                 $this->setBoolean($column, $value);
                 return false;
@@ -439,6 +444,8 @@ class AbstractRecord implements RecordInterface
         if ($value instanceof \DateTimeInterface) {
             $this->forceSetString($column, $value->format('Ymd'));
             return false;
+        } elseif (is_int($value)) {
+            $value = date('Ymd', $value);
         }
 
         if (0 == strlen($value)) {
@@ -446,7 +453,7 @@ class AbstractRecord implements RecordInterface
             return false;
         }
 
-        $this->forceSetString($column, date('Ymd', $value));
+        $this->forceSetString($column, $value);
 
         return true;
     }
