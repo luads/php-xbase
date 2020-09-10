@@ -15,14 +15,14 @@ class VisualFoxproTest extends AbstractTestCase
     {
         $table = new Table(__DIR__.'/Resources/foxpro/visual_fox_pro6.dbf');
 
-        self::assertSame(TableType::VISUAL_FOXPRO, $table->version);
+        self::assertSame(TableType::VISUAL_FOXPRO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
-        self::assertSame(true, TableType::isVisualFoxpro($table->version));
-        self::assertSame(776, $table->headerLength);
-        self::assertSame(90, $table->recordByteLength);
-        self::assertSame(false, $table->inTransaction);
-        self::assertSame(false, $table->encrypted);
+        self::assertSame(true, TableType::isVisualFoxpro($table->getVersion()));
+        self::assertSame(776, $table->getHeaderLength());
+        self::assertSame(90, $table->getRecordByteLength());
+        self::assertSame(false, $table->isInTransaction());
+        self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::CDX | TableFlag::MEMO, ord($table->mdxFlag));
         self::assertSame(0x03, $table->getLanguageCode());
         self::assertSame(15, $table->getColumnCount());
@@ -56,13 +56,13 @@ class VisualFoxproTest extends AbstractTestCase
         self::assertSame(20, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
 
-        self::assertSame(TableType::VISUAL_FOXPRO_VAR, $table->version);
+        self::assertSame(TableType::VISUAL_FOXPRO_VAR, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
-        self::assertSame(936, $table->headerLength);
-        self::assertSame(164, $table->recordByteLength);
-        self::assertSame(false, $table->inTransaction);
-        self::assertSame(false, $table->encrypted);
+        self::assertSame(936, $table->getHeaderLength());
+        self::assertSame(164, $table->getRecordByteLength());
+        self::assertSame(false, $table->isInTransaction());
+        self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::MEMO, ord($table->mdxFlag));
         self::assertSame(0x03, $table->getLanguageCode());
 
@@ -314,7 +314,7 @@ TEXT;
 
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(1, $table->getRecordCount());
-        self::assertSame(TableType::VISUAL_FOXPRO, $table->version);
+        self::assertSame(TableType::VISUAL_FOXPRO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
 

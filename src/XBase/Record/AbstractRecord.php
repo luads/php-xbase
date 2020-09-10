@@ -3,7 +3,6 @@
 namespace XBase\Record;
 
 use XBase\Column\ColumnInterface;
-use XBase\DBaseColumn;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
 use XBase\Exception\InvalidColumnException;
@@ -229,6 +228,8 @@ class AbstractRecord implements RecordInterface
 
         $value = str_replace(',', '.', $value);
         $this->forceSetString($column, number_format($value, $column->getDecimalCount(), '.', ''));
+
+        return true;
     }
 
     /**
@@ -421,7 +422,7 @@ class AbstractRecord implements RecordInterface
                 return false;
         }
 
-        trigger_error('cannot handle datatype'.$column->getType(), E_USER_ERROR);
+        trigger_error('cannot handle datatype '.$column->getType(), E_USER_ERROR);
     }
 
     /**
@@ -446,6 +447,8 @@ class AbstractRecord implements RecordInterface
         }
 
         $this->forceSetString($column, date('Ymd', $value));
+
+        return true;
     }
 
     /**

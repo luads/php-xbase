@@ -14,13 +14,13 @@ class FoxproTest extends AbstractTestCase
     {
         $table = new Table(__DIR__.'/Resources/foxpro/1.dbf', null, 'cp852'); //todo file to big need to reduce
 
-        self::assertSame(TableType::FOXPRO_MEMO, $table->version);
+        self::assertSame(TableType::FOXPRO_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP852, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
-        self::assertSame(417, $table->headerLength);
-        self::assertSame(66, $table->recordByteLength);
-        self::assertSame(false, $table->inTransaction);
-        self::assertSame(false, $table->encrypted);
+        self::assertSame(417, $table->getHeaderLength());
+        self::assertSame(66, $table->getRecordByteLength());
+        self::assertSame(false, $table->isInTransaction());
+        self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
         self::assertSame(0x64, $table->getLanguageCode());
 
@@ -58,14 +58,14 @@ class FoxproTest extends AbstractTestCase
         self::assertSame(8, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
 
-        self::assertSame(TableType::FOXPRO_MEMO, $table->version);
+        self::assertSame(TableType::FOXPRO_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
-        self::assertSame(true, $table->foxpro);
         self::assertSame(true, $table->isFoxpro());
-        self::assertSame(289, $table->headerLength);
-        self::assertSame(90, $table->recordByteLength);
-        self::assertSame(false, $table->inTransaction);
-        self::assertSame(false, $table->encrypted);
+        self::assertSame(true, $table->isFoxpro());
+        self::assertSame(289, $table->getHeaderLength());
+        self::assertSame(90, $table->getRecordByteLength());
+        self::assertSame(false, $table->isInTransaction());
+        self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
         self::assertSame(0x03, $table->getLanguageCode());
 

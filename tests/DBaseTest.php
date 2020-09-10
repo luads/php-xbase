@@ -21,16 +21,16 @@ class DBaseTest extends AbstractTestCase
         self::assertSame(18, $table->getColumnCount());
         self::assertSame(10, $table->getRecordCount());
 
-        self::assertSame(3, $table->version);
-        self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->version);
+        self::assertSame(3, $table->getVersion());
+        self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->getVersion());
         self::assertSame(Codepage::UNDEFINED, $table->getCodepage());
-        self::assertSame(false, $table->foxpro);
         self::assertSame(false, $table->isFoxpro());
-        self::assertSame(1580774400, $table->modifyDate);
-        self::assertSame(609, $table->headerLength);
-        self::assertSame(225, $table->recordByteLength);
-        self::assertSame(false, $table->inTransaction);
-        self::assertSame(false, $table->encrypted);
+        self::assertSame(false, $table->isFoxpro());
+        self::assertSame(1580774400, $table->getModifyDate());
+        self::assertSame(609, $table->getHeaderLength());
+        self::assertSame(225, $table->getRecordByteLength());
+        self::assertSame(false, $table->isInTransaction());
+        self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
         self::assertSame(0, $table->getLanguageCode());
 
@@ -169,14 +169,14 @@ JSON;
         self::assertSame(6, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
 
-        self::assertSame(TableType::DBASE_III_PLUS_MEMO, $table->version);
+        self::assertSame(TableType::DBASE_III_PLUS_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
-        self::assertSame(false, $table->foxpro); //todo why true
+        self::assertSame(false, $table->isFoxpro()); //todo why true
         self::assertSame(false, $table->isFoxpro());
-        self::assertSame(225, $table->headerLength);
-        self::assertSame(70, $table->recordByteLength);
-        self::assertSame(false, $table->inTransaction);
-        self::assertSame(false, $table->encrypted);
+        self::assertSame(225, $table->getHeaderLength());
+        self::assertSame(70, $table->getRecordByteLength());
+        self::assertSame(false, $table->isInTransaction());
+        self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
         self::assertSame(0x03, $table->getLanguageCode());
 
@@ -191,14 +191,14 @@ JSON;
         self::assertSame(7, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
 
-        self::assertSame(TableType::DBASE_IV_MEMO, $table->version);
+        self::assertSame(TableType::DBASE_IV_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
-        self::assertSame(false, $table->foxpro);
         self::assertSame(false, $table->isFoxpro());
-        self::assertSame(257, $table->headerLength);
-        self::assertSame(80, $table->recordByteLength);
-        self::assertSame(false, $table->inTransaction);
-        self::assertSame(false, $table->encrypted);
+        self::assertSame(false, $table->isFoxpro());
+        self::assertSame(257, $table->getHeaderLength());
+        self::assertSame(80, $table->getRecordByteLength());
+        self::assertSame(false, $table->isInTransaction());
+        self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
         self::assertSame(0x03, $table->getLanguageCode());
 
@@ -220,13 +220,13 @@ JSON;
         self::assertSame(12, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
 
-        self::assertSame(TableType::DBASE_7_MEMO, $table->version);
+        self::assertSame(TableType::DBASE_7_MEMO, $table->getVersion());
 //        self::assertSame(Codepage::CP1252, $table->getCodepage()); //todo codepage 0x26
         self::assertSame(false, $table->isFoxpro());
-        self::assertSame(645, $table->headerLength);
-        self::assertSame(126, $table->recordByteLength);
-        self::assertSame(false, $table->inTransaction);
-        self::assertSame(false, $table->encrypted);
+        self::assertSame(645, $table->getHeaderLength());
+        self::assertSame(126, $table->getRecordByteLength());
+        self::assertSame(false, $table->isInTransaction());
+        self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
 
         $this->assertRecords($table);
@@ -262,7 +262,7 @@ JSON;
         $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_ts.dbf');
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(15, $table->getRecordCount()); //has deleted
-        self::assertSame(TableType::DBASE_7_NOMEMO, $table->version);
+        self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
 
         /** @var DBase7Column $record */
         self::assertSame('1900-01-01 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
@@ -281,7 +281,7 @@ JSON;
         $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_int.dbf');
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(6, $table->getRecordCount());
-        self::assertSame(TableType::DBASE_7_NOMEMO, $table->version);
+        self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
 
         self::assertSame(1, $table->nextRecord()->getInt('int'));
         self::assertSame(-1, $table->nextRecord()->getInt('int'));

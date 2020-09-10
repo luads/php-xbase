@@ -18,6 +18,7 @@ class Table
 {
     /** @var int Table header length in bytes */
     const HEADER_LENGTH = 32;
+
     /** @var int Record field length in bytes */
     const FIELD_LENGTH = 32;
 
@@ -26,33 +27,70 @@ class Table
 
     /** @var string Table filepath. */
     protected $filepath;
+
     /** @var array|null */
     protected $availableColumns;
+
     /** @var Stream */
     protected $fp;
+
     /** @var int */
     protected $filePos = 0;
+
     /** @var int */
     protected $recordPos = -1;
+
     /** @var int */
     protected $deleteCount = 0;
+
     /** @var Record */
     protected $record;
+
     /** @var string|null */
     protected $convertFrom;
 
-    /** @var string */
+    /**
+     * @var string
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use getVersion() method.
+     */
     public $version;
-    /** @var int unixtime */
+
+    /**
+     * @var int unixtime
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use getModifyDate() method.
+     */
     public $modifyDate;
-    /** @var int */
+
+    /**
+     * @var int
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use getRecordCount() method.
+     */
     public $recordCount;
-    /** @var int */
+
+    /**
+     * @var int
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use getRecordByteLength() method.
+     */
     public $recordByteLength;
-    /** @var bool */
+
+    /**
+     * @var bool
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use isInTransaction() method.
+     */
     public $inTransaction;
-    /** @var bool */
+
+    /**
+     * @var bool
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use isEncrypted() method.
+     */
     public $encrypted;
+
     /** @var string */
     public $mdxFlag;
 
@@ -64,17 +102,34 @@ class Table
      */
     public $languageCode;
 
-    /** @var ColumnInterface[] */
+    /**
+     * @var ColumnInterface[]
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use getColumns() method.
+     */
     public $columns;
-    /** @var int */
+
+    /**
+     * @var int
+     *
+     * @deprecated in 1.2 and will be protected in 1.3. Use getHeaderLength() method.
+     */
     public $headerLength;
-    public $backlist;
+
+    protected $backlist;
+
     /**
      * @var bool
-     * @deprecated since 1.1 and will be removed in 2.0. Use isFoxpro method instead.
+     *
+     * @deprecated since 1.1 and will be removed in 1.3. Use isFoxpro() method instead.
      */
     public $foxpro;
-    /** @var MemoInterface */
+
+    /**
+     * @var MemoInterface|null
+     *
+     * @deprecated since 1.2 and will be removed in 1.3. Use getMemo() method instead.
+     */
     public $memo;
 
     /**
@@ -86,7 +141,7 @@ class Table
      *
      * @throws \Exception
      */
-    public function __construct($filepath, $availableColumns = null, $convertFrom = null)
+    public function __construct(string $filepath, $availableColumns = null, $convertFrom = null)
     {
         $this->filepath = $filepath;
         $this->availableColumns = $availableColumns;
@@ -325,16 +380,25 @@ class Table
     }
 
     /**
-     * @return Record
+     * @throws TableException
      */
-    public function getRecord()
+    private function checkHeaderTerminator(int $terminatorLength): void
     {
-        return $this->record;
-    }
+        $terminator = $this->fp->read($terminatorLength);
+        switch ($terminatorLength) {
+            case 1:
+                if (chr(0x0D) !== $terminator) {
+                    throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
+                }
+                break;
 
-    public function getCodepage(): int
-    {
-        return ord($this->languageCode);
+            case 2:
+                $unpack = unpack('n', $terminator);
+                if (0x0D00 !== $unpack[1]) {
+                    throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
+                }
+                break;
+        }
     }
 
     public function addColumn(ColumnInterface $column)
@@ -347,14 +411,6 @@ class Table
         }
 
         $this->columns[$name] = $column;
-    }
-
-    /**
-     * @return ColumnInterface[]
-     */
-    public function getColumns()
-    {
-        return $this->columns;
     }
 
     /**
@@ -371,6 +427,27 @@ class Table
         }
 
         throw new \Exception(sprintf('Column %s not found', $name));
+    }
+
+    /**
+     * @return Record
+     */
+    public function getRecord()
+    {
+        return $this->record;
+    }
+
+    public function getCodepage(): int
+    {
+        return ord($this->languageCode);
+    }
+
+    /**
+     * @return ColumnInterface[]
+     */
+    public function getColumns()
+    {
+        return $this->columns;
     }
 
     /**
@@ -457,25 +534,40 @@ class Table
         return TableType::isFoxpro($this->version);
     }
 
-    /**
-     * @throws TableException
-     */
-    private function checkHeaderTerminator(int $terminatorLength): void
+    public function getModifyDate()
     {
-        $terminator = $this->fp->read($terminatorLength);
-        switch ($terminatorLength) {
-            case 1:
-                if (chr(0x0D) !== $terminator) {
-                    throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
-                }
-                break;
+        return $this->modifyDate;
+    }
 
-            case 2:
-                $unpack = unpack('n', $terminator);
-                if (0x0D00 !== $unpack[1]) {
-                    throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
-                }
-                break;
-        }
+    /**
+     * @return bool
+     */
+    public function isInTransaction(): bool
+    {
+        return $this->inTransaction;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isEncrypted(): bool
+    {
+        return $this->encrypted;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMdxFlag(): string
+    {
+        return $this->mdxFlag;
+    }
+
+    /**
+     * @return int
+     */
+    public function getHeaderLength(): int
+    {
+        return $this->headerLength;
     }
 }
