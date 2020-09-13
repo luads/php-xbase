@@ -73,6 +73,7 @@ class DBaseColumn extends AbstractColumn
             $this->decimalCount = $decimalCount;
         }
 
+        $this->decimalCount = $decimalCount;
         $this->reserved1 = $reserved1;
         $this->workAreaID = $workAreaID;
         $this->reserved2 = $reserved2;
