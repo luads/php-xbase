@@ -65,7 +65,7 @@ class DBaseColumn extends AbstractColumn
         $this->name = strtolower($name);
         $this->type = $type;
         $this->memAddress = $memAddress;
-        $this->length = $length;
+        $this->length = in_array($this->type, ['M','C']) ? $length + 256*$decimalCount : $length;
         $this->decimalCount = $decimalCount;
         $this->reserved1 = $reserved1;
         $this->workAreaID = $workAreaID;
