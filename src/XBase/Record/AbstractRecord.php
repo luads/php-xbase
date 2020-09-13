@@ -274,7 +274,7 @@ class AbstractRecord implements RecordInterface
         $s = $this->forceGetString($columnName);
 
         if (!$s) {
-            return false;
+            return false; //todo if null?
         }
 
         switch (strtoupper($s[0])) {

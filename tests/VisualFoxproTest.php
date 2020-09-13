@@ -7,6 +7,7 @@ use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
+use XBase\Record\FoxproRecord;
 use XBase\Table;
 
 class VisualFoxproTest extends AbstractTestCase
@@ -324,5 +325,29 @@ TEXT;
 
         $record = $table->nextRecord();
         self::assertSame(10412.1241, $record->getCurrency('amount'));
+    }
+
+    public function test90(): void
+    {
+        $table = new Table(__DIR__.'/Resources/foxpro/f5.dbf');
+        self::assertSame(TableType::FOXPRO_MEMO, $table->getVersion());
+        self::assertSame(18, $table->getColumnCount());
+        self::assertSame(5, $table->getRecordCount());
+
+        /** @var FoxproRecord $record */
+        $record = $table->nextRecord();
+        self::assertSame('MASTER     06/27/2007 11:27', $record->getObject($table->getColumn('ucode')));
+        self::assertSame('20070517', $record->getDateTimeObject($table->getColumn('sdate'))->format('Ymd'));
+        self::assertSame('He will call us on the 18th to settle - 123 xp', $record->getObject($table->getColumn('note')));
+        self::assertSame(false, $record->getObject($table->getColumn('pri')));
+        self::assertSame(false, $record->getObject($table->getColumn('autold')));
+        self::assertSame('20070515', $record->getDateTimeObject($table->getColumn('due'))->format('Ymd'));
+        self::assertSame(null, $record->getObject($table->getColumn('uname')));
+        self::assertSame(null, $record->getObject($table->getColumn('oth1')));
+        self::assertSame(null, $record->getObject($table->getColumn('oth2')));
+        self::assertSame(false, $record->getObject($table->getColumn('n1')));
+        self::assertSame(108551.0, $record->getObject($table->getColumn('n2')));
+        self::assertSame('He will call us on the 18th to settle - 123 xp', $record->getObject($table->getColumn('notememo')));
+        self::assertSame(null, $record->getObject($table->getColumn('subject')));
     }
 }
