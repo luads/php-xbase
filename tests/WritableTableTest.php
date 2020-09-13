@@ -211,10 +211,14 @@ class WritableTableTest extends TestCase
     {
         $original = __DIR__.'/Resources/foxpro/vfp.dbf';
         $copyTo = $this->duplicateFile($original);
-        $table = new WritableTable($copyTo);
-        $table->writeRecord();
-        $table->close();
-        self::assertFileEquals($original, $copyTo);
+        try {
+            $table = new WritableTable($copyTo);
+            $table->writeRecord();
+            $table->close();
+            self::assertFileEquals($original, $copyTo);
+        } finally {
+            unlink($copyTo);
+        }
     }
 
     /**
@@ -224,12 +228,16 @@ class WritableTableTest extends TestCase
     {
         $original = __DIR__.'/Resources/foxpro/vfp.dbf';
         $copyTo = $this->duplicateFile($original);
-        $table = new WritableTable($copyTo);
-        $table->appendRecord();
-        $table->deleteRecord();
-        $table->writeRecord();
-        $table->close();
-        self::assertFileEquals($original, $copyTo);
+        try {
+            $table = new WritableTable($copyTo);
+            $table->appendRecord();
+            $table->deleteRecord();
+            $table->writeRecord();
+            $table->close();
+            self::assertFileEquals($original, $copyTo);
+        } finally {
+            unlink($copyTo);
+        }
     }
 
     /**
