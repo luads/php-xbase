@@ -21,7 +21,7 @@ class FoxproTest extends AbstractTestCase
         self::assertSame(66, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());
         self::assertSame(false, $table->isEncrypted());
-        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(TableFlag::NONE, ord($table->getMdxFlag()));
         self::assertSame(0x64, $table->getLanguageCode());
 
         self::assertSame(12, $table->getColumnCount());
@@ -67,7 +67,7 @@ class FoxproTest extends AbstractTestCase
         self::assertSame(90, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());
         self::assertSame(false, $table->isEncrypted());
-        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(TableFlag::NONE, ord($table->getMdxFlag()));
         self::assertSame(0x03, $table->getLanguageCode());
 
         $this->assertRecords($table);

@@ -2,12 +2,12 @@
 
 namespace XBase;
 
-use XBase\Column\ColumnFactory;
 use XBase\Column\ColumnInterface;
-use XBase\Column\DBase7Column;
 use XBase\Enum\Codepage;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
+use XBase\Header\Builder\HeaderBuilderFactory;
+use XBase\Header\HeaderInterface;
 use XBase\Memo\MemoFactory;
 use XBase\Memo\MemoInterface;
 use XBase\Record\RecordFactory;
@@ -16,14 +16,8 @@ use XBase\Stream\Stream;
 
 class Table
 {
-    /** @var int Table header length in bytes */
-    const HEADER_LENGTH = 32;
-
-    /** @var int Record field length in bytes */
-    const FIELD_LENGTH = 32;
-
-    /** @var int Visual FoxPro backlist length */
-    const VFP_BACKLIST_LENGTH = 263;
+    /** @var HeaderInterface */
+    protected $header;
 
     const END_OF_FILE_MARKER = 0x1a;
 
@@ -32,9 +26,6 @@ class Table
 
     /** @var Stream */
     protected $fp;
-
-    /** @var int */
-    protected $filePos = 0;
 
     /** @var int Current record position. */
     protected $recordPos = -1;
@@ -45,88 +36,13 @@ class Table
     /** @var RecordInterface|null */
     protected $record;
 
-    /**
-     * @var int
-     *
-     * @deprecated in 1.2 and will be protected in 1.3. Use getVersion() method.
-     */
-    public $version;
-
-    /**
-     * @var int unixtime
-     *
-     * @deprecated in 1.2 and will be protected in 1.3. Use getModifyDate() method.
-     */
-    public $modifyDate;
-
-    /**
-     * @var int
-     *
-     * @deprecated in 1.2 and will be protected in 1.3. Use getRecordCount() method.
-     */
-    public $recordCount = 0;
-
-    /**
-     * @var int
-     *
-     * @deprecated in 1.2 and will be protected in 1.3. Use getRecordByteLength() method.
-     */
-    public $recordByteLength;
-
-    /**
-     * @var bool
-     *
-     * @deprecated in 1.2 and will be protected in 1.3. Use isInTransaction() method.
-     */
-    public $inTransaction;
-
-    /**
-     * @var bool
-     *
-     * @deprecated in 1.2 and will be protected in 1.3. Use isEncrypted() method.
-     */
-    public $encrypted;
-
-    /** @var string */
-    public $mdxFlag;
-
-    /**
-     * @var string language codepage
-     *
-     * @see        https://blog.codetitans.pl/post/dbf-and-language-code-page/
-     * @deprecated in 1.2 and will be protected in 1.3. Use getLanguageCode() method.
-     */
-    public $languageCode;
-
-    /**
-     * @var ColumnInterface[]
-     *
-     * @deprecated in 1.2 and will be protected in 1.3. Use getColumns() method.
-     */
-    public $columns = [];
-
-    /**
-     * @var int
-     *
-     * @deprecated in 1.2 and will be protected in 1.3. Use getHeaderLength() method.
-     */
-    public $headerLength;
-
-    protected $backlist;
-
-    /**
-     * @var bool
-     *
-     * @deprecated since 1.1 and will be removed in 1.3. Use isFoxpro() method instead.
-     */
-    public $foxpro;
+    /** @var string|null */
+    protected $convertFrom;
 
     /**
      * @var MemoInterface|null
-     *
-     * @deprecated since 1.2 and will be removed in 1.3. Use getMemo() method instead.
      */
-    public $memo;
+    protected $memo;
 
     /** @var string|null DBase7 only */
     protected $languageName;
@@ -191,32 +107,8 @@ class Table
 
     protected function readHeader(): void
     {
-        $this->version = $this->fp->readUChar();
-        $this->foxpro = TableType::isFoxpro($this->version);
-        $this->modifyDate = $this->fp->read3ByteDate();
-        $this->recordCount = $this->fp->readUInt();
-        $this->headerLength = $this->fp->readUShort();
-        $this->recordByteLength = $this->fp->readUShort();
-        $this->fp->read(2); //reserved
-        $this->inTransaction = 0 != $this->fp->read();
-        $this->encrypted = 0 != $this->fp->read();
-        $this->fp->read(4); //Free record thread
-        $this->fp->read(8); //Reserved for multi-user dBASE
-        $this->mdxFlag = $this->fp->read();
-        $this->languageCode = $this->fp->read();
-        $this->fp->read(2); //reserved
-        if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
-            $this->languageName = rtrim($this->fp->read(32), chr(0));
-            $this->fp->read(4);
-        }
-
-        [$columnsCount, $terminatorLength] = $this->pickColumnsCount();
-        $this->readColumns($columnsCount);
-        $this->checkHeaderTerminator($terminatorLength);
-
-        if (TableType::isVisualFoxpro($this->version)) {
-            $this->backlist = $this->fp->read(self::VFP_BACKLIST_LENGTH);
-        }
+        $this->header = HeaderBuilderFactory::create($this->filepath)->build();
+        $this->fp->seek($this->header->getLength());
 
 //        $this->setFilePos($this->headerLength);
         $this->recordPos = -1;
@@ -311,12 +203,12 @@ class Table
         $valid = false;
 
         do {
-            if (($this->recordPos + 1) >= $this->recordCount) {
+            if (($this->recordPos + 1) >= $this->header->getRecordCount()) {
                 return null;
             }
 
             $this->recordPos++;
-            $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->recordByteLength));
+            $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->header->getRecordByteLength()));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -335,17 +227,17 @@ class Table
      */
     public function pickRecord(int $position): ?RecordInterface
     {
-        if ($position >= $this->recordCount) {
+        if ($position >= $this->header->getRecordCount()) {
             throw new TableException("Row with index {$position} does not exists");
         }
 
         $curPos = $this->fp->tell();
-        $seekPos = $this->headerLength + $position * $this->recordByteLength;
+        $seekPos = $this->header->getLength() + $position * $this->header->getRecordByteLength();
         if (0 !== $this->fp->seek($seekPos)) {
             throw new TableException("Failed to pick row at position {$position}");
         }
 
-        $record = RecordFactory::create($this, $position, $this->fp->read($this->recordByteLength));
+        $record = RecordFactory::create($this, $position, $this->fp->read($this->header->getRecordByteLength()));
         // revert pointer
         $this->fp->seek($curPos);
 
@@ -372,9 +264,9 @@ class Table
 
             $this->recordPos--;
 
-            $this->fp->seek($this->headerLength + ($this->recordPos * $this->recordByteLength));
+            $this->fp->seek($this->header->getLength() + ($this->recordPos * $this->header->getRecordByteLength()));
 
-            $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->recordByteLength));
+            $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->getRecordByteLength()));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -394,9 +286,9 @@ class Table
             return null;
         }
 
-        $this->fp->seek($this->headerLength + ($index * $this->recordByteLength));
+        $this->fp->seek($this->header->getLength() + ($index * $this->header->getRecordByteLength()));
 
-        $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->recordByteLength));
+        $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->header->getRecordByteLength()));
 
         return $this->record;
     }
@@ -448,7 +340,7 @@ class Table
 
     public function getColumn(string $name): ColumnInterface
     {
-        foreach ($this->columns as $column) {
+        foreach ($this->header->getColumns() as $column) {
             if ($column->getName() === $name) {
                 return $column;
             }
@@ -457,9 +349,6 @@ class Table
         throw new \Exception("Column $name not found");
     }
 
-    /**
-     * @return RecordInterface
-     */
     public function getRecord(): ?RecordInterface
     {
         return $this->record;
@@ -467,7 +356,7 @@ class Table
 
     public function getCodepage(): int
     {
-        return ord($this->languageCode);
+        return $this->header->getLanguageCode();
     }
 
     /**
@@ -475,17 +364,17 @@ class Table
      */
     public function getColumns(): array
     {
-        return $this->columns;
+        return $this->header->getColumns();
     }
 
     public function getColumnCount(): int
     {
-        return count($this->columns);
+        return count($this->getColumns());
     }
 
     public function getRecordCount(): int
     {
-        return $this->recordCount;
+        return $this->header->getRecordCount();
     }
 
     /**
@@ -498,7 +387,7 @@ class Table
 
     public function getRecordByteLength()
     {
-        return $this->recordByteLength;
+        return $this->header->getRecordByteLength();
     }
 
     /**
@@ -511,7 +400,7 @@ class Table
 
     public function getVersion(): int
     {
-        return $this->version;
+        return $this->header->getVersion();
     }
 
     /**
@@ -519,7 +408,7 @@ class Table
      */
     public function getLanguageCode(): int
     {
-        return ord($this->languageCode);
+        return $this->header->getLanguageCode();
     }
 
     public function getMemo(): ?MemoInterface
@@ -550,31 +439,31 @@ class Table
 
     public function isFoxpro(): bool
     {
-        return TableType::isFoxpro($this->version);
+        return $this->header->isFoxpro();
     }
 
     public function getModifyDate()
     {
-        return $this->modifyDate;
+        return $this->header->getModifyDate();
     }
 
     public function isInTransaction(): bool
     {
-        return $this->inTransaction;
+        return $this->header->isInTransaction();
     }
 
     public function isEncrypted(): bool
     {
-        return $this->encrypted;
+        return $this->header->isEncrypted();
     }
 
     public function getMdxFlag(): string
     {
-        return $this->mdxFlag;
+        return chr($this->header->getMdxFlag());
     }
 
     public function getHeaderLength(): int
     {
-        return $this->headerLength;
+        return $this->header->getLength();
     }
 }

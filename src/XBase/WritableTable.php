@@ -243,7 +243,7 @@ class WritableTable extends Table
             return $this;
         }
 
-        $offset = $this->headerLength + ($record->getRecordIndex() * $this->recordByteLength);
+        $offset = $this->header->getLength() + ($record->getRecordIndex() * $this->recordByteLength);
         $this->fp->seek($offset);
         $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($record));
 

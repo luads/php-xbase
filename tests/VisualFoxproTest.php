@@ -24,7 +24,7 @@ class VisualFoxproTest extends AbstractTestCase
         self::assertSame(90, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());
         self::assertSame(false, $table->isEncrypted());
-        self::assertSame(TableFlag::CDX | TableFlag::MEMO, ord($table->mdxFlag));
+        self::assertSame(TableFlag::CDX | TableFlag::MEMO, ord($table->getMdxFlag()));
         self::assertSame(0x03, $table->getLanguageCode());
         self::assertSame(15, $table->getColumnCount());
         self::assertSame(0, $table->getRecordCount());
@@ -64,7 +64,7 @@ class VisualFoxproTest extends AbstractTestCase
         self::assertSame(164, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());
         self::assertSame(false, $table->isEncrypted());
-        self::assertSame(TableFlag::MEMO, ord($table->mdxFlag));
+        self::assertSame(TableFlag::MEMO, ord($table->getMdxFlag()));
         self::assertSame(0x03, $table->getLanguageCode());
 
         $columns = $table->getColumns();
