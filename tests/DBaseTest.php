@@ -31,7 +31,7 @@ class DBaseTest extends AbstractTestCase
         self::assertSame(225, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());
         self::assertSame(false, $table->isEncrypted());
-        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(TableFlag::NONE, ord($table->getMdxFlag()));
         self::assertSame(0, $table->getLanguageCode());
 
         $columns = $table->getColumns();
@@ -177,7 +177,7 @@ JSON;
         self::assertSame(70, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());
         self::assertSame(false, $table->isEncrypted());
-        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(TableFlag::NONE, ord($table->getMdxFlag()));
         self::assertSame(0x03, $table->getLanguageCode());
 
         $this->assertRecords($table);
@@ -199,7 +199,7 @@ JSON;
         self::assertSame(80, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());
         self::assertSame(false, $table->isEncrypted());
-        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(TableFlag::NONE, ord($table->getMdxFlag()));
         self::assertSame(0x03, $table->getLanguageCode());
 
         $this->assertRecords($table);
@@ -227,7 +227,7 @@ JSON;
         self::assertSame(126, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());
         self::assertSame(false, $table->isEncrypted());
-        self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
+        self::assertSame(TableFlag::NONE, ord($table->getMdxFlag()));
 
         $this->assertRecords($table);
 

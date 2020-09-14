@@ -180,7 +180,7 @@ class WritableTable extends Table
             return;
         }
 
-        $offset = $this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength);
+        $offset = $this->header->getLength() + ($this->record->getRecordIndex() * $this->recordByteLength);
         $this->fp->seek($offset);
         $data = $this->record->serializeRawData(); // removed referencing
         $this->fp->write($data);
