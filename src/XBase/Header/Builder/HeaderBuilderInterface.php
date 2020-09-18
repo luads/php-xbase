@@ -6,5 +6,7 @@ use XBase\Header\HeaderInterface;
 
 interface HeaderBuilderInterface
 {
-    public function build(): HeaderInterface;
+    public function build(): self;
+
+    public function getHeader(): HeaderInterface;
 }

@@ -86,10 +86,11 @@ class Table
 
     protected function readHeader(): void
     {
-        $this->header = HeaderBuilderFactory::create($this->filepath)->build();
+        $this->header = HeaderBuilderFactory::create($this->filepath)
+            ->build()
+            ->getHeader();
         $this->fp->seek($this->header->getLength());
 
-//        $this->setFilePos($this->headerLength);
         $this->recordPos = -1;
         $this->record = false;
         $this->deleteCount = 0;
