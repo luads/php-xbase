@@ -4,8 +4,6 @@ namespace XBase\Header\Builder;
 
 use XBase\Column\ColumnFactory;
 use XBase\Column\ColumnInterface;
-use XBase\Column\DBase7Column;
-use XBase\Enum\TableType;
 use XBase\Exception\TableException;
 use XBase\Header\DBaseHeader;
 use XBase\Header\HeaderInterface;
@@ -39,12 +37,17 @@ abstract class AbstractHeaderBuilder implements HeaderBuilderInterface
         return DBaseHeader::class;
     }
 
-    public function build(): HeaderInterface
+    public function build(): HeaderBuilderInterface
     {
         $this->readFirstBlock();
         $this->readColumns();
         $this->readRest();
 
+        return $this;
+    }
+
+    public function getHeader(): HeaderInterface
+    {
         return $this->header;
     }
 
