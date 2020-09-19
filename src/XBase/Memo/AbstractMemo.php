@@ -34,7 +34,7 @@ abstract class AbstractMemo implements MemoInterface
     {
     }
 
-    public static function getExtension()
+    public static function getExtension(): string
     {
         return 'dbt';
     }
@@ -42,18 +42,18 @@ abstract class AbstractMemo implements MemoInterface
     /**
      * @inheritDoc
      */
-    public function isOpen()
+    public function isOpen(): bool
     {
         return null !== $this->fp;
     }
 
-    public function open()
+    public function open(): void
     {
         $this->close();
         $this->fp = fopen($this->filepath, 'rb');
     }
 
-    public function close()
+    public function close(): void
     {
         if (null !== $this->fp) {
             fclose($this->fp);

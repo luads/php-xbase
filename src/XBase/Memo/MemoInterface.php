@@ -4,24 +4,13 @@ namespace XBase\Memo;
 
 interface MemoInterface
 {
-    /**
-     * @param $pointer
-     *
-     * @return MemoObject|null
-     */
-    public function get($pointer);
+    public function get(string $pointer): ?MemoObject;
 
-    public function open();
+    public function open(): void;
 
-    public function close();
+    public function close(): void;
 
-    /**
-     * @return bool
-     */
-    public function isOpen();
+    public function isOpen(): bool;
 
-    /**
-     * @return string
-     */
-    public static function getExtension();
+    public static function getExtension(): string;
 }

@@ -17,37 +17,28 @@ class AbstractRecord implements RecordInterface
     /** @var Table */
     protected $table;
     /** @var array */
-    protected $choppedData;
+    protected $choppedData = [];
     /** @var bool */
-    protected $deleted;
+    protected $deleted = false;
     /** @var bool */
-    protected $inserted;
+    protected $inserted = false;
     /** @var int */
     protected $recordIndex;
 
-    /**
-     * Record constructor.
-     *
-     * @param      $recordIndex
-     * @param bool $rawData
-     */
-    public function __construct(Table $table, $recordIndex, $rawData = false)
+    public function __construct(Table $table, int $recordIndex, ?string $rawData = null)
     {
         $this->table = $table;
         $this->recordIndex = $recordIndex;
         $this->choppedData = [];
 
         if ($rawData && strlen($rawData) > 0) {
-            $this->inserted = false;
-            $this->deleted = (self::FLAG_NOT_DELETED !== ord($rawData[0]));
+            $this->deleted = (self::FLAG_NOT_DELETED !== $f = ord($rawData[0]));
 
             foreach ($table->getColumns() as $column) {
                 $this->choppedData[$column->getName()] = substr($rawData, $column->getBytePos(), $column->getDataLength());
             }
         } else {
             $this->inserted = true;
-            $this->deleted = false;
-
             foreach ($table->getColumns() as $column) {
                 $this->choppedData[$column->getName()] = str_pad('', $column->getDataLength(), chr(0));
             }
@@ -65,7 +56,7 @@ class AbstractRecord implements RecordInterface
         return $this->getString($name);
     }
 
-    public function __set($name, $value)
+    public function __set(string $name, $value)
     {
         return $this->setStringByName($name, $value);
     }
@@ -101,7 +92,7 @@ class AbstractRecord implements RecordInterface
      *
      * @return ColumnInterface
      */
-    public function getColumn($name)
+    public function getColumn(string $name)
     {
         return $this->table->getColumn($name);
     }
@@ -109,12 +100,12 @@ class AbstractRecord implements RecordInterface
     /**
      * @return int
      */
-    public function getRecordIndex()
+    public function getRecordIndex(): int
     {
         return $this->recordIndex;
     }
 
-    public function setRecordIndex($index)
+    public function setRecordIndex(int $index): void
     {
         $this->recordIndex = $index;
     }
@@ -496,11 +487,15 @@ class AbstractRecord implements RecordInterface
             trigger_error($column->getName().' is not a Memo column', E_USER_ERROR);
         }
 
-        $this->forceSetString($column, $value);
+        $this->table->getMemo()
+            ->get($this->choppedData[$column->getName()])
+            ->setData($value);
     }
 
     /**
      * @return string
+     *
+     * @deprecated
      */
     public function serializeRawData()
     {

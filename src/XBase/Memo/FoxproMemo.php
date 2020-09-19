@@ -16,7 +16,7 @@ class FoxproMemo extends AbstractMemo
         $this->blockSize = $bytes[1];
     }
 
-    public static function getExtension()
+    public static function getExtension(): string
     {
         return 'fpt';
     }
@@ -26,7 +26,7 @@ class FoxproMemo extends AbstractMemo
      *
      * @return false|string|null
      */
-    public function get($pointer)
+    public function get(string $pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();

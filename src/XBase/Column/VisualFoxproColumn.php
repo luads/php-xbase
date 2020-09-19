@@ -6,7 +6,7 @@ use XBase\Enum\FieldType;
 
 class VisualFoxproColumn extends DBaseColumn
 {
-    public function getDataLength()
+    public function getDataLength(): int
     {
         switch ($this->type) {
             case FieldType::BLOB:

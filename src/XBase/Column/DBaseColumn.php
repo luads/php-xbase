@@ -84,10 +84,7 @@ class DBaseColumn extends AbstractColumn
         $this->bytePos = $bytePos;
     }
 
-    /**
-     * @return int
-     */
-    public function getDataLength()
+    public function getDataLength(): int
     {
         switch ($this->type) {
             case FieldType::DATE:

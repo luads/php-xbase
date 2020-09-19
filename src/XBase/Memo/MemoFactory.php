@@ -3,7 +3,6 @@
 namespace XBase\Memo;
 
 use XBase\Enum\TableType;
-use XBase\Memo;
 use XBase\Table;
 
 class MemoFactory
@@ -45,9 +44,6 @@ class MemoFactory
             case TableType::VISUAL_FOXPRO_AI:
             case TableType::VISUAL_FOXPRO_VAR:
                 return VisualFoxproMemo::class;
-
-            default:
-                return Memo::class;
         }
     }
 }

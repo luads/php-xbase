@@ -68,7 +68,7 @@ class StreamWrapper
         return fflush($this->fp);
     }
 
-    public function isOpen()
+    public function isOpen(): bool
     {
         return null !== $this->fp;
     }
@@ -97,7 +97,7 @@ class StreamWrapper
         return fwrite($this->fp, $string); //todo length arg
     }
 
-    public function __call($method, $args)
+    public function __call(string $method, $args)
     {
         $mapping = [
             'char'  => [1, 'c'],

@@ -6,7 +6,7 @@ class DBase3Memo extends AbstractMemo
 {
     const BLOCK_LENGTH = 512;
 
-    public function get($pointer)
+    public function get(string $pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();

@@ -2,8 +2,6 @@
 
 namespace XBase\Column;
 
-use XBase\Record;
-
 interface ColumnInterface
 {
     public static function getHeaderLength(): int;
@@ -43,7 +41,6 @@ interface ColumnInterface
 
     /**
      * @return int
-     * @deprecated use getMemAddress
      */
     public function getBytePos();
 

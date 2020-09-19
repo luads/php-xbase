@@ -24,7 +24,7 @@ class DBase4Memo extends AbstractMemo
         $this->blockLength = $bytes[1];
     }
 
-    public function get($pointer)
+    public function get(string $pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();

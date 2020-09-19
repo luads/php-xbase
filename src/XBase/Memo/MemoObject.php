@@ -31,6 +31,13 @@ class MemoObject
         return $this->data;
     }
 
+    public function setData(string $data): self
+    {
+        $this->data = $data;
+
+        return $this;
+    }
+
     public function __toString()
     {
         return $this->data;

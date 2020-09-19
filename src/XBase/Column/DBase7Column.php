@@ -2,8 +2,6 @@
 
 namespace XBase\Column;
 
-use XBase\Enum\FieldType;
-use XBase\Record;
 use XBase\Stream\Stream;
 
 class DBase7Column extends AbstractColumn

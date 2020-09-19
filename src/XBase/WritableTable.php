@@ -150,8 +150,8 @@ class WritableTable extends Table
             $this->fp->write(chr($column->isSetFields() ? 1 : 0));//23
             $this->fp->write(
                 method_exists($column, 'getReserved3')
-                ? call_user_func([$column, 'getReserved3'])
-                : str_pad('', 7, chr(0))
+                    ? call_user_func([$column, 'getReserved3'])
+                    : str_pad('', 7, chr(0))
             );//24-30
             $this->fp->write(chr($column->isIndexed() ? 1 : 0));//31
         }
@@ -221,11 +221,9 @@ class WritableTable extends Table
     /**
      * Remove deleted records.
      */
-    public function pack()
+    public function pack(): void
     {
         $newRecordCount = 0;
-        $newFilepos = $this->headerLength;
-
         for ($i = 0; $i < $this->getRecordCount(); $i++) {
             $r = $this->moveTo($i);
 
