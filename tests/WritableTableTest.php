@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Tests;
 
@@ -171,7 +171,7 @@ class WritableTableTest extends TestCase
             $newRecord->apartado = '600';
             $newRecord->telefonor = '12345678';
             $newRecord->email = 'someone@email.com';
-            $newRecord->venciced = \DateTime::createFromFormat('U', -777859200);
+            $newRecord->venciced = \DateTime::createFromFormat('U', '-777859200');
             $newRecord->nriesgo = 'B';
             $newRecord->salario = 5000;
             //save
@@ -309,7 +309,7 @@ class WritableTableTest extends TestCase
 //            $record->getObject($table->getColumn('blob'), );
 //            $record->getObject($table->getColumn('currency'), );
             //self::assertSame(1599696000, $record->getObject($table->getColumn('datetime')));
-            self::assertSame('2020-09-10T00:00:00+00:00', $record->getDateTimeObject($table->getColumn('datetime'))->format(DATE_ATOM));
+            self::assertSame('2020-09-10T00:00:00+00:00', $record->getDateTimeObject($table->getColumn('datetime')->getName())->format(DATE_ATOM));
             self::assertSame(3.1415, $record->getObject($table->getColumn('double')));
             self::assertSame(3, $record->getObject($table->getColumn('integer')));
             self::assertSame('varchar', $record->getObject($table->getColumn('varchar')));

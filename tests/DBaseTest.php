@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Tests;
 
@@ -45,6 +45,7 @@ class DBaseTest extends AbstractTestCase
         self::assertSame(FieldType::NUMERIC, $column->getType());
         self::assertSame(4, $column->getLength());
         self::assertSame(1, $column->getBytePos());
+        self::assertSame(0, $column->getMemAddress());
         self::assertSame(0, $column->getColIndex());
 
         $column = $columns['plan'];
@@ -53,6 +54,7 @@ class DBaseTest extends AbstractTestCase
         self::assertSame(FieldType::CHAR, $column->getType());
         self::assertSame(1, $column->getLength());
         self::assertSame(5, $column->getBytePos());
+        self::assertSame(0, $column->getMemAddress());
         self::assertSame(1, $column->getColIndex());
 
         $column = $columns['dt'];
@@ -61,6 +63,7 @@ class DBaseTest extends AbstractTestCase
         self::assertSame(FieldType::DATE, $column->getType());
         self::assertSame(8, $column->getLength());
         self::assertSame(216, $column->getBytePos());
+        self::assertSame(0, $column->getMemAddress());
         self::assertSame(16, $column->getColIndex());
 
         unset($column, $columns);

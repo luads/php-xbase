@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Tests;
 
@@ -37,6 +37,7 @@ class FoxproTest extends AbstractTestCase
         self::assertSame(10, $c->getLength());
         self::assertSame(0x20, $c->getMemAddress());
         self::assertSame(0x20, $c->getBytePos());
+        self::assertSame(0x20, $c->getMemAddress());
         unset($c);
 
         //<editor-fold desc="record">
