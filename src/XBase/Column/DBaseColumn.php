@@ -84,20 +84,20 @@ class DBaseColumn extends AbstractColumn
         $this->bytePos = $bytePos;
     }
 
-    public function getDataLength(): int
-    {
-        switch ($this->type) {
-            case FieldType::DATE:
-            case FieldType::DATETIME:
-                return 8;
-            case FieldType::LOGICAL:
-                return 1;
-            case FieldType::MEMO:
-                return 10;
-            default:
-                return $this->length;
-        }
-    }
+//    public function getDataLength(): int
+//    {
+//        switch ($this->type) {
+//            case FieldType::DATE:
+//            case FieldType::DATETIME:
+//                return 8;
+//            case FieldType::LOGICAL:
+//                return 1;
+//            case FieldType::MEMO:
+//                return 10;
+//            default:
+//                return $this->length;
+//        }
+//    }
 
     /**
      * @return bool|string

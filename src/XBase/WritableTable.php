@@ -12,6 +12,11 @@ use XBase\Stream\Stream;
 class WritableTable extends Table
 {
     /**
+     * @var bool record property is new.
+     */
+    private $insertion = false;
+
+    /**
      * @param $table
      *
      * @return WritableTable
@@ -58,7 +63,7 @@ class WritableTable extends Table
                 throw new TableException('fields argument error, must be array of arrays', $this->filepath);
             }
             $column = new DBaseColumn($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
-            $recordByteLength += $column->getDataLength();
+            $recordByteLength += $column->getLength();
             $columnNames[$i] = $field[0];
             $columns[$i] = $column;
             $i++;
@@ -134,7 +139,7 @@ class WritableTable extends Table
             $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0))); // 0-10
             $this->fp->write($column->getType());// 11
             $this->fp->writeUInt($column->getMemAddress());//12-15
-            $this->fp->writeUChar($column->getDataLength());//16
+            $this->fp->writeUChar($column->getLength());//16
             $this->fp->writeUChar($column->getDecimalCount());//17
             $this->fp->write(
                 method_exists($column, 'getReserved1')
@@ -170,6 +175,7 @@ class WritableTable extends Table
     {
         $this->recordPos = $this->recordCount++;
         $this->record = RecordFactory::create($this, $this->recordPos);
+        $this->insertion = true;
 
         return $this->record;
     }
@@ -182,31 +188,32 @@ class WritableTable extends Table
 
         $offset = $this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength);
         $this->fp->seek($offset);
-        $data = $this->record->serializeRawData(); // todo build binary string
-        $this->fp->write($data);
+        $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($this->record));
 
-        if ($this->record->isInserted()) {
+        if ($this->insertion) {
             $this->writeHeader();
         }
 
         $this->fp->flush();
 
-        $this->record->setInserted(false);
+        $this->insertion = false;
     }
 
-    public function deleteRecord(): void
+    public function deleteRecord(): self
     {
-        if ($this->record->isInserted()) {
+        if ($this->insertion) {
             $this->record = null;
             $this->recordPos = -1;
-            return;
+            return $this;
         }
 
         $this->record->setDeleted(true);
+        $this->writeRecord();
 
-        $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
-        $this->fp->write('!');
-        $this->fp->flush();
+        return $this;
+//        $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
+//        $this->fp->write('!');
+//        $this->fp->flush();
     }
 
     public function undeleteRecord()
@@ -221,7 +228,7 @@ class WritableTable extends Table
     /**
      * Remove deleted records.
      */
-    public function pack(): void
+    public function pack(): self
     {
         $newRecordCount = 0;
         for ($i = 0; $i < $this->getRecordCount(); $i++) {
@@ -239,5 +246,7 @@ class WritableTable extends Table
         $this->writeHeader();
 
         $this->fp->truncate($this->headerLength + ($this->recordCount * $this->recordByteLength));
+
+        return $this;
     }
 }

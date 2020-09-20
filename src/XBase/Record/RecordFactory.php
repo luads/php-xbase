@@ -3,6 +3,12 @@
 namespace XBase\Record;
 
 use XBase\Enum\TableType;
+use XBase\Record\DataConverter\DataConverterInterface;
+use XBase\Record\DataConverter\DBase4DataConverter;
+use XBase\Record\DataConverter\DBase7DataConverter;
+use XBase\Record\DataConverter\DBaseDataConverter;
+use XBase\Record\DataConverter\FoxproDataConverter;
+use XBase\Record\DataConverter\VisualFoxproDataConverter;
 use XBase\Table;
 
 class RecordFactory
@@ -15,7 +21,11 @@ class RecordFactory
             return null;
         }
 
-        return $refClass->newInstance($table, $recordIndex, $rawData);
+        return $refClass->newInstance(
+            $table,
+            $recordIndex,
+            self::createDataConverter($table)->fromBinaryString($rawData ?? '')
+        );
     }
 
     private static function getClass(string $version): string
@@ -40,6 +50,31 @@ class RecordFactory
             case TableType::DBASE_III_PLUS_NOMEMO:
             default:
                 return DBaseRecord::class;
+        }
+    }
+
+    public static function createDataConverter(Table $table): DataConverterInterface
+    {
+        switch ($table->getVersion()) {
+            case TableType::DBASE_IV_MEMO:
+                return new DBase4DataConverter($table);
+
+            case TableType::DBASE_7_NOMEMO:
+            case TableType::DBASE_7_MEMO:
+                return new DBase7DataConverter($table);
+
+            case TableType::FOXPRO_MEMO:
+                return new FoxproDataConverter($table);
+
+            case TableType::VISUAL_FOXPRO:
+            case TableType::VISUAL_FOXPRO_AI:
+            case TableType::VISUAL_FOXPRO_VAR:
+                return new VisualFoxproDataConverter($table);
+
+            case TableType::DBASE_III_PLUS_MEMO:
+            case TableType::DBASE_III_PLUS_NOMEMO:
+            default:
+                return new DBaseDataConverter($table);
         }
     }
 }

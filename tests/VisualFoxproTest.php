@@ -235,17 +235,24 @@ TEXT;
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType());
         self::assertSame(27297, strlen($memoImg->getData()));
         self::assertSame(1.2, $record->getFloat('rate'));
-        self::assertSame(1, $record->getString('general'));
+        self::assertEquals(1, $record->getString('general'));
+        self::assertSame('1', $record->getString('general'));
         self::assertSame([70, 19], array_values(unpack('C*', $record->getString('blob'))));
-        self::assertSame(1.2, $record->getString('currency'));
+        self::assertSame(1.2, $record->getObject($table->getColumn('currency')));
+        self::assertSame('1.2', $record->getString('currency'));
         self::assertSame(-5364658739, $record->getDateTime('datetime'));
         self::assertSame('1800-01-01 01:01:01', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
-        self::assertSame(2.3, $record->getString('double'));
-        self::assertSame(0, $record->getString('integer'));
-        self::assertSame(1, $record->getString('ai'));
+        self::assertSame(2.3, $record->getObject($table->getColumn('double')));
+        self::assertSame('2.3', $record->getString('double'));
+        self::assertSame('0', $record->getString('integer'));
+        self::assertSame('1', $record->getString('ai'));
         self::assertSame('qwe', $record->getString('varchar'));
         self::assertSame('Groot', $record->getString('name_bin'));
-        self::assertSame($bio, str_replace("\r\n", "\n", trim($record->getString('bio_bin'))));
+        /** @var MemoObject $memoBinBio */
+        $memoBinBio = $record->getObject($table->getColumn('bio_bin'));
+        self::assertInstanceOf(MemoObject::class, $memoBinBio);
+        self::assertSame($bio, str_replace("\r\n", "\n", trim($memoBinBio->getData())));
+        self::assertSame($bio, str_replace("\r\n", "\n", trim((string) $memoBinBio)));
         self::assertSame([0xAB, 0xCD, 0xEF], array_values(unpack('C*', $record->getString('varbinary'))));
         self::assertSame('qwe', $record->getString('varchar_bi'));
 
@@ -268,18 +275,19 @@ TEXT;
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType());
         self::assertSame(95714, strlen($memoImg->getData()));
         self::assertSame(1.23, $record->getFloat('rate'));
-        self::assertSame(2, $record->getString('general'));
-        self::assertSame(null, $record->getString('blob'));
-        self::assertSame(1.23, $record->getString('currency'));
+        self::assertSame('2', $record->getString('general'));
+        self::assertSame('', $record->getString('blob'));
+        self::assertEquals(null, $record->getString('blob'));
+        self::assertSame('1.23', $record->getString('currency'));
         self::assertSame(0, $record->getDateTime('datetime'));
         self::assertSame('1970-01-01 00:00:00', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
-        self::assertSame(4.56, $record->getString('double'));
-        self::assertSame(1, $record->getString('integer'));
-        self::assertSame(2, $record->getString('ai'));
+        self::assertSame('4.56', $record->getString('double'));
+        self::assertSame(1, $record->get('integer'));
+        self::assertSame(2, $record->get('ai'));
         self::assertSame('asd', $record->getString('varchar')); //todo varchar
         self::assertSame('Rocket Raccoon', $record->getString('name_bin'));
-        self::assertSame($bio, str_replace("\r\n", "\n", trim($record->getString('bio_bin'))));
-        self::assertSame([0x12, 0x34], array_values(unpack('C*', $record->getString('varbinary'))));
+        self::assertSame($bio, str_replace("\r\n", "\n", trim((string) $record->get('bio_bin'))));
+        self::assertSame([0x12, 0x34], array_values(unpack('C*', $record->get('varbinary'))));
         self::assertSame('asd', $record->getString('varchar_bi'));
 
         $record = $table->nextRecord();
@@ -303,19 +311,19 @@ TEXT;
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType());
         self::assertSame(187811, strlen($memoImg->getData()));
         self::assertSame(15.16, $record->getFloat('rate'));
-        self::assertSame(3, $record->getString('general'));
-        self::assertSame(null, $record->getString('blob'));
-        self::assertSame(15.16, $record->getString('currency'));
+        self::assertSame(3, $record->get('general'));
+        self::assertSame('', $record->get('blob'));
+        self::assertSame(15.16, $record->get('currency'));
         self::assertSame(1582230020, $record->getDateTime('datetime'));
         self::assertSame('2020-02-20 20:20:20', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
-        self::assertSame(987.654, $record->getString('double'));
-        self::assertSame(2, $record->getString('integer'));
-        self::assertSame(3, $record->getString('ai'));
-        self::assertSame('zxc', $record->getString('varchar')); //todo varchar
-        self::assertSame('Star-Lord', $record->getString('name_bin'));
+        self::assertSame(987.654, $record->get('double'));
+        self::assertSame(2, $record->get('integer'));
+        self::assertSame(3, $record->get('ai'));
+        self::assertSame('zxc', $record->get('varchar')); //todo varchar
+        self::assertSame('Star-Lord', $record->get('name_bin'));
         self::assertSame($bio, str_replace("\r\n", "\n", trim($record->getString('bio_bin'))));
         self::assertSame([0xFA, 0xCE, 0x8D], array_values(unpack('C*', $record->getString('varbinary'))));
-        self::assertSame(null, $record->getString('varchar_bi'));
+        self::assertSame('', $record->get('varchar_bi'));
     }
 
     public function testCurrency(): void
@@ -354,16 +362,26 @@ TEXT;
         self::assertSame('MASTER     06/27/2007 11:27', $record->getObject($table->getColumn('ucode')));
         self::assertSame('20070517', $record->getDateTimeObject($table->getColumn('sdate')->getName())->format('Ymd'));
         self::assertSame('He will call us on the 18th to settle - 123 xp', $record->getObject($columnNote));
-        self::assertSame('He will call us on the 18th to settle - 123 xp', $record->getObject($table->getColumn('notememo')));
+        /** @var MemoObject $memoNote */
+        $memoNote = $record->getObject($table->getColumn('notememo'));
+        self::assertInstanceOf(MemoObject::class, $memoNote);
+        self::assertSame('He will call us on the 18th to settle - 123 xp', $memoNote->getData());
+        self::assertEquals('He will call us on the 18th to settle - 123 xp', $memoNote);
         self::assertSame(false, $record->getObject($table->getColumn('pri')));
         self::assertSame(false, $record->getObject($table->getColumn('autold')));
         self::assertSame('20070515', $record->getDateTimeObject($table->getColumn('due')->getName())->format('Ymd'));
-        self::assertSame(null, $record->getObject($table->getColumn('uname')));
-        self::assertSame(null, $record->getObject($table->getColumn('oth1')));
-        self::assertSame(null, $record->getObject($table->getColumn('oth2')));
-        self::assertSame(false, $record->getObject($table->getColumn('n1')));
+        self::assertSame('', $record->getObject($table->getColumn('uname')));
+        self::assertSame('', $record->getObject($table->getColumn('oth1')));
+        self::assertSame('', $record->getObject($table->getColumn('oth2')));
+        self::assertSame(0.0, $record->getObject($table->getColumn('n1')));
+        self::assertSame('', $record->getObject($table->getColumn('subject')));
         self::assertSame(108551.0, $record->getObject($table->getColumn('n2')));
-        self::assertSame(null, $record->getObject($table->getColumn('subject')));
+        //legacy
+        self::assertEquals(null, $record->getObject($table->getColumn('uname')));
+        self::assertEquals(null, $record->getObject($table->getColumn('oth1')));
+        self::assertEquals(null, $record->getObject($table->getColumn('oth2')));
+        self::assertEquals(false, $record->getObject($table->getColumn('n1')));
+        self::assertEquals(null, $record->getObject($table->getColumn('subject')));
 
         $record = $table->nextRecord();
         self::assertSame(

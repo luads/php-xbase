@@ -138,11 +138,13 @@ class WritableTableTest extends TestCase
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
         $table = new WritableTable($copyTo, null, 'cp866');
+        self::assertEquals(10, $table->getRecordCount());
         $table->openWrite();
         $table->nextRecord(); // set pointer to first row
-        $table->deleteRecord();
-        $table->pack();
-        $table->close();
+        $table
+            ->deleteRecord()
+            ->pack()
+            ->close();
 
         $table = new Table($copyTo, null, 'cp866');
         self::assertEquals(9, $table->getRecordCount());
@@ -239,6 +241,7 @@ class WritableTableTest extends TestCase
         $copyTo = $this->duplicateFile(__DIR__.'/Resources/foxpro/vfp.dbf');
 
         $table = new WritableTable($copyTo);
+        self::assertSame(TableType::VISUAL_FOXPRO_VAR, $table->getVersion());
         self::assertSame(3, $table->getRecordCount());
         $table->openWrite();
         $table->appendRecord();

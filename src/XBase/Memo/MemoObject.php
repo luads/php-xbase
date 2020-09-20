@@ -7,21 +7,22 @@ class MemoObject
     const TYPE_TEXT  = 1;
     const TYPE_IMAGE = 2;
 
-    /** @var int */
+    /** @var string */
+    private $data;
+    /** @var int|null */
+    private $type;
+    /** @var int|null */
     private $pointer;
     /** @var int|null */
     private $length;
-    /** @var int */
-    private $type;
-    /** @var string */
-    private $data;
+
     /** @var bool */
     private $edited = false;
 
     /**
      * MemoObject constructor.
      */
-    public function __construct(int $pointer, int $length, int $type, string $data)
+    public function __construct(string $data, ?int $type = null, ?int $pointer = null, ?int $length = null)
     {
         $this->pointer = $pointer;
         $this->length = $length;
@@ -29,7 +30,7 @@ class MemoObject
         $this->data = $data;
     }
 
-    public function getPointer(): int
+    public function getPointer(): ?int
     {
         return $this->pointer;
     }
@@ -42,7 +43,7 @@ class MemoObject
         return $this->length;
     }
 
-    public function getType(): int
+    public function getType(): ?int
     {
         return $this->type;
     }
@@ -66,9 +67,6 @@ class MemoObject
         return $this->data;
     }
 
-    /**
-     * @return bool
-     */
     public function isEdited(): bool
     {
         return $this->edited;

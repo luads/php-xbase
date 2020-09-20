@@ -12,9 +12,7 @@ class DBase3Memo extends AbstractMemo
             $this->open();
         }
 
-        if (is_string($pointer)) {
-            $pointer = (int) ltrim($pointer, ' ');
-        }
+        $pointer = (int) ltrim($pointer, ' ');
         fseek($this->fp, $pointer * self::BLOCK_LENGTH);
 
         $endMarker = chr(0x1A).chr(0x1A).chr(0x00);
@@ -41,6 +39,6 @@ class DBase3Memo extends AbstractMemo
             }
         }
 
-        return new MemoObject($pointer, $memoLength, $type, $result);
+        return new MemoObject($result, $type, $pointer, $memoLength);
     }
 }

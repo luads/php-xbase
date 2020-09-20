@@ -13,54 +13,49 @@ class VisualFoxproRecord extends FoxproRecord
     /** @var int */
     protected $zeroDate = 0x253d8c;
 
-    public function getObject(ColumnInterface $column)
-    {
-        switch ($column->getType()) {
-            case FieldType::INTEGER:
-                return $this->getInt($column->getName());
-            case FieldType::DOUBLE:
-                return $this->getDouble($column->getName());
-            case FieldType::DATETIME:
-                return $this->getDateTime($column->getName());
-            case FieldType::CURRENCY:
-                return $this->getCurrency($column->getName());
-            case FieldType::FLOAT:
-                return $this->getFloat($column->getName());
-            case FieldType::VAR_FIELD:
-            case FieldType::VARBINARY:
-                return $this->getVarchar($column->getName());
-            default:
-                return parent::getObject($column);
-        }
-    }
+//    public function getObject(ColumnInterface $column)
+//    {
+//        switch ($column->getType()) {
+//            case FieldType::INTEGER:
+//                return $this->getInt($column->getName());
+//            case FieldType::DOUBLE:
+//                return $this->getDouble($column->getName());
+//            case FieldType::DATETIME:
+//                return $this->getDateTime($column->getName());
+//            case FieldType::CURRENCY:
+//                return $this->getCurrency($column->getName());
+//            case FieldType::FLOAT:
+//                return $this->getFloat($column->getName());
+//            case FieldType::VAR_FIELD:
+//            case FieldType::VARBINARY:
+//                return $this->getVarchar($column->getName());
+//            default:
+//                return parent::getObject($column);
+//        }
+//    }
 
-    public function setObject(ColumnInterface $column, $value)
+    public function setObject($column, $value)
     {
+        $column = $this->toColumn($column);
         switch ($column->getType()) {
             case FieldType::INTEGER:
-                return $this->setInt($column, $value);
+                return $this->setInt($column->getName(), $value);
             case FieldType::DOUBLE:
-                return $this->setDouble($column, $value);
+                return $this->setDouble($column->getName(), $value);
             case FieldType::DATETIME:
-                return $this->setDateTime($column, $value);
+                return $this->setDateTime($column->getName(), $value);
             case FieldType::CURRENCY:
-                return $this->setCurrency($column, $value);
+                return $this->setCurrency($column->getName(), $value);
             case FieldType::GENERAL:
-                return $this->setGeneral($column, $value);
+                return $this->setGeneral($column->getName(), $value);
             case FieldType::FLOAT:
-                return $this->setFloat($column, $value);
+                return $this->setFloat($column->getName(), $value);
             case FieldType::VAR_FIELD:
             case FieldType::VARBINARY:
-                return $this->setVarchar($column, $value);
+                return $this->setVarchar($column->getName(), $value);
             default:
-                return parent::setObject($column, $value);
+                return parent::setObject($column->getName(), $value);
         }
-    }
-
-    public function getGeneral(string $columnName)
-    {
-        $data = unpack('L', $this->choppedData[$columnName]);
-        return $data[1];
     }
 
     public function setGeneral(ColumnInterface $column, $value): self
@@ -69,35 +64,9 @@ class VisualFoxproRecord extends FoxproRecord
         return $this;
     }
 
-    /**
-     * @return bool|float|int
-     */
-    public function getInt(string $columnName)
+    public function setInt($columnName, $value)
     {
-        $s = $this->choppedData[$columnName];
-
-        if (!$s) {
-            return false;
-        }
-
-        if ($this->table->isFoxpro()) {
-            $su = unpack('i', $s);
-            $ret = $su[1];
-        } else {
-            $ret = ord($s[0]);
-
-            $length = $this->getColumn($columnName)->getLength();
-
-            for ($i = 1; $i < $length; $i++) {
-                $ret += $i * 256 * ord($s[$i]);
-            }
-        }
-
-        return $ret;
-    }
-
-    public function setInt(ColumnInterface $column, $value)
-    {
+        $column = $this->toColumn($columnName);
         if (FieldType::INTEGER !== $column->getType()) {
             trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
         }
@@ -111,40 +80,11 @@ class VisualFoxproRecord extends FoxproRecord
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getDouble(string $columnName)
-    {
-        $s = $this->choppedData[$columnName];
-
-        $s = unpack('d', $s);
-
-        if ($s) {
-            return $s[1];
-        }
-
-        return 0;
-    }
-
     public function setDouble(ColumnInterface $column, $value): self
     {
         $this->choppedData[$column->getName()] = pack('d', $value);
 
         return $this;
-    }
-
-    public function getCurrency(string $columnName)
-    {
-        $s = $this->choppedData[$columnName];
-
-        $s = unpack('q', $s);
-
-        if ($s) {
-            return $s[1] / 10000;
-        }
-
-        return 0;
     }
 
     private function setCurrency(ColumnInterface $column, $value): self
@@ -154,29 +94,13 @@ class VisualFoxproRecord extends FoxproRecord
         return $this;
     }
 
-    public function getVarchar(string $columnName)
+    private function setVarchar($columnName, $value): self
     {
-        $s = $this->forceGetString($columnName);
-        if (false !== ($pos = strpos($s, chr(0x00)))) {
-            $s = substr($s, 0, $pos);
-        }
-        return $s;
-    }
-
-    private function setVarchar(ColumnInterface $column, $value): self
-    {
-        $this->choppedData[$column->getName()] = $value;
+        $column = $this->toColumn($columnName);
+        $this->data[$column->getName()] = $value;
+        $this->choppedData[$column->getName()] = $value; //todo-delete
 
         return $this;
-    }
-
-    public function getVarbinary(string $columnName)
-    {
-        $s = $this->forceGetString($columnName);
-        if (false !== ($pos = strpos($s, chr(0x00)))) {
-            $s = substr($s, 0, $pos);
-        }
-        return $s;
     }
 
     /**
@@ -197,25 +121,6 @@ class VisualFoxproRecord extends FoxproRecord
 
         $value = str_replace(',', '.', $value);
         $this->forceSetString($column, $value);
-    }
-
-    /**
-     * @return bool|float|int
-     */
-    public function getDateTime(string $columnName)
-    {
-        $raw = $this->choppedData[$columnName];
-        $buf = unpack('i*', $raw);
-        $intDate = $buf[1];
-        $intTime = $buf[2];
-
-        if (0 == $intDate && 0 == $intTime) {
-            return false;
-        }
-
-        $longDate = ($intDate - $this->zeroDate) * 86400;
-
-        return $longDate + ($intTime / 1000);
     }
 
     /**
@@ -260,5 +165,61 @@ class VisualFoxproRecord extends FoxproRecord
         }
 
         return new \DateTime($data);
+    }
+
+    /**
+     * @deprecated use get()
+     */
+    public function getGeneral(string $columnName)
+    {
+        return $this->get($columnName);
+    }
+
+    /**
+     * @deprecated use get()
+     */
+    public function getDateTime(string $columnName)
+    {
+        return $this->get($columnName);
+    }
+
+    /**
+     * @deprecated use get()
+     */
+    public function getVarbinary(string $columnName)
+    {
+        return $this->get($columnName);
+    }
+
+    /**
+     * @deprecated use get()
+     */
+    public function getVarchar(string $columnName)
+    {
+        return $this->get($columnName);
+    }
+
+    /**
+     * @deprecated use get()
+     */
+    public function getCurrency(string $columnName)
+    {
+        return $this->get($columnName);
+    }
+
+    /**
+     * @deprecated use get()
+     */
+    public function getDouble(string $columnName)
+    {
+        return $this->data[$columnName];
+    }
+
+    /**
+     * @deprecated use get()
+     */
+    public function getInt(string $columnName)
+    {
+        return $this->data[$columnName];
     }
 }

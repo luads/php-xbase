@@ -9,6 +9,7 @@ use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
+use XBase\Record\DBaseRecord;
 use XBase\Record\RecordInterface;
 use XBase\Table;
 
@@ -71,7 +72,7 @@ class DBaseTest extends AbstractTestCase
 
         //<editor-fold desc="record">
         self::assertEmpty($table->getRecord());
-
+        /** @var DBaseRecord $record */
         $record = $table->nextRecord();
         self::assertInstanceOf(RecordInterface::class, $record);
         $columns = $record->getColumns();
@@ -96,7 +97,7 @@ class DBaseTest extends AbstractTestCase
     "ir": 66071,
     "iv": 0,
     "iitg": 66071,
-    "dt": 1564617600,
+    "dt": "20190801",
     "priz": 1
 }
 JSON;
@@ -135,8 +136,9 @@ JSON;
         self::assertSame('А', $record->plan); //cyrilic
         // date
         self::assertSame(1564617600, $record->getDate('dt'));
-        self::assertSame(1564617600, $record->getObject($record->getColumn('dt')));
-        self::assertSame('Thu, 01 Aug 2019 00:00:00 +0000', $record->dt);
+        self::assertSame('20190801', $record->getObject($record->getColumn('dt')));
+        self::assertSame('2019-08-01', $record->getDateTimeObject('dt')->format('Y-m-d'));
+//        self::assertSame('Thu, 01 Aug 2019 00:00:00 +0000', $record->dt);
         $dt = new \DateTime($record->forceGetString('dt'));
         self::assertEquals('2019-08-01T00:00:00+00:00', $dt->format(DATE_W3C));
         //</editor-fold>
@@ -235,11 +237,16 @@ JSON;
         $this->assertRecords($table);
 
         $record = $table->moveTo(0);
-        self::assertSame(0, $record->getString('auto_inc'));
+        self::assertSame(0, $record->get('auto_inc'));
         self::assertSame(1, $record->getInt('integer'));
         self::assertSame(4.0, $record->getNum('large_int'));
         self::assertNotEmpty($record->getTimestamp('datetime'));
         self::assertSame('1800-01-01 01:01:01', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
+        /** @var MemoObject $memoBlob */
+        $memoBlob = $record->getObject($table->getColumn('blob'));
+        self::assertInstanceOf(MemoObject::class, $memoBlob);
+        self::assertSame('qwe', $memoBlob->getData());
+        self::assertSame(null, $record->getObject($table->getColumn('dbase_ole')));
 
         $record = $table->nextRecord();
         self::assertSame(1, $record->getInt('auto_inc'));

@@ -50,7 +50,7 @@ class Table
     protected $convertFrom;
 
     /**
-     * @var string
+     * @var int
      *
      * @deprecated in 1.2 and will be protected in 1.3. Use getVersion() method.
      */
@@ -421,7 +421,7 @@ class Table
             }
         }
 
-        throw new \Exception(sprintf('Column %s not found', $name));
+        throw new \Exception("Column $name not found");
     }
 
     /**
@@ -476,7 +476,7 @@ class Table
         return $this->filepath;
     }
 
-    public function getVersion()
+    public function getVersion(): int
     {
         return $this->version;
     }
@@ -502,10 +502,7 @@ class Table
         return $this->deleteCount;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getConvertFrom()
+    public function getConvertFrom(): ?string
     {
         return $this->convertFrom;
     }

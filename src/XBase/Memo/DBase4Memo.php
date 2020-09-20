@@ -30,13 +30,11 @@ class DBase4Memo extends AbstractMemo
             $this->open();
         }
 
-        if (is_string($pointer)) {
-            $pointer = (int) ltrim($pointer, ' ');
-        }
+        $pointer = (int) ltrim($pointer);
         fseek($this->fp, $pointer * $this->blockLength);
         $sign = unpack('N', fread($this->fp, self::BLOCK_SIGN_LENGTH));
         if (self::BLOCK_SIGN !== $sign[1]) {
-            throw new \LogicException('Wrong dBaseIV block sign/');
+            throw new \LogicException('Wrong dBaseIV block sign');
         }
 
         $memoLength = unpack('L', fread($this->fp, self::BLOCK_LENGTH_LENGTH));
@@ -47,6 +45,6 @@ class DBase4Memo extends AbstractMemo
             $result = iconv($this->convertFrom, 'utf-8', $result);
         }
 
-        return new MemoObject($pointer, $memoLength[1], $type, $result);
+        return new MemoObject($result, $type, $pointer, $memoLength[1]);
     }
 }

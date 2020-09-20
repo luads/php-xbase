@@ -32,9 +32,7 @@ class FoxproMemo extends AbstractMemo
             $this->open();
         }
 
-        if (is_string($pointer)) {
-            $pointer = (int) ltrim($pointer, ' ');
-        }
+        $pointer = (int) ltrim($pointer, ' ');
         fseek($this->fp, $pointer * $this->blockSize);
         $type = unpack('N', fread($this->fp, 4)); //todo
 
@@ -46,6 +44,6 @@ class FoxproMemo extends AbstractMemo
             $result = iconv($this->convertFrom, 'utf-8', $result);
         }
 
-        return new MemoObject($pointer, $memoLength[1], $type, $result);
+        return new MemoObject($result, $type, $pointer, $memoLength[1]);
     }
 }

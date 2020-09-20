@@ -1,11 +1,11 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace XBase\Record;
+namespace XBase\Record\DataConverter;
 
 use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 
-class DBase7Record extends AbstractRecord
+class DBase7DataConverter extends DBase4DataConverter
 {
     /**
      * @var int Julian Day of Unix epoch start
@@ -15,52 +15,32 @@ class DBase7Record extends AbstractRecord
 
     private const SEC_TO_JD = 500;
 
-    public function getObject(ColumnInterface $column)
+    protected function normalize(ColumnInterface $column, string $value)
     {
         switch ($column->getType()) {
             case FieldType::INTEGER:
             case FieldType::AUTO_INCREMENT:
-                return $this->getInt($column->getName());
+                return $this->normalizeInt($value);
             case FieldType::TIMESTAMP:
-                return $this->getTimestamp($column->getName());
+                return $this->normalizeTimestamp($value);
             default:
-                return parent::getObject($column);
+                return parent::normalize($column, $value);
         }
+    }
+
+    private function normalizeTimestamp(string $value): int
+    {
+        $buf = unpack('H14', $value);
+        return (int) ((hexdec($buf[1]) - self::UTC_TO_JD) / self::SEC_TO_JD);
     }
 
     /**
-     * Get DATE(D) or DATETIME(T) data as object of \DateTime class
+     * @todo This function should be optimized
      */
-    public function getDateTimeObject(string $columnName): \DateTime
+    private function normalizeInt(string $value): int
     {
-        $column = $this->getColumn($columnName);
-        if (!in_array($column->getType(), [FieldType::DATE, FieldType::TIMESTAMP])) {
-            trigger_error($column->getName().' is not a Date or DateTime column', E_USER_ERROR);
-        }
-
-        $data = $this->forceGetString($columnName);
-        if (in_array($column->getType(), [FieldType::TIMESTAMP])) {
-            return \DateTime::createFromFormat('U', $this->getTimestamp($columnName));
-        }
-
-        return new \DateTime($data);
-    }
-
-    public function getTimestamp(string $columnName): int
-    {
-        $raw = $this->choppedData[$columnName];
-        $buf = unpack('H14', $raw);
-        return (hexdec($buf[1]) - self::UTC_TO_JD) / self::SEC_TO_JD;
-    }
-
-    /**
-     * @deprecated use get('name')
-     */
-    public function getInt(string $columnName): int
-    {
-        $s = $this->choppedData[$columnName];
         //big endian
-        $buf = unpack('C*', $s);
+        $buf = unpack('C*', $value);
         $buf = array_map(function ($v) {
             return str_pad(decbin($v), 8, '0', STR_PAD_LEFT);
         }, $buf);

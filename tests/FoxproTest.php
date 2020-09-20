@@ -6,6 +6,7 @@ use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
+use XBase\Memo\MemoObject;
 use XBase\Table;
 
 class FoxproTest extends AbstractTestCase
@@ -86,13 +87,19 @@ class FoxproTest extends AbstractTestCase
 
         $record = $table->moveTo(0);
         self::assertSame(1.2, $record->getFloat('rate'));
-        self::assertSame('1', $record->getString('general'));
+        /** @var MemoObject $memoGeneral */
+        $memoGeneral = $record->get('general');
+        self::assertInstanceOf(MemoObject::class, $memoGeneral);
+        self::assertSame('1', $memoGeneral->getData());
+        self::assertEquals('1', $memoGeneral);
+
         $record = $table->nextRecord();
         self::assertSame(1.23, $record->getFloat('rate'));
-        self::assertSame('2', $record->getString('general'));
+        self::assertEquals('2', $record->getString('general'));
+
         $record = $table->nextRecord();
         self::assertSame(15.16, $record->getFloat('rate'));
-        self::assertSame('3', $record->getString('general'));
+        self::assertEquals('3', $record->getString('general'));
     }
 
     protected function assertMemoImg(Table $table): void

@@ -21,14 +21,16 @@ class FoxproRecord extends AbstractRecord
 
     public function getGeneral(string $columnName)
     {
-        return $this->table->getMemo()->get($this->choppedData[$columnName])->getData();
+        return $this->data[$columnName];
     }
 
     /**
      * @return int
+     *
+     * @deprecated use __get or getObject function
      */
     public function getFloat(string $columnName)
     {
-        return (float) ltrim($this->choppedData[$columnName]);
+        return $this->data[$columnName];
     }
 }
