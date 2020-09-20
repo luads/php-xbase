@@ -136,7 +136,7 @@ class Table
      * Table constructor.
      *
      * @param array|null  $availableColumns
-     * @param string|null $convertFrom Encoding of file
+     * @param string|null $convertFrom      Encoding of file
      *
      * @throws \Exception
      */
@@ -445,17 +445,11 @@ class Table
         return $this->columns;
     }
 
-    /**
-     * @return int
-     */
     public function getColumnCount(): int
     {
         return count($this->columns);
     }
 
-    /**
-     * @return int
-     */
     public function getRecordCount(): int
     {
         return $this->recordCount;

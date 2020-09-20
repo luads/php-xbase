@@ -246,7 +246,11 @@ JSON;
         self::assertSame(2, $record->getInt('integer'));
         self::assertSame(5.0, $record->getNum('large_int'));
         self::assertSame('1970-01-01 00:00:00', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
+        /** @var MemoObject $memoImg */
         $memoImg = $record->getMemoObject('image');
+        self::assertInstanceOf(MemoObject::class, $memoImg);
+        self::assertSame(0x3f, $memoImg->getPointer());
+        self::assertSame(98034, $memoImg->getLength());
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType()); //png
         self::assertSame(98026, strlen($memoImg->getData())); //png
 

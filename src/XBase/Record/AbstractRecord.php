@@ -32,7 +32,7 @@ class AbstractRecord implements RecordInterface
         $this->choppedData = [];
 
         if ($rawData && strlen($rawData) > 0) {
-            $this->deleted = (self::FLAG_NOT_DELETED !== $f = ord($rawData[0]));
+            $this->deleted = (self::FLAG_NOT_DELETED !== ord($rawData[0]));
 
             foreach ($table->getColumns() as $column) {
                 $this->choppedData[$column->getName()] = substr($rawData, $column->getBytePos(), $column->getDataLength());
@@ -45,13 +45,13 @@ class AbstractRecord implements RecordInterface
         }
     }
 
-    public function destroy()
+    public function destroy(): void
     {
         $this->table = null;
         $this->choppedData = null;
     }
 
-    public function __get($name)
+    public function __get(string $name)
     {
         return $this->getString($name);
     }
@@ -66,10 +66,7 @@ class AbstractRecord implements RecordInterface
         return $this->deleted;
     }
 
-    /**
-     * @return bool
-     */
-    public function isInserted()
+    public function isInserted(): bool
     {
         return $this->inserted;
     }
@@ -97,9 +94,6 @@ class AbstractRecord implements RecordInterface
         return $this->table->getColumn($name);
     }
 
-    /**
-     * @return int
-     */
     public function getRecordIndex(): int
     {
         return $this->recordIndex;
@@ -321,7 +315,7 @@ class AbstractRecord implements RecordInterface
      * @param $columnName
      * @param $value
      */
-    public function setStringByName(string $columnName, $value)
+    public function setStringByName(string $columnName, $value): void
     {
         $this->setString($this->table->getColumn($columnName), $value);
     }
@@ -330,15 +324,12 @@ class AbstractRecord implements RecordInterface
      * @param $columnIndex
      * @param $value
      */
-    public function setStringByIndex($columnIndex, $value)
+    public function setStringByIndex($columnIndex, $value): void
     {
         $this->setString($this->table->getColumn($columnIndex), $value);
     }
 
-    /**
-     * @param $value
-     */
-    public function setString(ColumnInterface $column, $value)
+    public function setString(ColumnInterface $column, $value): void
     {
         if (FieldType::CHAR == $column->getType()) {
             $this->forceSetString($column, $value);
@@ -354,7 +345,7 @@ class AbstractRecord implements RecordInterface
     /**
      * @param $value
      */
-    public function forceSetString(ColumnInterface $column, $value)
+    public function forceSetString(ColumnInterface $column, $value): void
     {
         if ($this->table->getConvertFrom()) {
             $value = iconv('utf-8', $this->table->getConvertFrom(), $value);
@@ -384,11 +375,6 @@ class AbstractRecord implements RecordInterface
         return $this->setObject($this->table->getColumn($columnIndex), $value);
     }
 
-    /**
-     * @param $value
-     *
-     * @return bool
-     */
     public function setObject(ColumnInterface $column, $value)
     {
         switch ($column->getType()) {

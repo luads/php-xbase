@@ -182,7 +182,7 @@ class WritableTable extends Table
 
         $offset = $this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength);
         $this->fp->seek($offset);
-        $data = $this->record->serializeRawData(); // removed referencing
+        $data = $this->record->serializeRawData(); // todo build binary string
         $this->fp->write($data);
 
         if ($this->record->isInserted()) {

@@ -19,7 +19,9 @@ class DBase3Memo extends AbstractMemo
 
         $endMarker = chr(0x1A).chr(0x1A).chr(0x00);
         $result = '';
+        $memoLength = 0;
         while (!feof($this->fp)) {
+            $memoLength++;
             $result .= fread($this->fp, 1);
 
             $substr = substr($result, -3);
@@ -30,14 +32,15 @@ class DBase3Memo extends AbstractMemo
         }
 
         $type = $this->guessDataType($result);
-        if (MemoObject::TYPE_TEXT === $type && chr(0x00) === substr($result, -1)) {
-            $result = substr($result, 0, -1); // remove endline symbol (0x00)
+        if (MemoObject::TYPE_TEXT === $type) {
+            if (chr(0x00) === substr($result, -1)) {
+                $result = substr($result, 0, -1); // remove endline symbol (0x00)
+            }
+            if ($this->convertFrom) {
+                $result = iconv($this->convertFrom, 'utf-8', $result);
+            }
         }
 
-        if (MemoObject::TYPE_TEXT === $type && $this->convertFrom) {
-            $result = iconv($this->convertFrom, 'utf-8', $result);
-        }
-
-        return new MemoObject($type, $result);
+        return new MemoObject($pointer, $memoLength, $type, $result);
     }
 }

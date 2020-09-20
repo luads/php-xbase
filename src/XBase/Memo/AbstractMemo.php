@@ -61,7 +61,7 @@ abstract class AbstractMemo implements MemoInterface
         $this->fp = null;
     }
 
-    protected function guessDataType(string $result)
+    protected function guessDataType(string $result): int
     {
         if (strlen($result) > 4) {
             $bytes = unpack('n*', substr($result, 0, 4));

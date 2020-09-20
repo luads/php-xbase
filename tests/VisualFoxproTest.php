@@ -227,8 +227,11 @@ The character was reintroduced as a heroic, noble being in 2006, and appeared in
 TEXT;
         self::assertSame($bio, str_replace("\r\n", "\n", trim($record->getMemo('bio'))));
         self::assertSame(12.1235, $record->getNum('money'));
+        /** @var MemoObject $memoImg */
         $memoImg = $record->getMemoObject('image');
         self::assertInstanceOf(MemoObject::class, $memoImg);
+        self::assertSame(0x20, $memoImg->getPointer());
+        self::assertSame(27297, $memoImg->getLength());
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType());
         self::assertSame(27297, strlen($memoImg->getData()));
         self::assertSame(1.2, $record->getFloat('rate'));
@@ -257,8 +260,11 @@ The character has appeared in several media adaptations as a member of that team
 TEXT;
         self::assertSame(trim($bio), str_replace("\r\n", "\n", trim($record->getMemo('bio'))));
         self::assertSame(325.32, $record->getNum('money'));
+        /** @var MemoObject $memoImg */
         $memoImg = $record->getMemoObject('image');
         self::assertInstanceOf(MemoObject::class, $memoImg);
+        self::assertSame(0x01db, $memoImg->getPointer());
+        self::assertSame(95714, $memoImg->getLength());
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType());
         self::assertSame(95714, strlen($memoImg->getData()));
         self::assertSame(1.23, $record->getFloat('rate'));
@@ -289,8 +295,11 @@ Chris Pratt portrays the character in the Marvel Cinematic Universe films Guardi
 TEXT;
         self::assertSame(trim($bio), str_replace("\r\n", "\n", trim($record->getMemo('bio'))));
         self::assertSame(0.0, $record->getNum('money'));
+        /** @var MemoObject $memoImg */
         $memoImg = $record->getMemoObject('image');
         self::assertInstanceOf(MemoObject::class, $memoImg);
+        self::assertSame(0x07c6, $memoImg->getPointer());
+        self::assertSame(187811, $memoImg->getLength());
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType());
         self::assertSame(187811, strlen($memoImg->getData()));
         self::assertSame(15.16, $record->getFloat('rate'));

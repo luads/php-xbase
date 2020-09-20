@@ -47,6 +47,6 @@ class DBase4Memo extends AbstractMemo
             $result = iconv($this->convertFrom, 'utf-8', $result);
         }
 
-        return new MemoObject($type, $result);
+        return new MemoObject($pointer, $memoLength[1], $type, $result);
     }
 }
