@@ -4,15 +4,21 @@ namespace XBase\Tests\Record;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Column\ColumnInterface;
+use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
-use XBase\Memo\MemoInterface;
-use XBase\Memo\MemoObject;
-use XBase\Record\DataConverter\DBaseDataConverter;
 use XBase\Record\DBaseRecord;
 use XBase\Table;
 
+/**
+ * @author Alexander Strizhak <gam6itko@gmail.com>
+ *
+ * @coversDefaultClass \XBase\Record\DBaseRecord
+ */
 class DBaseRecordTest extends TestCase
 {
+    /**
+     * @covers ::copyFrom
+     */
     public function testCopyFrom(): void
     {
         $columns = [];
@@ -59,6 +65,10 @@ class DBaseRecordTest extends TestCase
             ->expects(self::atLeastOnce())
             ->method('getColumns')
             ->willReturn($columns);
+        $table
+            ->expects(self::atLeastOnce())
+            ->method('getRecordByteLength')
+            ->willReturn(70);
         $table
             ->expects(self::atLeastOnce())
             ->method('getConvertFrom')

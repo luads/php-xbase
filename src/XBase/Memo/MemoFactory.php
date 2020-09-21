@@ -45,5 +45,7 @@ class MemoFactory
             case TableType::VISUAL_FOXPRO_VAR:
                 return VisualFoxproMemo::class;
         }
+
+        throw new \LogicException('Unknown table memo type: '.$version);
     }
 }

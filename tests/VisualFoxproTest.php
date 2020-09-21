@@ -73,6 +73,7 @@ class VisualFoxproTest extends AbstractTestCase
         $memAddress = 1;
         $column = $columns['name'];
         self::assertSame(FieldType::CHAR, $column->getType());
+        self::assertSame(1, $column->getBytePos());
         self::assertSame(20, $column->getLength());
         self::assertSame(1, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -80,6 +81,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['birthday'];
         self::assertSame(FieldType::DATE, $column->getType());
+        self::assertSame(21, $column->getBytePos());
         self::assertSame(8, $column->getLength());
         self::assertSame(21, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -87,6 +89,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['is_man'];
         self::assertSame(FieldType::LOGICAL, $column->getType());
+        self::assertSame(29, $column->getBytePos());
         self::assertSame(1, $column->getLength());
         self::assertSame(29, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -94,6 +97,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['bio'];
         self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(30, $column->getBytePos());
         self::assertSame(4, $column->getLength());
         self::assertSame(30, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -101,6 +105,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['money'];
         self::assertSame(FieldType::NUMERIC, $column->getType());
+        self::assertSame(34, $column->getBytePos());
         self::assertSame(20, $column->getLength());
         self::assertSame(4, $column->getDecimalCount());
         self::assertSame(34, $column->getMemAddress());
@@ -109,6 +114,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['image'];
         self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(54, $column->getBytePos());
         self::assertSame(4, $column->getLength());
         self::assertSame(54, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -116,13 +122,16 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['rate'];
         self::assertSame(FieldType::FLOAT, $column->getType());
+        self::assertSame(58, $column->getBytePos());
         self::assertSame(10, $column->getLength());
         self::assertSame(58, $column->getMemAddress());
+        self::assertSame(2, $column->getDecimalCount());
         self::assertSame($memAddress, $column->getMemAddress());
         $memAddress += $column->getLength();
 
         $column = $columns['general'];
         self::assertSame(FieldType::GENERAL, $column->getType());
+        self::assertSame(68, $column->getBytePos());
         self::assertSame(4, $column->getLength());
         self::assertSame(68, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -130,6 +139,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['blob'];
         self::assertSame(FieldType::BLOB, $column->getType());
+        self::assertSame(72, $column->getBytePos());
         self::assertSame(4, $column->getLength());
         self::assertSame(72, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -137,6 +147,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['currency'];
         self::assertSame(FieldType::CURRENCY, $column->getType());
+        self::assertSame(76, $column->getBytePos());
         self::assertSame(8, $column->getLength());
         self::assertSame(76, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -144,6 +155,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['datetime'];
         self::assertSame(FieldType::DATETIME, $column->getType());
+        self::assertSame(84, $column->getBytePos());
         self::assertSame(8, $column->getLength());
         self::assertSame(84, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -151,6 +163,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['double'];
         self::assertSame(FieldType::DOUBLE, $column->getType());
+        self::assertSame(92, $column->getBytePos());
         self::assertSame(8, $column->getLength());
         self::assertSame(92, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -158,6 +171,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['integer'];
         self::assertSame(FieldType::INTEGER, $column->getType());
+        self::assertSame(100, $column->getBytePos());
         self::assertSame(4, $column->getLength());
         self::assertSame(100, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -165,6 +179,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['ai'];
         self::assertSame(FieldType::INTEGER, $column->getType());
+        self::assertSame(104, $column->getBytePos());
         self::assertSame(4, $column->getLength());
         self::assertSame(104, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -172,6 +187,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['varchar'];
         self::assertSame(FieldType::VAR_FIELD, $column->getType());
+        self::assertSame(108, $column->getBytePos());
         self::assertSame(10, $column->getLength());
         self::assertSame(108, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -179,6 +195,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['name_bin'];
         self::assertSame(FieldType::CHAR, $column->getType());
+        self::assertSame(118, $column->getBytePos());
         self::assertSame(20, $column->getLength());
         self::assertSame(118, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -186,6 +203,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['bio_bin'];
         self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(138, $column->getBytePos());
         self::assertSame(4, $column->getLength());
         self::assertSame(138, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -193,6 +211,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['varbinary'];
         self::assertSame(FieldType::VARBINARY, $column->getType());
+        self::assertSame(142, $column->getBytePos());
         self::assertSame(10, $column->getLength());
         self::assertSame(142, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -200,6 +219,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['varchar_bi'];
         self::assertSame(FieldType::VAR_FIELD, $column->getType());
+        self::assertSame(152, $column->getBytePos());
         self::assertSame(10, $column->getLength());
         self::assertSame(152, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -207,6 +227,7 @@ class VisualFoxproTest extends AbstractTestCase
 
         $column = $columns['_nullflags'];
         self::assertSame(FieldType::IGNORE, $column->getType());
+        self::assertSame(162, $column->getBytePos());
         self::assertSame(2, $column->getLength());
         self::assertSame(162, $column->getMemAddress());
         self::assertSame($memAddress, $column->getMemAddress());
@@ -240,11 +261,11 @@ TEXT;
         self::assertSame([70, 19], array_values(unpack('C*', $record->getString('blob'))));
         self::assertSame(1.2, $record->getObject($table->getColumn('currency')));
         self::assertSame('1.2', $record->getString('currency'));
-        self::assertSame(-5364658739, $record->getDateTime('datetime'));
+        self::assertSame('-5364658739', $record->getDateTime('datetime')->format('U'));
         self::assertSame('1800-01-01 01:01:01', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         self::assertSame(2.3, $record->getObject($table->getColumn('double')));
         self::assertSame('2.3', $record->getString('double'));
-        self::assertSame('0', $record->getString('integer'));
+        self::assertSame(null, $record->get('integer'));
         self::assertSame('1', $record->getString('ai'));
         self::assertSame('qwe', $record->getString('varchar'));
         self::assertSame('Groot', $record->getString('name_bin'));
@@ -279,7 +300,8 @@ TEXT;
         self::assertSame('', $record->getString('blob'));
         self::assertEquals(null, $record->getString('blob'));
         self::assertSame('1.23', $record->getString('currency'));
-        self::assertSame(0, $record->getDateTime('datetime'));
+        self::assertSame('0', $record->getDateTime('datetime')->format('U'));
+        self::assertSame('1970-01-01T00:00:00+00:00', $record->getDateTime('datetime')->format(DATE_ATOM));
         self::assertSame('1970-01-01 00:00:00', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         self::assertSame('4.56', $record->getString('double'));
         self::assertSame(1, $record->get('integer'));
@@ -314,7 +336,8 @@ TEXT;
         self::assertSame(3, $record->get('general'));
         self::assertSame('', $record->get('blob'));
         self::assertSame(15.16, $record->get('currency'));
-        self::assertSame(1582230020, $record->getDateTime('datetime'));
+        self::assertSame('1582230020', $record->getDateTime('datetime')->format('U'));
+        self::assertSame('2020-02-20 20:20:20', $record->getDateTime('datetime')->format('Y-m-d H:i:s'));
         self::assertSame('2020-02-20 20:20:20', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         self::assertSame(987.654, $record->get('double'));
         self::assertSame(2, $record->get('integer'));
@@ -368,12 +391,12 @@ TEXT;
         self::assertSame('He will call us on the 18th to settle - 123 xp', $memoNote->getData());
         self::assertEquals('He will call us on the 18th to settle - 123 xp', $memoNote);
         self::assertSame(false, $record->getObject($table->getColumn('pri')));
-        self::assertSame(false, $record->getObject($table->getColumn('autold')));
+        self::assertSame(null, $record->get('autold'));
         self::assertSame('20070515', $record->getDateTimeObject($table->getColumn('due')->getName())->format('Ymd'));
         self::assertSame('', $record->getObject($table->getColumn('uname')));
         self::assertSame('', $record->getObject($table->getColumn('oth1')));
         self::assertSame('', $record->getObject($table->getColumn('oth2')));
-        self::assertSame(0.0, $record->getObject($table->getColumn('n1')));
+        self::assertSame(null, $record->getObject($table->getColumn('n1')));
         self::assertSame('', $record->getObject($table->getColumn('subject')));
         self::assertSame(108551.0, $record->getObject($table->getColumn('n2')));
         //legacy
@@ -389,6 +412,6 @@ TEXT;
             $record->getObject($columnNote)
         );
         self::assertSame(false, $record->getObject($table->getColumn('pri')));
-        self::assertSame(false, $record->getObject($table->getColumn('autold')));
+        self::assertSame(null, $record->getObject($table->getColumn('autold')));
     }
 }

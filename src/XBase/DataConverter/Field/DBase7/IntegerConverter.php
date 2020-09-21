@@ -1,43 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Record\DataConverter;
+namespace XBase\DataConverter\Field\DBase7;
 
-use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
+use XBase\DataConverter\Field\AbstractFieldDataConverter;
 
-class DBase7DataConverter extends DBase4DataConverter
+class IntegerConverter extends AbstractFieldDataConverter
 {
-    /**
-     * @var int Julian Day of Unix epoch start
-     * @see https://planetcalc.com/503/
-     */
-    private const UTC_TO_JD = 0x42cc418ba99a00;
-
-    private const SEC_TO_JD = 500;
-
-    protected function normalize(ColumnInterface $column, string $value)
+    public static function getType(): string
     {
-        switch ($column->getType()) {
-            case FieldType::INTEGER:
-            case FieldType::AUTO_INCREMENT:
-                return $this->normalizeInt($value);
-            case FieldType::TIMESTAMP:
-                return $this->normalizeTimestamp($value);
-            default:
-                return parent::normalize($column, $value);
-        }
-    }
-
-    private function normalizeTimestamp(string $value): int
-    {
-        $buf = unpack('H14', $value);
-        return (int) ((hexdec($buf[1]) - self::UTC_TO_JD) / self::SEC_TO_JD);
+        return FieldType::INTEGER;
     }
 
     /**
      * @todo This function should be optimized
      */
-    private function normalizeInt(string $value): int
+    public function fromBinaryString(string $value): int
     {
         //big endian
         $buf = unpack('C*', $value);
@@ -64,6 +42,12 @@ class DBase7DataConverter extends DBase4DataConverter
         }
 
         return $result;
+    }
+
+    public function toBinaryString($value): string
+    {
+        //todo
+        throw new \Exception('NotRealized');
     }
 
     private function inverseBits(string $bin): string

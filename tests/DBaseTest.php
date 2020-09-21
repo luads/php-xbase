@@ -128,14 +128,14 @@ JSON;
         self::assertJsonStringEqualsJsonString($json, json_encode($record->getChoppedData()));
 
         // num
-        self::assertSame(10605, $record->getNum('num_sc'));
+        self::assertSame('10605', $record->getNum('num_sc'));
         self::assertSame(0.0, $record->getNum('vv'));
         self::assertSame(0.0, $record->vv);
         // char
         self::assertSame('А', $record->getString('plan')); //cyrilic
         self::assertSame('А', $record->plan); //cyrilic
         // date
-        self::assertSame(1564617600, $record->getDate('dt'));
+        self::assertSame('20190801', $record->getDate('dt'));
         self::assertSame('20190801', $record->getObject($record->getColumn('dt')));
         self::assertSame('2019-08-01', $record->getDateTimeObject('dt')->format('Y-m-d'));
 //        self::assertSame('Thu, 01 Aug 2019 00:00:00 +0000', $record->dt);

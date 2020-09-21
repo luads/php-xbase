@@ -3,12 +3,12 @@
 namespace XBase\Record;
 
 use XBase\Enum\TableType;
-use XBase\Record\DataConverter\DataConverterInterface;
-use XBase\Record\DataConverter\DBase4DataConverter;
-use XBase\Record\DataConverter\DBase7DataConverter;
-use XBase\Record\DataConverter\DBaseDataConverter;
-use XBase\Record\DataConverter\FoxproDataConverter;
-use XBase\Record\DataConverter\VisualFoxproDataConverter;
+use XBase\DataConverter\Record\RecordDataConverterInterface;
+use XBase\DataConverter\Record\DBase4DataConverter;
+use XBase\DataConverter\Record\DBase7DataConverter;
+use XBase\DataConverter\Record\DBaseDataConverter;
+use XBase\DataConverter\Record\FoxproDataConverter;
+use XBase\DataConverter\Record\VisualFoxproDataConverter;
 use XBase\Table;
 
 class RecordFactory
@@ -31,8 +31,8 @@ class RecordFactory
     private static function getClass(string $version): string
     {
         switch ($version) {
-            case TableType::DBASE_IV_MEMO:
-                return DBase4Record::class;
+//            case TableType::DBASE_IV_MEMO:
+//                return DBase4Record::class;
 
             case TableType::DBASE_7_NOMEMO:
             case TableType::DBASE_7_MEMO:
@@ -53,7 +53,7 @@ class RecordFactory
         }
     }
 
-    public static function createDataConverter(Table $table): DataConverterInterface
+    public static function createDataConverter(Table $table): RecordDataConverterInterface
     {
         switch ($table->getVersion()) {
             case TableType::DBASE_IV_MEMO:

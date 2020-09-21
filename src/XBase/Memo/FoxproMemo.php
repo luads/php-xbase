@@ -21,18 +21,20 @@ class FoxproMemo extends AbstractMemo
         return 'fpt';
     }
 
-    /**
-     * @param int $pointer
-     *
-     * @return false|string|null
-     */
-    public function get(string $pointer): ?MemoObject
+    public function get($pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();
         }
 
-        $pointer = (int) ltrim($pointer, ' ');
+        if (is_string($pointer)) {
+            $pointer = (int) ltrim($pointer, ' ');
+        }
+
+        if (0 === $pointer) {
+            return null;
+        }
+
         fseek($this->fp, $pointer * $this->blockSize);
         $type = unpack('N', fread($this->fp, 4)); //todo
 

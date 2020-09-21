@@ -24,13 +24,16 @@ class DBase4Memo extends AbstractMemo
         $this->blockLength = $bytes[1];
     }
 
-    public function get(string $pointer): ?MemoObject
+    public function get($pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();
         }
 
-        $pointer = (int) ltrim($pointer);
+        if (is_string($pointer)) {
+            $pointer = (int) ltrim($pointer);
+        }
+
         fseek($this->fp, $pointer * $this->blockLength);
         $sign = unpack('N', fread($this->fp, self::BLOCK_SIGN_LENGTH));
         if (self::BLOCK_SIGN !== $sign[1]) {

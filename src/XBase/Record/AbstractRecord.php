@@ -5,7 +5,6 @@ namespace XBase\Record;
 use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
-use XBase\Exception\InvalidColumnException;
 use XBase\Memo\MemoObject;
 use XBase\Table;
 
@@ -92,150 +91,85 @@ class AbstractRecord implements RecordInterface
         $this->recordIndex = $index;
     }
 
-    /**
-     * @param bool $bool
-     */
-    public function setDeleted($bool)
+    public function setDeleted(bool $bool): self
     {
         $this->deleted = $bool;
+
+        return $this;
     }
 
     //<editor-fold desc="getters">
-    public function get(string $columnName)
+    public function get($columnName)
     {
-        if (!$column = $this->table->getColumn($columnName)) {
-            throw new \LogicException("Column $columnName not found");
-        }
+        $column = $this->toColumn($columnName);
 
-        return $this->data[$columnName] ?? null;
+        return $this->data[$column->getName()] ?? null;
     }
 
     /**
-     * @return bool|false|float|int|string|null
-     *
-     * @throws InvalidColumnException If dataType not exists
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getObject(ColumnInterface $column)
     {
-        return $this->data[$column->getName()];
-//        switch ($column->getType()) {
-//            case FieldType::CHAR:
-//                return $this->getString($column->getName());
-//            case FieldType::DATE:
-//                return $this->getDate($column->getName());
-//            case FieldType::LOGICAL:
-//                return $this->getBoolean($column->getName());
-//            case FieldType::MEMO:
-//                return $this->getMemo($column->getName());
-//            case FieldType::NUMERIC:
-//                return $this->getNum($column->getName());
-//            case FieldType::IGNORE:
-//                return false;
-//            case FieldType::BLOB:
-//                return $this->forceGetString($column->getName());
-//        }
-//
-//        throw new InvalidColumnException(sprintf('Cannot handle datatype %s', $column->getType()));
+        return $this->get($column->getName());
     }
 
     /**
-     * @deprecated use getString
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getChar(string $columnName)
     {
-        return $this->forceGetString($columnName);
-    }
-
-    public function getString(string $columnName): string
-    {
-        $column = $this->table->getColumn($columnName);
-
-        if (FieldType::CHAR == $column->getType()) {
-            return $this->forceGetString($columnName);
-        } else {
-            $result = $this->getObject($column);
-
-            if ($result && (FieldType::DATETIME == $column->getType() || FieldType::DATE == $column->getType())) {
-                return date('r', $result);
-            }
-
-            if (FieldType::LOGICAL == $column->getType()) {
-                return $result ? '1' : '0';
-            }
-
-            return (string) $result;
-        }
+        return $this->get($columnName);
     }
 
     /**
-     * @return bool|float|int
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
+     */
+    public function getString(string $columnName): string
+    {
+        return $this->get($columnName);
+    }
+
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getNum(string $columnName)
     {
-        if (is_string($value = $this->data[$columnName])) {
-            $value = str_replace(',', '.', $value);
-            $column = $this->getColumn($columnName);
-
-            if (FieldType::NUMERIC == $column->getType() && ($column->getDecimalCount() > 0 || $column->getLength() > 9)) {
-                $value = doubleval($value);
-            } else {
-                $value = intval($value);
-            }
-        }
-
-        return $value;
+        return $this->get($columnName);
     }
 
     /**
-     * @return bool|int
+     * @deprecated since 1.3 and will be delete in 2.0. Use set()
      */
     public function getDate(string $columnName)
     {
-        $s = $this->forceGetString($columnName);
-
-        if (!$s) {
-            return false;
-        }
-
-        return strtotime($s);
+        return $this->get($columnName);
     }
 
     /**
      * Get DATE(D) or DATETIME(T) data as object of \DateTime class
      */
-    public function getDateTimeObject(string $columnName): \DateTime
+    public function getDateTimeObject($columnName): ?\DateTimeInterface
     {
         $column = $this->getColumn($columnName);
-        if (!in_array($column->getType(), [FieldType::DATE])) {
-            trigger_error($column->getName().' is not a Date or DateTime column', E_USER_ERROR);
-        }
+        $this->checkType($column, FieldType::DATE);
 
-        $data = $this->forceGetString($columnName);
+        $data = $this->get($column->getName());
 
-        return new \DateTime($data);
+        return \DateTime::createFromFormat('Ymd', $data);
+    }
+
+    public function getTimeStamp($columnName): int
+    {
+        return strtotime($this->getDate($columnName));
     }
 
     /**
-     * @return bool
+     * @deprecated since 1.3 and will be delete in 2.0. Use set()
      */
     public function getBoolean(string $columnName)
     {
-        $s = $this->forceGetString($columnName);
-
-        if (!$s) {
-            return false; //todo if null?
-        }
-
-        switch (strtoupper($s[0])) {
-            case 'T':
-            case 'Y':
-            case 'J':
-            case '1':
-                return true;
-
-            default:
-                return false;
-        }
+        return $this->get($columnName);
     }
 
     /**
@@ -258,66 +192,29 @@ class AbstractRecord implements RecordInterface
 
         return $this->data[$columnName];
     }
+
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
+     */
+    public function getFloat(string $columnName)
+    {
+        return $this->data[$columnName];
+    }
     //</editor-fold>
 
     //<editor-fold desc="setters">
-    public function set(string $columnName, $value): RecordInterface
-    {
-        if (!$column = $this->table->getColumn($columnName)) {
-            throw new \LogicException("Column $columnName not found");
-        }
-
-        $this->setObject($columnName, $value);
-
-        return $this;
-    }
-
-    /**
-     * @param string|ColumnInterface $columnName
-     */
-    public function setString($columnName, $value): self
+    public function set($columnName, $value): RecordInterface
     {
         $column = $this->toColumn($columnName);
-        $this->data[$column->getName()] = $value;
-        $this->forceSetString($column, $value);//todo remove 1.4
-
-        return $this;
-    }
-
-    /**
-     * @param string|ColumnInterface $columnName
-     */
-    public function setNum($columnName, $value): self
-    {
-        $column = $this->toColumn($columnName);
-        if (FieldType::NUMERIC !== $column->getType()) {
-            trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
-        }
-
-        if (is_string($value)) {
-            $value = (float) str_replace(',', '.', $value);
-        }
-
-        $this->data[$column->getName()] = $value;
-
-        $this->forceSetString($column, number_format($value, $column->getDecimalCount(), '.', ''));//todo remove 1.4
-
-        return $this;
-    }
-
-    public function setObject($column, $value)
-    {
-        $column = $this->toColumn($column);
         switch ($column->getType()) {
             case FieldType::CHAR:
                 return $this->setString($column->getName(), $value);
-//            case FieldType::DOUBLE:
-//            case FieldType::FLOAT:
-//                $this->setFloat($column, $value);
-//                return false;
+            case FieldType::DOUBLE:
+            case FieldType::FLOAT:
+                return $this->setFloat($column->getName(), $value);
             case FieldType::DATE:
                 return $this->setDate($column->getName(), $value);
-//            case FieldType::DATETIME:
+            case FieldType::DATETIME:
 //                $this->setDateTime($column, $value);
             case FieldType::LOGICAL:
                 return $this->setBoolean($column->getName(), $value);
@@ -329,7 +226,61 @@ class AbstractRecord implements RecordInterface
                 return $this;
         }
 
-        trigger_error('cannot handle datatype '.$column->getType(), E_USER_ERROR);
+        return $this;
+    }
+
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use set()
+     */
+    public function setObject($column, $value)
+    {
+        return $this->set($column, $value);
+    }
+
+    /**
+     * @param string|ColumnInterface $columnName
+     */
+    public function setString($columnName, $value): self
+    {
+        $column = $this->toColumn($columnName);
+        $this->data[$column->getName()] = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param string|ColumnInterface $columnName
+     */
+    public function setNum($columnName, $value): self
+    {
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::NUMERIC);
+
+        if (is_string($value)) {
+            $value = (float) str_replace(',', '.', $value);
+        }
+
+        $this->data[$column->getName()] = $value;
+
+        return $this;
+    }
+
+    public function setFloat($columnName, $value): self
+    {
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, [FieldType::DOUBLE, FieldType::FLOAT]);
+
+        if (is_numeric($value)) {
+            $this->data[$column->getName()] = (float) $value;
+        } elseif (is_string($value)) {
+            $value = str_replace(',', '.', trim($value));
+        }
+
+        if (null === $value || '' === $value) {
+            $this->data[$column->getName()] = null;
+        }
+
+        return $this;
     }
 
     /**
@@ -338,12 +289,10 @@ class AbstractRecord implements RecordInterface
      *
      * @return bool
      */
-    public function setDate($columnName, $value)
+    public function setDate($columnName, $value): self
     {
         $column = $this->toColumn($columnName);
-        if (FieldType::DATE !== $column->getType()) {
-            trigger_error($column->getName().' is not a Date column', E_USER_ERROR);
-        }
+        $this->checkType($column, FieldType::DATE);
 
         if ($value instanceof \DateTimeInterface) {
             $value = $value->format('Ymd');
@@ -352,39 +301,39 @@ class AbstractRecord implements RecordInterface
         }
 
         $this->data[$column->getName()] = $value;
-        $this->forceSetString($column, $value);
 
-        return true;
+        return $this;
     }
 
     /**
-     * @param $value
-     *
-     * @return bool
+     * @param ColumnInterface|string $columnName
      */
-    public function setBoolean($columnName, $value)
+    public function setBoolean($columnName, bool $value): self
     {
         $column = $this->toColumn($columnName);
-        if (FieldType::LOGICAL !== $column->getType()) {
-            trigger_error($column->getName().' is not a DateTime column', E_USER_ERROR);
+        $this->checkType($column, FieldType::LOGICAL);
+
+        if (is_bool($value)) {
+            $this->data[$column->getName()] = $value;
+        } elseif (is_string($value)) {
+            switch (strtoupper($value)) {
+                case 'T':
+                case 'Y':
+                case 'J':
+                case '1':
+                    $this->data[$column->getName()] = true;
+                    break;
+                case 'F':
+                case 'N':
+                case '0':
+                    $this->data[$column->getName()] = false;
+                    break;
+                default:
+                    $this->data[$column->getName()] = null;
+            }
         }
 
-        switch (strtoupper($value)) {
-            case 'T':
-            case 'Y':
-            case 'J':
-            case '1':
-            case 'F':
-            case 'N':
-            case '0':
-                $this->forceSetString($column, $value);
-                return false;
-            case true:
-                $this->forceSetString($column, 'T');
-                return false;
-            default:
-                $this->forceSetString($column, 'F');
-        }
+        return $this;
     }
 
     /**
@@ -393,14 +342,15 @@ class AbstractRecord implements RecordInterface
     public function setMemo($columnName, $value): self
     {
         $column = $this->toColumn($columnName);
-        if (FieldType::MEMO !== $column->getType()) {
-            trigger_error($column->getName().' is not a Memo column', E_USER_ERROR);
-        }
+        $this->checkType($column, FieldType::MEMO);
 
-        if (empty($this->data[$columnName])) {
-            $this->data[$columnName] = new MemoObject($value);
+        if ($value instanceof MemoObject) {
+            $this->data[$column->getName()] = $value;
+        } elseif (empty($this->data[$column->getName()])) {
+            $this->data[$column->getName()] = new MemoObject($value);
+        } else {
+            $this->data[$column->getName()]->setData($value);
         }
-        $this->data[$columnName]->setData($value);
 
         return $this;
     }
@@ -415,7 +365,7 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @deprecated
+     * @deprecated since 1.3 and will be delete in 2.0. Use set()
      */
     public function setStringByName(string $columnName, $value): void
     {
@@ -423,7 +373,7 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @deprecated
+     * @deprecated since 1.3 and will be delete in 2.0. Use set()
      */
     public function setStringByIndex($columnIndex, $value): void
     {
@@ -431,7 +381,7 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @deprecated since 1.3 will be deleted in 1.4. Use get()
+     * @deprecated since 1.3 and will be deleted in 2.0. Use get()
      */
     public function forceGetString(string $columnName)
     {
@@ -449,7 +399,7 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @deprecated since 1.3 will be deleted in 1.4. Use set()
+     * @deprecated since 1.3 and will be deleted in 2.0. Use set()
      */
     public function forceSetString(ColumnInterface $column, $value): void
     {
@@ -461,7 +411,7 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @deprecated
+     * @deprecated since 1.3 and will be delete in 2.0. Use set()
      */
     public function setObjectByName(string $columnName, $value)
     {
@@ -469,7 +419,7 @@ class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @deprecated
+     * @deprecated since 1.3 and will be delete in 2.0. Use set()
      */
     public function setObjectByIndex($columnIndex, $value)
     {
@@ -489,7 +439,7 @@ class AbstractRecord implements RecordInterface
      *
      * @return array|string[]
      *
-     * @deprecated since 1.3. Use getData()
+     * @deprecated since 1.3 and will be deleted in 2.0. Use getData()
      */
     public function getChoppedData()
     {
@@ -504,15 +454,31 @@ class AbstractRecord implements RecordInterface
 
     protected function toColumn($columnName): ColumnInterface
     {
-        if ($columnName instanceof ColumnInterface) {
-            @trigger_error('You should pass string column name as first argument', E_USER_WARNING);
-            return $columnName;
-        }
-
         if (is_string($columnName)) {
             return $this->getColumn($columnName);
         }
 
+        if ($columnName instanceof ColumnInterface) {
+            return $columnName;
+        }
+
         throw new \LogicException('Incorrect first argument');
+    }
+
+    /**
+     * @param string|array $types
+     */
+    protected function checkType(ColumnInterface $column, $types): void
+    {
+        if (!is_array($types)) {
+            $types = [$types];
+        }
+
+        if (!in_array($column->getType(), $types)) {
+            trigger_error(
+                sprintf("Column '%s' is not one of types [%s]", $column->getName(), implode(', ', $types)),
+                E_USER_ERROR
+            );
+        }
     }
 }

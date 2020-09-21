@@ -97,6 +97,11 @@ class StreamWrapper
         return fwrite($this->fp, $string); //todo length arg
     }
 
+    public function eof(): bool
+    {
+        return feof($this->fp);
+    }
+
     public function __call(string $method, $args)
     {
         $mapping = [

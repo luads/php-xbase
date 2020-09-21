@@ -102,8 +102,11 @@ abstract class AbstractColumn implements ColumnInterface
         return $this->rawName;
     }
 
-//    public function getDataLength(): int
-//    {
-//        return $this->length;
-//    }
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use getLength()
+     */
+    public function getDataLength(): int
+    {
+        return $this->length;
+    }
 }

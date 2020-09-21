@@ -4,7 +4,10 @@ namespace XBase\Memo;
 
 interface MemoInterface
 {
-    public function get(string $pointer): ?MemoObject;
+    /**
+     * @param string|int $pointer
+     */
+    public function get($pointer): ?MemoObject;
 
     public function open(): void;
 

@@ -2,7 +2,6 @@
 
 namespace XBase\Record;
 
-use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 
 /**
@@ -10,33 +9,9 @@ use XBase\Enum\FieldType;
  */
 class VisualFoxproRecord extends FoxproRecord
 {
-    /** @var int */
-    protected $zeroDate = 0x253d8c;
-
-//    public function getObject(ColumnInterface $column)
-//    {
-//        switch ($column->getType()) {
-//            case FieldType::INTEGER:
-//                return $this->getInt($column->getName());
-//            case FieldType::DOUBLE:
-//                return $this->getDouble($column->getName());
-//            case FieldType::DATETIME:
-//                return $this->getDateTime($column->getName());
-//            case FieldType::CURRENCY:
-//                return $this->getCurrency($column->getName());
-//            case FieldType::FLOAT:
-//                return $this->getFloat($column->getName());
-//            case FieldType::VAR_FIELD:
-//            case FieldType::VARBINARY:
-//                return $this->getVarchar($column->getName());
-//            default:
-//                return parent::getObject($column);
-//        }
-//    }
-
-    public function setObject($column, $value)
+    public function set($columnName, $value): RecordInterface
     {
-        $column = $this->toColumn($column);
+        $column = $this->toColumn($columnName);
         switch ($column->getType()) {
             case FieldType::INTEGER:
                 return $this->setInt($column->getName(), $value);
@@ -54,42 +29,62 @@ class VisualFoxproRecord extends FoxproRecord
             case FieldType::VARBINARY:
                 return $this->setVarchar($column->getName(), $value);
             default:
-                return parent::setObject($column->getName(), $value);
+                return parent::set($column->getName(), $value);
         }
     }
 
-    public function setGeneral(ColumnInterface $column, $value): self
-    {
-        $this->choppedData[$column->getName()] = pack('L', $value);
-        return $this;
-    }
-
-    public function setInt($columnName, $value)
+    public function setGeneral($columnName, $value): self
     {
         $column = $this->toColumn($columnName);
-        if (FieldType::INTEGER !== $column->getType()) {
-            trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
+        $this->checkType($column, FieldType::GENERAL);
+
+        if (null !== $value) {
+            $value = (int) $value;
         }
 
-        if ($this->table->isFoxpro()) {
-            $this->choppedData[$column->getName()] = pack('i', $value);
-        } else {
-            //todo
-        }
+        $this->data[$column->getName()] = $value;
 
         return $this;
     }
 
-    public function setDouble(ColumnInterface $column, $value): self
+    public function setInt($columnName, $value): self
     {
-        $this->choppedData[$column->getName()] = pack('d', $value);
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::INTEGER);
+
+        if (null !== $value) {
+            $value = (int) $value;
+        }
+
+        $this->data[$column->getName()] = $value;
 
         return $this;
     }
 
-    private function setCurrency(ColumnInterface $column, $value): self
+    public function setDouble($columnName, $value): self
     {
-        //todo
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::DOUBLE);
+
+        if (is_string($value)) {
+            $value = (float) str_replace(',', '.', trim($value));
+        }
+
+        $this->data[$column->getName()] = $value;
+
+        return $this;
+    }
+
+    private function setCurrency($columnName, $value): self
+    {
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::CURRENCY);
+
+        if (is_string($value)) {
+            $value = (float) str_replace(',', '.', trim($value));
+        }
+
+        $this->data[$column->getName()] = $value;
 
         return $this;
     }
@@ -97,8 +92,9 @@ class VisualFoxproRecord extends FoxproRecord
     private function setVarchar($columnName, $value): self
     {
         $column = $this->toColumn($columnName);
+        $this->checkType($column, [FieldType::VAR_FIELD, FieldType::VARBINARY]);
+
         $this->data[$column->getName()] = $value;
-        $this->choppedData[$column->getName()] = $value; //todo-delete
 
         return $this;
     }
@@ -108,67 +104,38 @@ class VisualFoxproRecord extends FoxproRecord
      *
      * @return bool
      */
-    public function setFloat(ColumnInterface $column, $value)
+    public function setDateTime($columnName, $value): self
     {
-        if (FieldType::FLOAT !== $column->getType()) {
-            trigger_error($column->getName().' is not a Float column', E_USER_ERROR);
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::DATETIME);
+
+        if (is_int($value)) {
+            $value = \DateTime::createFromFormat('U', $value);
+        } elseif (is_string($value)) {
+            $value = new \DateTime($value);
         }
 
-        if (0 == strlen($value)) {
-            $this->forceSetString($column, '');
-            return false;
-        }
+        $this->data[$column->getName()] = $value;
 
-        $value = str_replace(',', '.', $value);
-        $this->forceSetString($column, $value);
-    }
-
-    /**
-     * @param $value
-     *
-     * @return bool
-     */
-    public function setDateTime(ColumnInterface $column, $value)
-    {
-        if (FieldType::DATETIME !== $column->getType()) {
-            trigger_error($column->getName().' is not a DateTime column', E_USER_ERROR);
-        }
-
-        if ($value instanceof \DateTimeInterface) {
-            $value = $value->format('U');
-        }
-
-        if (0 == strlen($value)) {
-            $this->forceSetString($column, '');
-            return false;
-        }
-
-        $a = getdate($value);
-        $intDate = $this->zeroDate + (mktime(0, 0, 0, $a['mon'], $a['mday'], $a['year']) / 86400);
-        $intTime = ($a['hours'] * 3600 + $a['minutes'] * 60 + $a['seconds']) * 1000;
-        $this->choppedData[$column->getName()] = pack('i', $intDate).pack('i', $intTime);
+        return $this;
     }
 
     /**
      * Get DATE(D) or DATETIME(T) data as object of \DateTime class
      */
-    public function getDateTimeObject(string $columnName): \DateTime
+    public function getDateTimeObject($columnName): ?\DateTimeInterface
     {
         $column = $this->getColumn($columnName);
-        if (!in_array($column->getType(), [FieldType::DATE, FieldType::DATETIME])) {
-            trigger_error($column->getName().' is not a Date or DateTime column', E_USER_ERROR);
-        }
-
-        $data = $this->forceGetString($columnName);
+        $this->checkType($column, [FieldType::DATE, FieldType::DATETIME]);
         if (in_array($column->getType(), [FieldType::DATETIME])) {
-            return \DateTime::createFromFormat('U', $this->getDateTime($columnName));
+            return $this->getDateTime($column->getName());
         }
 
-        return new \DateTime($data);
+        return parent::getDateTimeObject($column->getName());
     }
 
     /**
-     * @deprecated use get()
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getGeneral(string $columnName)
     {
@@ -176,7 +143,7 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * @deprecated use get()
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getDateTime(string $columnName)
     {
@@ -184,7 +151,7 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * @deprecated use get()
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getVarbinary(string $columnName)
     {
@@ -192,7 +159,7 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * @deprecated use get()
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getVarchar(string $columnName)
     {
@@ -200,7 +167,7 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * @deprecated use get()
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getCurrency(string $columnName)
     {
@@ -208,7 +175,7 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * @deprecated use get()
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getDouble(string $columnName)
     {
@@ -216,7 +183,7 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * @deprecated use get()
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getInt(string $columnName)
     {

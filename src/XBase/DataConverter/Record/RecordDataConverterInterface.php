@@ -1,10 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Record\DataConverter;
+namespace XBase\DataConverter\Record;
 
 use XBase\Record\RecordInterface;
 
-interface DataConverterInterface
+/**
+ * Converts table row binary data to normal RecordInterface data and back.
+ */
+interface RecordDataConverterInterface
 {
     public function fromBinaryString(string $rawData): array;
 

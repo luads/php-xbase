@@ -4,20 +4,26 @@ namespace XBase\Tests\Record\DataConverter;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Column\ColumnInterface;
+use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
 use XBase\Memo\MemoInterface;
 use XBase\Memo\MemoObject;
-use XBase\Record\DataConverter\DBaseDataConverter;
 use XBase\Record\DBaseRecord;
 use XBase\Table;
 
+/**
+ * @author Alexander Strizhak <gam6itko@gmail.com>
+ *
+ * @coversDefaultClass \XBase\DataConverter\Record\DBaseDataConverter
+ */
 class DBaseDataConverterTest extends TestCase
 {
     public function testFromBinaryString(): void
     {
         $base64RowData = 'IEdyb290ICAgICAgICAgICAgICAgMTk2MDExMDFGICAgICAgICAgMSAgICAgICAgICAgICAxMi4xMjM1ICAgICAgICAgNA==';
 
+        /** @var ColumnInterface[] $columns */
         $columns = [];
 
         $columns[] = $c = $this->createMock(ColumnInterface::class);
@@ -77,8 +83,24 @@ class DBaseDataConverterTest extends TestCase
             ->willReturn($columns);
         $table
             ->expects(self::atLeastOnce())
+            ->method('getColumn')
+            ->willReturnCallback(static function (string $name) use ($columns): ?ColumnInterface {
+                foreach ($columns as $c) {
+                    if ($name === $c->getName()) {
+                        return $c;
+                    }
+                }
+
+                return null;
+            });
+        $table
+            ->expects(self::atLeastOnce())
             ->method('getConvertFrom')
             ->willReturn('cp866');
+        $table
+            ->expects(self::atLeastOnce())
+            ->method('getRecordByteLength')
+            ->willReturn(70);
         $table
             ->expects(self::atLeastOnce())
             ->method('getMemo')

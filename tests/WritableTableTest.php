@@ -110,7 +110,7 @@ class WritableTableTest extends TestCase
         self::assertSame(100.0, $record->getNum('vr'));
         self::assertSame(200.0, $record->getNum('vv'));
         self::assertSame(300.0201, $record->getNum('vitg'));
-        self::assertSame(172800, $record->getDate('dt'));
+        self::assertSame('19700103', $record->getDate('dt'));
         self::assertSame(2, $record->getNum('priz'));
         $table->close();
     }
@@ -190,7 +190,8 @@ class WritableTableTest extends TestCase
         self::assertSame('socio', $record->socio);
         self::assertSame('apellido', $record->apellido);
         self::assertSame('nombre', $record->nombre);
-        self::assertSame(86400, $record->getDate('fecnacim'));
+        self::assertSame('19700102', $record->getDate('fecnacim'));
+        self::assertSame(86400, $record->getTimeStamp('fecnacim'));
         self::assertSame($fecnacim, $record->getDateTimeObject('fecnacim')->format('m/d/Y'));
         self::assertSame($fecingreso, $record->getDateTimeObject('fecingreso')->format('m/d/Y'));
         self::assertSame('M', $record->sexo);
@@ -267,14 +268,14 @@ class WritableTableTest extends TestCase
         $record->setObject($table->getColumn('name'), 'gam6itko');
         $record->setObject($table->getColumn('birthday'), new \DateTime('1988-10-10'));
         $record->setObject($table->getColumn('is_man'), true);
-//            $record->setObject($table->getColumn('bio'), 'another time');
+        $record->setObject($table->getColumn('bio'), 'another time');
         $record->setObject($table->getColumn('money'), 100.10);
-//            $record->setObject($table->getColumn('image'), );
+        $record->setObject($table->getColumn('image'), 'binary_string');
         $record->setObject($table->getColumn('rate'), 10.55);
         $record->setObject($table->getColumn('general'), 10);
-//            $record->setObject($table->getColumn('blob'), );
-//            $record->setObject($table->getColumn('currency'), );
-        $record->setObject($table->getColumn('datetime'), new \DateTime('2020-09-10'));
+//        $record->setObject($table->getColumn('blob'), 'blob_string');
+        $record->setObject($table->getColumn('currency'), 12.36);
+        $record->setObject($table->getColumn('datetime'), new \DateTime('2020-09-10T12:34:56'));
         $record->setObject($table->getColumn('double'), 3.1415);
         $record->setObject($table->getColumn('integer'), 3);
         $record->setObject($table->getColumn('varchar'), 'varchar');
@@ -290,7 +291,7 @@ class WritableTableTest extends TestCase
 
         $record = $table->pickRecord(3);
         self::assertSame('gam6itko', $record->getObject($table->getColumn('name')));
-        self::assertSame(592444800, $record->getObject($table->getColumn('birthday'))); //returns timestamp
+        self::assertSame('19881010', $record->getObject($table->getColumn('birthday'))); //returns timestamp
         self::assertSame(true, $record->getObject($table->getColumn('is_man')));
 //            $record->getObject($table->getColumn('bio'), 'another time');
         self::assertSame(100.10, $record->getObject($table->getColumn('money')));
@@ -300,7 +301,7 @@ class WritableTableTest extends TestCase
 //            $record->getObject($table->getColumn('blob'), );
 //            $record->getObject($table->getColumn('currency'), );
         //self::assertSame(1599696000, $record->getObject($table->getColumn('datetime')));
-        self::assertSame('2020-09-10T00:00:00+00:00', $record->getDateTimeObject($table->getColumn('datetime')->getName())->format(DATE_ATOM));
+        self::assertSame('2020-09-10T12:34:56+00:00', $record->getDateTimeObject($table->getColumn('datetime')->getName())->format(DATE_ATOM));
         self::assertSame(3.1415, $record->getObject($table->getColumn('double')));
         self::assertSame(3, $record->getObject($table->getColumn('integer')));
         self::assertSame('varchar', $record->getObject($table->getColumn('varchar')));

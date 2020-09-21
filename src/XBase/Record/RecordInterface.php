@@ -9,22 +9,26 @@ interface RecordInterface
     public function isDeleted(): bool;
 
     /**
-     * Get column value
+     * Get column value.
+     *
+     * @param ColumnInterface|string $columnName
      */
-    public function get(string $columnName);
+    public function get($columnName);
 
     /**
-     * Set column value
+     * Set column value.
+     *
+     * @param ColumnInterface|string $columnName
      */
-    public function set(string $columnName, $value): self;
+    public function set($columnName, $value): self;
 
     /**
-     * @deprecated since v1.3 and will be delete in v1.4. Use (string) $record->get('name')
+     * @deprecated since 1.3 and will be delete in 2.0. Use (string) $record->get('name')
      */
     public function getString(string $columnName);
 
     /**
-     * @deprecated since v1.3 and will be delete in v1.4. Use (string) $record->get('name')
+     * @deprecated since 1.3 and will be delete in 2.0. Use (string) $record->get('name')
      */
     public function getObject(ColumnInterface $column);
 }
