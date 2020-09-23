@@ -152,6 +152,10 @@ class VisualFoxproDataConverterTest extends TestCase
         $memo = $this->createMock(MemoInterface::class);
         $memo
             ->expects(self::atLeastOnce())
+            ->method('persist')
+            ->willReturnArgument(0);
+        $memo
+            ->expects(self::atLeastOnce())
             ->method('get')
             ->willReturnMap([
                 [5046, new MemoObject('memo text', MemoObject::TYPE_TEXT, 5046, 1)],

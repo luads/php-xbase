@@ -16,6 +16,16 @@ class WritableTable extends Table
      */
     private $insertion = false;
 
+    protected function open(): void
+    {
+        parent::open();
+
+        $currentPosition = $this->fp->tell();
+        $this->fp->close();
+        $this->fp = Stream::createFromFile($this->filepath, 'rb+');
+        $this->fp->seek($currentPosition);
+    }
+
     /**
      * @param $table
      *
@@ -90,12 +100,6 @@ class WritableTable extends Table
         return false;
     }
 
-    /**
-     * @param bool $filename
-     * @param bool $overwrite
-     *
-     * @return bool
-     */
     public function openWrite($filename = false, $overwrite = false)
     {
         if (!$filename) {
@@ -106,10 +110,8 @@ class WritableTable extends Table
             if ($this->fp = Stream::createFromFile($filename, 'r+')) {
                 $this->readHeader();
             }
-        } else {
-            if ($this->fp = Stream::createFromFile($filename, 'w+')) {
-                $this->writeHeader();
-            }
+        } elseif ($this->fp = Stream::createFromFile($filename, 'w+')) {
+            $this->writeHeader();
         }
 
         return false != $this->fp;
@@ -180,15 +182,16 @@ class WritableTable extends Table
         return $this->record;
     }
 
-    public function writeRecord(): void
+    public function writeRecord(RecordInterface $record = null): void
     {
-        if (!$this->record) {
+        $record = $record ?? $this->record;
+        if (!$record) {
             return;
         }
 
-        $offset = $this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength);
+        $offset = $this->headerLength + ($record->getRecordIndex() * $this->recordByteLength);
         $this->fp->seek($offset);
-        $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($this->record));
+        $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($record));
 
         if ($this->insertion) {
             $this->writeHeader();

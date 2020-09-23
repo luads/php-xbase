@@ -6,6 +6,11 @@ use XBase\Column\ColumnInterface;
 
 interface RecordInterface
 {
+    /**
+     * @return int Zero based row index.
+     */
+    public function getRecordIndex(): int;
+
     public function isDeleted(): bool;
 
     /**

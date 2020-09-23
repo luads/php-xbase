@@ -13,14 +13,14 @@ class DBase4Memo extends AbstractMemo
     /** @var int */
     protected $blockLength;
 
-    protected function readHeader()
+    protected function readHeader(): void
     {
-        fseek($this->fp, 4);
-        $bytes = unpack('N', fread($this->fp, 4));
+        $this->fp->seek(4);
+        $bytes = unpack('N', $this->fp->read(4));
         $this->blockSize = $bytes[1];
 
-        fseek($this->fp, 20);
-        $bytes = unpack('S', fread($this->fp, 2));
+        $this->fp->seek(20);
+        $bytes = unpack('S', $this->fp->read(2));
         $this->blockLength = $bytes[1];
     }
 
@@ -34,14 +34,14 @@ class DBase4Memo extends AbstractMemo
             $pointer = (int) ltrim($pointer);
         }
 
-        fseek($this->fp, $pointer * $this->blockLength);
-        $sign = unpack('N', fread($this->fp, self::BLOCK_SIGN_LENGTH));
+        $this->fp->seek($pointer * $this->blockLength);
+        $sign = unpack('N', $this->fp->read(self::BLOCK_SIGN_LENGTH));
         if (self::BLOCK_SIGN !== $sign[1]) {
             throw new \LogicException('Wrong dBaseIV block sign');
         }
 
-        $memoLength = unpack('L', fread($this->fp, self::BLOCK_LENGTH_LENGTH));
-        $result = fread($this->fp, $memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
+        $memoLength = unpack('L', $this->fp->read(self::BLOCK_LENGTH_LENGTH));
+        $result = $this->fp->read($memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
 
         $type = $this->guessDataType($result);
         if (MemoObject::TYPE_TEXT === $type && $this->convertFrom) {
@@ -49,5 +49,10 @@ class DBase4Memo extends AbstractMemo
         }
 
         return new MemoObject($result, $type, $pointer, $memoLength[1]);
+    }
+
+    public function persist(MemoObject $memoObject): MemoObject
+    {
+        throw new \Exception('not realized'); //todo realize
     }
 }

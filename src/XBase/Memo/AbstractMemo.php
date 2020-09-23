@@ -2,12 +2,16 @@
 
 namespace XBase\Memo;
 
+use XBase\Stream\Stream;
+
 abstract class AbstractMemo implements MemoInterface
 {
-    /** @var resource */
+    /** @var Stream */
     protected $fp;
+
     /** @var string */
     protected $filepath;
+
     /** @var string */
     protected $convertFrom;
 
@@ -17,7 +21,7 @@ abstract class AbstractMemo implements MemoInterface
      * @param string $filepath
      * @param string $convertFrom
      */
-    public function __construct($filepath, $convertFrom = null)
+    public function __construct(string $filepath, ?string $convertFrom = null)
     {
         $this->filepath = $filepath;
         $this->convertFrom = $convertFrom; //todo autodetect from languageCode
@@ -30,7 +34,7 @@ abstract class AbstractMemo implements MemoInterface
         $this->close();
     }
 
-    protected function readHeader()
+    protected function readHeader(): void
     {
     }
 
@@ -50,13 +54,13 @@ abstract class AbstractMemo implements MemoInterface
     public function open(): void
     {
         $this->close();
-        $this->fp = fopen($this->filepath, 'rb');
+        $this->fp = Stream::createFromFile($this->filepath, 'rb+'); //todo configure write mode
     }
 
     public function close(): void
     {
         if (null !== $this->fp) {
-            fclose($this->fp);
+            $this->fp->close();
         }
         $this->fp = null;
     }

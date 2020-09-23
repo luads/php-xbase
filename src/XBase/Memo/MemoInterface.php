@@ -9,6 +9,8 @@ interface MemoInterface
      */
     public function get($pointer): ?MemoObject;
 
+    public function persist(MemoObject $memoObject): MemoObject;
+
     public function open(): void;
 
     public function close(): void;

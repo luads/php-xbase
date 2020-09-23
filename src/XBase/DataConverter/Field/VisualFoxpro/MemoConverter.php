@@ -24,10 +24,16 @@ class MemoConverter extends AbstractFieldDataConverter
      */
     public function toBinaryString($value): string
     {
-        if ($value instanceof MemoObject) {
-            $value = $value->getPointer();
+        if (null === $value) {
+            return pack('l', null);
         }
 
-        return pack('l', $value);
+        if (!$value instanceof MemoObject) {
+            throw new \LogicException('value must be MemoObject');
+        }
+
+        $value = $this->table->getMemo()->persist($value);
+
+        return pack('l', $value->getPointer());
     }
 }

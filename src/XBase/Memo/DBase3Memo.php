@@ -16,14 +16,14 @@ class DBase3Memo extends AbstractMemo
             $pointer = (int) ltrim($pointer, ' ');
         }
 
-        fseek($this->fp, $pointer * self::BLOCK_LENGTH);
+        $this->fp->seek($pointer * self::BLOCK_LENGTH);
 
-        $endMarker = chr(0x1A).chr(0x1A).chr(0x00);
+        $endMarker = $this->getBlockEndMarker();
         $result = '';
         $memoLength = 0;
-        while (!feof($this->fp)) {
+        while (!$this->fp->eof()) {
             $memoLength++;
-            $result .= fread($this->fp, 1);
+            $result .= $this->fp->read(1);
 
             $substr = substr($result, -3);
             if ($endMarker === $substr) {
@@ -43,5 +43,20 @@ class DBase3Memo extends AbstractMemo
         }
 
         return new MemoObject($result, $type, $pointer, $memoLength);
+    }
+
+    public function persist(MemoObject $memoObject): MemoObject
+    {
+        throw new \Exception('not realized'); //todo realize
+    }
+
+    protected function calculateBlockCount(string $data): int
+    {
+        return ceil(strlen($data) + strlen($this->getBlockEndMarker()) / self::BLOCK_LENGTH);
+    }
+
+    private function getBlockEndMarker(): string
+    {
+        return chr(0x1A).chr(0x1A).chr(0x00);
     }
 }
