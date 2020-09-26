@@ -269,11 +269,7 @@ TEXT;
         self::assertSame('1', $record->getString('ai'));
         self::assertSame('qwe', $record->getString('varchar'));
         self::assertSame('Groot', $record->getString('name_bin'));
-        /** @var MemoObject $memoBinBio */
-        $memoBinBio = $record->getObject($table->getColumn('bio_bin'));
-        self::assertInstanceOf(MemoObject::class, $memoBinBio);
-        self::assertSame($bio, str_replace("\r\n", "\n", trim($memoBinBio->getData())));
-        self::assertSame($bio, str_replace("\r\n", "\n", trim((string) $memoBinBio)));
+        self::assertSame($bio, str_replace("\r\n", "\n", trim($record->getObject($table->getColumn('bio_bin')))));
         self::assertSame([0xAB, 0xCD, 0xEF], array_values(unpack('C*', $record->getString('varbinary'))));
         self::assertSame('qwe', $record->getString('varchar_bi'));
 
@@ -385,11 +381,7 @@ TEXT;
         self::assertSame('MASTER     06/27/2007 11:27', $record->getObject($table->getColumn('ucode')));
         self::assertSame('20070517', $record->getDateTimeObject($table->getColumn('sdate')->getName())->format('Ymd'));
         self::assertSame('He will call us on the 18th to settle - 123 xp', $record->getObject($columnNote));
-        /** @var MemoObject $memoNote */
-        $memoNote = $record->getObject($table->getColumn('notememo'));
-        self::assertInstanceOf(MemoObject::class, $memoNote);
-        self::assertSame('He will call us on the 18th to settle - 123 xp', $memoNote->getData());
-        self::assertEquals('He will call us on the 18th to settle - 123 xp', $memoNote);
+        self::assertSame('He will call us on the 18th to settle - 123 xp', $record->getObject($table->getColumn('notememo')));
         self::assertSame(false, $record->getObject($table->getColumn('pri')));
         self::assertSame(null, $record->get('autold'));
         self::assertSame('20070515', $record->getDateTimeObject($table->getColumn('due')->getName())->format('Ymd'));

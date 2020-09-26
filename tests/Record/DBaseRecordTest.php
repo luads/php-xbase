@@ -6,6 +6,8 @@ use PHPUnit\Framework\TestCase;
 use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
+use XBase\Enum\TableType;
+use XBase\Memo\MemoInterface;
 use XBase\Record\DBaseRecord;
 use XBase\Table;
 
@@ -60,7 +62,19 @@ class DBaseRecordTest extends TestCase
         $c->method('getBytePos')->willReturn(60);
         $c->method('getLength')->willReturn(10);
 
+        $memo = $this->createMock(MemoInterface::class);
+        $memo
+            ->expects(self::atLeastOnce())
+            ->method('get')
+            ->willReturnMap([
+                [1, 'memo text']
+            ]);
+
         $table = $this->createMock(Table::class);
+        $table
+            ->expects(self::atLeastOnce())
+            ->method('getVersion')
+            ->willReturn(TableType::DBASE_III_PLUS_MEMO);
         $table
             ->expects(self::atLeastOnce())
             ->method('getColumns')
@@ -73,6 +87,10 @@ class DBaseRecordTest extends TestCase
             ->expects(self::atLeastOnce())
             ->method('getConvertFrom')
             ->willReturn('cp866');
+        $table
+            ->expects(self::atLeastOnce())
+            ->method('getMemo')
+            ->willReturn($memo);
         $table
             ->expects(self::atLeastOnce())
             ->method('getColumn')

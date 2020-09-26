@@ -4,10 +4,7 @@ namespace XBase\Memo;
 
 interface MemoInterface
 {
-    /**
-     * @param string|int $pointer
-     */
-    public function get($pointer): ?MemoObject;
+    public function get(int $pointer): ?MemoObject;
 
     public function persist(MemoObject $memoObject): MemoObject;
 

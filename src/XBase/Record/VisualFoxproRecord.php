@@ -9,6 +9,18 @@ use XBase\Enum\FieldType;
  */
 class VisualFoxproRecord extends FoxproRecord
 {
+    public function get($columnName)
+    {
+        $column = $this->toColumn($columnName);
+
+        switch ($column->getType()) {
+            case FieldType::GENERAL:
+                return $this->data[$column->getName()];
+            default:
+                return parent::get($columnName);
+        }
+    }
+
     public function set($columnName, $value): RecordInterface
     {
         $column = $this->toColumn($columnName);

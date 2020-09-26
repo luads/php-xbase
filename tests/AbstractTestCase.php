@@ -47,7 +47,7 @@ Groot (/?ru?t/) is a fictional character appearing in American comic books publi
 
 The character was reintroduced as a heroic, noble being in 2006, and appeared in the crossover comic book storyline "Annihilation: Conquest". Groot went on to star in its spin-off series, Guardians of the Galaxy, joining the team of the same name. Groot has been featured in a variety of associated Marvel merchandise, including animated television series, toys and trading cards. Vin Diesel voices Groot in the Marvel Cinematic Universe films Guardians of the Galaxy (2014), Guardians of the Galaxy Vol. 2 (2017), Avengers: Infinity War (2018), and Avengers: Endgame (2019), while Krystian Godlewski played the character via performance capture in the first film. Fred Tatasciore voices Groot on the Disney California Adventure ride Guardians of the Galaxy: Mission Breakout. Diesel will return to voice the character in Guardians of the Galaxy Vol. 3. Diesel also voiced Groot as a cameo in the 2018 Disney animated film Ralph Breaks the Internet. Since his film premiere and animated series debut, Groot has become a pop culture icon, with his repeated line "I am Groot" becoming an Internet meme. 
 TEXT;
-        self::assertSame(trim($str), str_replace("\r\n", "\n", trim($record->getMemo('bio'))));
+        self::assertSame(trim($str), str_replace("\r\n", "\n", trim($record->get('bio'))));
         self::assertSame(12.1235, $record->getNum('money'));
         $memoImg = $record->getMemoObject('image');
         self::assertInstanceOf(MemoObject::class, $memoImg);

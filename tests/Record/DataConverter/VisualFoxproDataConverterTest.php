@@ -6,6 +6,7 @@ use PHPUnit\Framework\TestCase;
 use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Record\VisualFoxproDataConverter;
 use XBase\Enum\FieldType;
+use XBase\Enum\TableType;
 use XBase\Memo\MemoInterface;
 use XBase\Memo\MemoObject;
 use XBase\Record\VisualFoxproRecord;
@@ -150,36 +151,40 @@ class VisualFoxproDataConverterTest extends TestCase
         //</editor-fold>
 
         $memo = $this->createMock(MemoInterface::class);
-        $memo
-            ->expects(self::atLeastOnce())
-            ->method('persist')
-            ->willReturnArgument(0);
-        $memo
-            ->expects(self::atLeastOnce())
-            ->method('get')
-            ->willReturnMap([
-                [5046, new MemoObject('memo text', MemoObject::TYPE_TEXT, 5046, 1)],
-                [32, new MemoObject('memo_image_data', MemoObject::TYPE_IMAGE, 32, 1)],
-                [5070, new MemoObject('memo_image_data', MemoObject::TYPE_IMAGE, 5070, 1)],
-            ]);
+//        $memo
+//            ->expects(self::atLeastOnce())
+//            ->method('persist')
+//            ->willReturnArgument(0);
+//        $memo
+//            ->expects(self::atLeastOnce())
+//            ->method('get')
+//            ->willReturnMap([
+//                [5046, new MemoObject('memo text', MemoObject::TYPE_TEXT, 5046, 1)],
+//                [32, new MemoObject('memo_image_data', MemoObject::TYPE_IMAGE, 32, 1)],
+//                [5070, new MemoObject('memo_image_data', MemoObject::TYPE_IMAGE, 5070, 1)],
+//            ]);
 
         $table = $this->createMock(Table::class);
         $table
             ->expects(self::atLeastOnce())
             ->method('getColumns')
             ->willReturn($columns);
-        $table
-            ->expects(self::atLeastOnce())
-            ->method('getColumn')
-            ->willReturnCallback(static function (string $name) use ($columns): ?ColumnInterface {
-                foreach ($columns as $c) {
-                    if ($name === $c->getName()) {
-                        return $c;
-                    }
-                }
-
-                return null;
-            });
+//        $table
+//            ->expects(self::atLeastOnce())
+//            ->method('getColumn')
+//            ->willReturnCallback(static function (string $name) use ($columns): ?ColumnInterface {
+//                foreach ($columns as $c) {
+//                    if ($name === $c->getName()) {
+//                        return $c;
+//                    }
+//                }
+//
+//                return null;
+//            });
+//        $table
+//            ->expects(self::atLeastOnce())
+//            ->method('getVersion')
+//            ->willReturn(TableType::FOXPRO_MEMO);
         $table
             ->expects(self::atLeastOnce())
             ->method('getConvertFrom')
@@ -188,10 +193,10 @@ class VisualFoxproDataConverterTest extends TestCase
             ->expects(self::atLeastOnce())
             ->method('getRecordByteLength')
             ->willReturn(164);
-        $table
-            ->expects(self::atLeastOnce())
-            ->method('getMemo')
-            ->willReturn($memo);
+//        $table
+//            ->expects(self::atLeastOnce())
+//            ->method('getMemo')
+//            ->willReturn($memo);
 
         $converter = new VisualFoxproDataConverter($table);
         $array = $converter->fromBinaryString($rawData);

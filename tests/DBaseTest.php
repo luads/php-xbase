@@ -242,10 +242,7 @@ JSON;
         self::assertSame(4.0, $record->getNum('large_int'));
         self::assertNotEmpty($record->getTimestamp('datetime'));
         self::assertSame('1800-01-01 01:01:01', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
-        /** @var MemoObject $memoBlob */
-        $memoBlob = $record->getObject($table->getColumn('blob'));
-        self::assertInstanceOf(MemoObject::class, $memoBlob);
-        self::assertSame('qwe', $memoBlob->getData());
+        self::assertSame('qwe', $record->get('blob'));
         self::assertSame(null, $record->getObject($table->getColumn('dbase_ole')));
 
         $record = $table->nextRecord();

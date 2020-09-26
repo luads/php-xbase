@@ -63,14 +63,14 @@ class DBaseDataConverterTest extends TestCase
         $c->method('getBytePos')->willReturn(60);
         $c->method('getLength')->willReturn(10);
 
-        $memo = $this->createMock(MemoInterface::class);
-        $memo
-            ->expects(self::atLeastOnce())
-            ->method('get')
-            ->willReturnMap([
-                ['         1', new MemoObject('memo text', MemoObject::TYPE_TEXT, 1, 1)],
-                ['         4', new MemoObject('memo_image_data', MemoObject::TYPE_IMAGE, 4, 1)],
-            ]);
+//        $memo = $this->createMock(MemoInterface::class);
+//        $memo
+//            ->expects(self::atLeastOnce())
+//            ->method('get')
+//            ->willReturnMap([
+//                ['         1', new MemoObject('memo text', MemoObject::TYPE_TEXT, 1, 1)],
+//                ['         4', new MemoObject('memo_image_data', MemoObject::TYPE_IMAGE, 4, 1)],
+//            ]);
 
         $table = $this->createMock(Table::class);
         $table
@@ -81,18 +81,18 @@ class DBaseDataConverterTest extends TestCase
             ->expects(self::atLeastOnce())
             ->method('getColumns')
             ->willReturn($columns);
-        $table
-            ->expects(self::atLeastOnce())
-            ->method('getColumn')
-            ->willReturnCallback(static function (string $name) use ($columns): ?ColumnInterface {
-                foreach ($columns as $c) {
-                    if ($name === $c->getName()) {
-                        return $c;
-                    }
-                }
-
-                return null;
-            });
+//        $table
+//            ->expects(self::atLeastOnce())
+//            ->method('getColumn')
+//            ->willReturnCallback(static function (string $name) use ($columns): ?ColumnInterface {
+//                foreach ($columns as $c) {
+//                    if ($name === $c->getName()) {
+//                        return $c;
+//                    }
+//                }
+//
+//                return null;
+//            });
         $table
             ->expects(self::atLeastOnce())
             ->method('getConvertFrom')
@@ -101,10 +101,10 @@ class DBaseDataConverterTest extends TestCase
             ->expects(self::atLeastOnce())
             ->method('getRecordByteLength')
             ->willReturn(70);
-        $table
-            ->expects(self::atLeastOnce())
-            ->method('getMemo')
-            ->willReturn($memo);
+//        $table
+//            ->expects(self::atLeastOnce())
+//            ->method('getMemo')
+//            ->willReturn($memo);
 
         $converter = new DBaseDataConverter($table);
         $rawData = base64_decode($base64RowData);
@@ -116,13 +116,9 @@ class DBaseDataConverterTest extends TestCase
         self::assertSame(false, $array['data']['is_man']);
         self::assertSame(12.1235, $array['data']['money']);
         /** @var MemoObject $memoBio */
-        $memoBio = $array['data']['bio'];
-        self::assertInstanceOf(MemoObject::class, $memoBio);
-        self::assertSame('memo text', $memoBio->getData());
+        self::assertSame(1, $array['data']['bio']);
         /** @var MemoObject $memoImage */
-        $memoImage = $array['data']['image'];
-        self::assertInstanceOf(MemoObject::class, $memoImage);
-        self::assertSame('memo_image_data', $memoImage->getData());
+        self::assertSame(4, $array['data']['image']);
         // opposite force
         $binaryString = $converter->toBinaryString(new DBaseRecord($table, 1, $array));
         self::assertSame($rawData, $binaryString);

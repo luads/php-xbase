@@ -20,6 +20,8 @@ interface RecordInterface
      */
     public function get($columnName);
 
+    public function getGenuine(string $columnName);
+
     /**
      * Set column value.
      *

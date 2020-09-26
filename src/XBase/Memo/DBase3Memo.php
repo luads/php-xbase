@@ -6,15 +6,15 @@ class DBase3Memo extends AbstractMemo
 {
     const BLOCK_LENGTH = 512;
 
-    public function get($pointer): ?MemoObject
+    public function get(int $pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();
         }
 
-        if (is_string($pointer)) {
-            $pointer = (int) ltrim($pointer, ' ');
-        }
+//        if (is_string($pointer)) {
+//            $pointer = (int) ltrim($pointer, ' ');
+//        }
 
         $this->fp->seek($pointer * self::BLOCK_LENGTH);
 

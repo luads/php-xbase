@@ -4,7 +4,6 @@ namespace XBase\DataConverter\Field\Foxpro;
 
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
 use XBase\Enum\FieldType;
-use XBase\Memo\MemoObject;
 
 class GeneralConverter extends AbstractFieldDataConverter
 {
@@ -13,9 +12,13 @@ class GeneralConverter extends AbstractFieldDataConverter
         return FieldType::GENERAL;
     }
 
-    public function fromBinaryString(string $value): ?MemoObject
+    public function fromBinaryString(string $value): ?int
     {
-        return $this->table->getMemo()->get($value);
+        if (empty($pointer = ltrim($value, ' '))) {
+            return null;
+        }
+
+        return (int) $pointer;
     }
 
     public function toBinaryString($value): string

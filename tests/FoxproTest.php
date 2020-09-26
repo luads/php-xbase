@@ -88,10 +88,7 @@ class FoxproTest extends AbstractTestCase
         $record = $table->moveTo(0);
         self::assertSame(1.2, $record->getFloat('rate'));
         /** @var MemoObject $memoGeneral */
-        $memoGeneral = $record->get('general');
-        self::assertInstanceOf(MemoObject::class, $memoGeneral);
-        self::assertSame('1', $memoGeneral->getData());
-        self::assertEquals('1', $memoGeneral);
+        self::assertSame('1', $record->get('general'));
 
         $record = $table->nextRecord();
         self::assertSame(1.23, $record->getFloat('rate'));

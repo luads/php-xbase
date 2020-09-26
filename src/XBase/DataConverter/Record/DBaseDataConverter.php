@@ -104,7 +104,7 @@ class DBaseDataConverter implements RecordDataConverterInterface
 
     protected function denormalizeField(ColumnInterface $column, RecordInterface $record): string
     {
-        $value = $record->get($column->getName());
+        $value = $record->getGenuine($column->getName()); //todo memo get raw value
 
         return $this->findFieldConverter($column)->toBinaryString($value);
     }

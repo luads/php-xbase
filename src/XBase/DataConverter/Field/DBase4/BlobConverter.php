@@ -2,7 +2,6 @@
 
 namespace XBase\DataConverter\Field\DBase4;
 
-use XBase\Memo\MemoObject;
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
 
 class BlobConverter extends AbstractFieldDataConverter
@@ -12,13 +11,13 @@ class BlobConverter extends AbstractFieldDataConverter
         return 'B'; //blob
     }
 
-    public function fromBinaryString(string $value): ?MemoObject
+    public function fromBinaryString(string $value): ?int
     {
         if (empty($pointer = ltrim($value, ' 0'))) {
             return null;
         }
 
-        return $this->table->getMemo()->get($pointer);
+        return (int) $pointer;
     }
 
     public function toBinaryString($value): string

@@ -30,15 +30,15 @@ class FoxproMemo extends AbstractMemo
         return 'fpt';
     }
 
-    public function get($pointer): ?MemoObject
+    public function get(int $pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();
         }
 
-        if (is_string($pointer)) {
-            $pointer = (int) ltrim($pointer, ' ');
-        }
+//        if (is_string($pointer)) {
+//            $pointer = (int) ltrim($pointer, ' ');
+//        }
 
         if (0 === $pointer) {
             return null;

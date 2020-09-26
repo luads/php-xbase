@@ -2,10 +2,9 @@
 
 namespace XBase\DataConverter\Field\DBase;
 
+use XBase\DataConverter\Field\AbstractFieldDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
-use XBase\Memo\MemoObject;
-use XBase\DataConverter\Field\AbstractFieldDataConverter;
 
 class MemoConverter extends AbstractFieldDataConverter
 {
@@ -14,28 +13,28 @@ class MemoConverter extends AbstractFieldDataConverter
         return FieldType::MEMO;
     }
 
-    public function fromBinaryString(string $value): ?MemoObject
+    public function fromBinaryString(string $value): ?int
     {
         if (!TableType::hasMemo($this->table->getVersion())) {
             throw new \LogicException('Table not supports Memo');
         }
 
-        return $this->table->getMemo()->get($value);
+        if (empty($pointer = ltrim($value, ' '))) {
+            return null;
+        }
+
+        return (int) $pointer;
     }
 
     /**
-     * @param MemoObject|null $memoObject
+     * @param int|null $value
      */
-    public function toBinaryString($memoObject): string
+    public function toBinaryString($value): string
     {
-        if (!$memoObject) {
+        if (!$value) {
             return str_pad('', $this->column->getLength(), chr(0x00), STR_PAD_LEFT);
         }
 
-        if ($memoObject->isEdited()) {
-            //todo
-        }
-
-        return str_pad((string) $memoObject->getPointer(), $this->column->getLength(), ' ', STR_PAD_LEFT);
+        return str_pad((string) $value, $this->column->getLength(), ' ', STR_PAD_LEFT);
     }
 }

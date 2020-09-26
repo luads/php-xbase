@@ -13,14 +13,15 @@ class MemoConverter extends AbstractFieldDataConverter
         return FieldType::MEMO;
     }
 
-    public function fromBinaryString(string $value): ?MemoObject
+    public function fromBinaryString(string $value): ?int
     {
         $pointer = unpack('l', $value)[1];
-        return $this->table->getMemo()->get($pointer);
+
+        return $pointer ? (int) $pointer : null;
     }
 
     /**
-     * @param MemoObject|null $value
+     * @param int|null $value
      */
     public function toBinaryString($value): string
     {
@@ -28,12 +29,6 @@ class MemoConverter extends AbstractFieldDataConverter
             return pack('l', null);
         }
 
-        if (!$value instanceof MemoObject) {
-            throw new \LogicException('value must be MemoObject');
-        }
-
-        $value = $this->table->getMemo()->persist($value);
-
-        return pack('l', $value->getPointer());
+        return pack('l', $value);
     }
 }

@@ -8,7 +8,7 @@ use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
 use XBase\Table;
 
-class AbstractRecord implements RecordInterface
+abstract class AbstractRecord implements RecordInterface
 {
     public const FLAG_NOT_DELETED = 0x20;
     public const FLAG_DELETED     = 0x2a;
@@ -103,7 +103,21 @@ class AbstractRecord implements RecordInterface
     {
         $column = $this->toColumn($columnName);
 
-        return $this->data[$column->getName()] ?? null;
+        switch ($column->getType()) {
+            case FieldType::MEMO:
+                return $this->getMemo($column->getName());
+            default:
+                return $this->data[$column->getName()] ?? null;
+        }
+    }
+
+    public function getGenuine(string $columnName)
+    {
+        if (!array_key_exists($columnName, $this->data)) {
+            throw new \LogicException('Unknown column '.$columnName);
+        }
+
+        return $this->data[$columnName];
     }
 
     /**
@@ -181,16 +195,24 @@ class AbstractRecord implements RecordInterface
             throw new \LogicException('Table not supports Memo');
         }
 
-        return $this->data[$columnName]->getData();
+        if (null === $memoObject = $this->getMemoObject($columnName)) {
+            return null;
+        }
+
+        return $memoObject->getData();
     }
 
-    public function getMemoObject(string $columnName): MemoObject
+    public function getMemoObject(string $columnName): ?MemoObject
     {
         if (!TableType::hasMemo($this->table->getVersion())) {
             throw new \LogicException('Table not supports Memo');
         }
 
-        return $this->data[$columnName];
+        if (!$pointer = $this->data[$columnName]) {
+            return null;
+        }
+
+        return $this->table->getMemo()->get($pointer);
     }
 
     /**
@@ -341,15 +363,16 @@ class AbstractRecord implements RecordInterface
      */
     public function setMemo($columnName, $value): self
     {
+        //todo
         $column = $this->toColumn($columnName);
         $this->checkType($column, FieldType::MEMO);
 
         if ($value instanceof MemoObject) {
-            $this->data[$column->getName()] = $value;
+            //todo
         } elseif (empty($this->data[$column->getName()])) {
-            $this->data[$column->getName()] = new MemoObject($value);
+            $this->data[$column->getName()] = $this->table->getMemo()->create($value); //todo
         } else {
-            $this->data[$column->getName()]->setData($value);
+            $this->table->getMemo()->update($this->data[$column->getName()], $value);//todo
         }
 
         return $this;

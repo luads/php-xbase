@@ -5,12 +5,12 @@ namespace XBase\Record;
 use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 
-class DBase7Record extends AbstractRecord
+class DBase7Record extends DBase4Record
 {
     /**
      * Get DATE(D) or DATETIME(T) data as object of \DateTime class
      */
-    public function getDateTimeObject($columnName): \DateTime
+    public function getDateTimeObject($columnName): ?\DateTimeInterface
     {
         $column = $this->getColumn($columnName);
         $this->checkType($column, [FieldType::DATE, FieldType::TIMESTAMP]);
