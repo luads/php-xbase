@@ -14,6 +14,8 @@ class VisualFoxproRecord extends FoxproRecord
         $column = $this->toColumn($columnName);
 
         switch ($column->getType()) {
+            case FieldType::BLOB:
+                return $this->getMemo($column->getName());
             case FieldType::GENERAL:
                 return $this->data[$column->getName()];
             default:
@@ -25,6 +27,9 @@ class VisualFoxproRecord extends FoxproRecord
     {
         $column = $this->toColumn($columnName);
         switch ($column->getType()) {
+            case FieldType::BLOB:
+            case FieldType::MEMO:
+                return $this->setMemo($column->getName(), $value);
             case FieldType::INTEGER:
                 return $this->setInt($column->getName(), $value);
             case FieldType::DOUBLE:
@@ -43,6 +48,23 @@ class VisualFoxproRecord extends FoxproRecord
             default:
                 return parent::set($column->getName(), $value);
         }
+    }
+
+    /**
+     * @param $value
+     */
+    public function setMemo($columnName, $value): RecordInterface
+    {
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, [FieldType::BLOB, FieldType::MEMO]);
+
+        if (empty($this->data[$column->getName()]) && $value) {
+            $this->data[$column->getName()] = $this->table->getMemo()->create($value);
+        } elseif (!empty($this->data[$column->getName()])) {
+            $this->data[$column->getName()] = $this->table->getMemo()->update($this->data[$column->getName()], $value);
+        }
+
+        return $this;
     }
 
     public function setGeneral($columnName, $value): self

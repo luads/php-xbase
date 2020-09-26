@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Memo;
 
@@ -13,15 +13,9 @@ class MemoObject
     private $type;
     /** @var int|null */
     private $pointer;
-    /** @var int|null */
+    /** @var int|null In bytes */
     private $length;
 
-    /** @var bool */
-    private $edited = false;
-
-    /**
-     * MemoObject constructor.
-     */
     public function __construct(string $data, ?int $type = null, ?int $pointer = null, ?int $length = null)
     {
         $this->pointer = $pointer;
@@ -36,7 +30,7 @@ class MemoObject
     }
 
     /**
-     * @return int
+     * @return int Length in bytes
      */
     public function getLength(): ?int
     {
@@ -53,22 +47,8 @@ class MemoObject
         return $this->data;
     }
 
-    public function setData(string $data): self
-    {
-        $this->data = $data;
-        $this->edited = true;
-        $this->length = null;
-
-        return $this;
-    }
-
     public function __toString()
     {
         return $this->data;
-    }
-
-    public function isEdited(): bool
-    {
-        return $this->edited;
     }
 }

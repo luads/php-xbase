@@ -2,15 +2,29 @@
 
 namespace XBase;
 
+use XBase\Column\ColumnInterface;
 use XBase\Column\DBaseColumn;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
+use XBase\Memo\MemoFactory;
+use XBase\Memo\MemoInterface;
 use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
+use XBase\Writable\CloneTrait;
+use XBase\Writable\Memo\WritableMemoInterface;
 
 class WritableTable extends Table
 {
+    use CloneTrait;
+
+    /**
+     * @var bool
+     *
+     * @deprecated in 1.3
+     */
+    private $autoSave = false;
+
     /**
      * @var bool record property is new.
      */
@@ -18,12 +32,37 @@ class WritableTable extends Table
 
     protected function open(): void
     {
-        parent::open();
+        $this->clone();
+        $this->fp = Stream::createFromFile($this->cloneFilepath, 'rb+');
 
-        $currentPosition = $this->fp->tell();
-        $this->fp->close();
-        $this->fp = Stream::createFromFile($this->filepath, 'rb+');
-        $this->fp->seek($currentPosition);
+        $this->readHeader();
+    }
+
+    protected function openMemo(): void
+    {
+        if (TableType::hasMemo($this->getVersion())) {
+            $this->memo = MemoFactory::create($this, true);
+        }
+    }
+
+    public function close(): void
+    {
+        if ($this->autoSave) {
+            @trigger_error('You should call `save` method directly.');
+            $this->save();
+        }
+
+        parent::close();
+
+        unlink($this->cloneFilepath);
+    }
+
+    /**
+     * @return WritableMemoInterface|null
+     */
+    public function getMemo(): ?MemoInterface
+    {
+        return $this->memo;
     }
 
     /**
@@ -100,24 +139,29 @@ class WritableTable extends Table
         return false;
     }
 
+    /**
+     * @deprecated since 1.3 and will be deleted in 2.0. Do not use this.
+     */
     public function openWrite($filename = false, $overwrite = false)
     {
-        if (!$filename) {
-            $filename = $this->filepath;
-        }
-
-        if (file_exists($filename) && !$overwrite) {
-            if ($this->fp = Stream::createFromFile($filename, 'r+')) {
-                $this->readHeader();
-            }
-        } elseif ($this->fp = Stream::createFromFile($filename, 'w+')) {
-            $this->writeHeader();
-        }
-
-        return false != $this->fp;
+        @trigger_error('Method `openWrite` is deprecated. Do not use it!');
+        $this->autoSave = true;
+//        if (!$filename) {
+//            $filename = $this->filepath;
+//        }
+//
+//        if (file_exists($filename) && !$overwrite) {
+//            if ($this->fp = Stream::createFromFile($filename, 'r+')) {
+//                $this->readHeader();
+//            }
+//        } elseif ($this->fp = Stream::createFromFile($filename, 'w+')) {
+//            $this->writeHeader();
+//        }
+//
+//        return false != $this->fp;
     }
 
-    public function writeHeader(): void
+    protected function writeHeader(): void
     {
         $this->headerLength = ($this->isFoxpro() ? 296 : 33) + ($this->getColumnCount() * 32);
 
@@ -182,11 +226,11 @@ class WritableTable extends Table
         return $this->record;
     }
 
-    public function writeRecord(RecordInterface $record = null): void
+    public function writeRecord(RecordInterface $record = null): self
     {
         $record = $record ?? $this->record;
         if (!$record) {
-            return;
+            return $this;
         }
 
         $offset = $this->headerLength + ($record->getRecordIndex() * $this->recordByteLength);
@@ -200,6 +244,8 @@ class WritableTable extends Table
         $this->fp->flush();
 
         $this->insertion = false;
+
+        return $this;
     }
 
     public function deleteRecord(): self
@@ -214,9 +260,6 @@ class WritableTable extends Table
         $this->writeRecord();
 
         return $this;
-//        $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
-//        $this->fp->write('!');
-//        $this->fp->flush();
     }
 
     public function undeleteRecord()
@@ -238,6 +281,12 @@ class WritableTable extends Table
             $r = $this->moveTo($i);
 
             if ($r->isDeleted()) {
+                // remove memo columns
+                foreach ($this->getMemoColumns() as $column) {
+                    if ($pointer = $this->record->getGenuine($column->getName())) {
+                        $this->getMemo()->delete($pointer);
+                    }
+                }
                 continue;
             }
 
@@ -251,5 +300,60 @@ class WritableTable extends Table
         $this->fp->truncate($this->headerLength + ($this->recordCount * $this->recordByteLength));
 
         return $this;
+    }
+
+    public function save(): self
+    {
+        if ($this->memo) {
+            $this->memo->save();
+        }
+
+        copy($this->cloneFilepath, $this->filepath);
+
+        return $this;
+    }
+
+    /**
+     * @internal
+     *
+     * @todo Find better solution for notifying table from memo.
+     */
+    public function onMemoBlocksDelete(array $blocks): void
+    {
+        $columns = $this->getMemoColumns();
+
+        for ($i = 0; $i < $this->recordCount; $i++) {
+            $record = $this->pickRecord($i);
+            $save = false;
+            foreach ($columns as $column) {
+                $pointer = $record->getGenuine($column->getName());
+                $sub = 0;
+                foreach ($blocks as $deletedPointer => $length) {
+                    if ($pointer && $pointer > $deletedPointer) {
+                        $sub += $length;
+                    }
+                }
+                $save = $sub > 0;
+                $record->setGenuine($column->getName(), $pointer - $sub);
+            }
+            if ($save) {
+                $this->writeRecord($record);
+            }
+        }
+    }
+
+    /**
+     * @return ColumnInterface[]
+     */
+    private function getMemoColumns(): array
+    {
+        $result = [];
+        foreach ($this->columns as $column) {
+            if (in_array($column->getType(), TableType::getMemoTypes($this->version))) {
+                $result[] = $column;
+            }
+        }
+
+        return $result;
     }
 }

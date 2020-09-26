@@ -76,4 +76,16 @@ final class TableType
             self::FOXPRO_MEMO,
         ]);
     }
+
+    public static function getMemoTypes(string $tableType): array
+    {
+        if (!self::hasMemo($tableType)) {
+            return [];
+        }
+
+        switch ($tableType) {
+            default:
+                return [FieldType::BLOB, FieldType::MEMO];
+        }
+    }
 }

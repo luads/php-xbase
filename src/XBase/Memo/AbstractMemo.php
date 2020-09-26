@@ -3,9 +3,13 @@
 namespace XBase\Memo;
 
 use XBase\Stream\Stream;
+use XBase\Table;
 
 abstract class AbstractMemo implements MemoInterface
 {
+    /** @var Table */
+    protected $table;
+
     /** @var Stream */
     protected $fp;
 
@@ -21,8 +25,9 @@ abstract class AbstractMemo implements MemoInterface
      * @param string $filepath
      * @param string $convertFrom
      */
-    public function __construct(string $filepath, ?string $convertFrom = null)
+    public function __construct(Table $table, string $filepath, ?string $convertFrom = null)
     {
+        $this->table = $table;
         $this->filepath = $filepath;
         $this->convertFrom = $convertFrom; //todo autodetect from languageCode
         $this->open();
@@ -53,8 +58,7 @@ abstract class AbstractMemo implements MemoInterface
 
     public function open(): void
     {
-        $this->close();
-        $this->fp = Stream::createFromFile($this->filepath, 'rb+'); //todo configure write mode
+        $this->fp = Stream::createFromFile($this->filepath); //todo configure write mode
     }
 
     public function close(): void

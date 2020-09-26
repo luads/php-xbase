@@ -5,7 +5,6 @@ namespace XBase\DataConverter\Record;
 use XBase\Column\ColumnInterface;
 use XBase\Exception\InvalidColumnException;
 use XBase\Record\AbstractRecord;
-use XBase\DataConverter\Field\DBase\BlobConverter;
 use XBase\DataConverter\Field\DBase\DateConverter;
 use XBase\DataConverter\Field\DBase\IgnoreConverter;
 use XBase\DataConverter\Field\DBase\LogicalConverter;
@@ -32,7 +31,6 @@ class DBaseDataConverter implements RecordDataConverterInterface
     protected static function getFiledConverters(): array
     {
         return [
-            BlobConverter::class,
             DateConverter::class,
             IgnoreConverter::class,
             LogicalConverter::class,

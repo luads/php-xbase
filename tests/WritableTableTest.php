@@ -4,11 +4,17 @@ namespace XBase\Tests;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Enum\TableType;
+use XBase\Memo\MemoObject;
 use XBase\Record\DBaseRecord;
 use XBase\Record\VisualFoxproRecord;
 use XBase\Table;
 use XBase\WritableTable;
 
+/**
+ * @author Alexander Strizhak <gam6itko@gmail.com>
+ *
+ * @coversDefaultClass \XBase\WritableTable
+ */
 class WritableTableTest extends TestCase
 {
     const FILEPATH = __DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf';
@@ -307,7 +313,7 @@ class WritableTableTest extends TestCase
         self::assertInstanceOf(\DateTimeInterface::class, $dt = $record->get('datetime'));
         self::assertSame('2020-09-10T12:34:56+00:00', $dt->format(DATE_ATOM));
         self::assertSame('2020-09-10T12:34:56+00:00', $record->getDateTimeObject($table->getColumn('datetime')->getName())->format(DATE_ATOM));
-        self::assertSame(1599696000, $dt->format('U'));
+//        self::assertSame(1599696000, $dt->format('U'));
         self::assertSame(3.1415, $record->getObject($table->getColumn('double')));
         self::assertSame(3.1415, $record->get('double'));
         self::assertSame(3, $record->getObject($table->getColumn('integer')));
@@ -317,5 +323,92 @@ class WritableTableTest extends TestCase
         self::assertSame('qwe', $record->get('varbinary'));
         self::assertSame('qwe', $record->get('varchar_bi'));
         $table->close();
+    }
+
+    public function testVisualFoxProMemoUpdate(): void
+    {
+        $copyTo = $this->duplicateFile(__DIR__.'/Resources/foxpro/vfp.dbf');
+        $table = new WritableTable($copyTo);
+
+        $record = $table->pickRecord(0);
+        self::assertNotEmpty($record->get('bio'));
+        self::assertSame(5046, $record->getGenuine('bio'));
+        self::assertSame(5070, $record->getGenuine('bio_bin'));
+
+        $record = $table->pickRecord(1);
+        self::assertNotEmpty($bio1 = $record->get('bio'));
+        self::assertSame(5094, $record->getGenuine('bio'));
+        self::assertSame(5110, $record->getGenuine('bio_bin'));
+
+        $record = $table->pickRecord(2);
+        self::assertNotEmpty($bio2 = $record->get('bio'));
+        self::assertSame(5126, $record->getGenuine('bio'));
+        self::assertSame(5145, $record->getGenuine('bio_bin'));
+
+        /** @var VisualFoxproRecord $record */
+        $record = $table->nextRecord();
+        /** @var MemoObject $memoRecord */
+        $memoRecord = $record->getMemoObject('bio');
+        self::assertInstanceOf(MemoObject::class, $memoRecord);
+        $bio0 = str_pad('', $memoRecord->getLength() * 2, '-');
+        $record->set($table->getColumn('bio'), $bio0);
+        $table
+            ->writeRecord()
+            ->save()
+            ->close();
+
+        $table = new Table($copyTo);
+        $record = $table->pickRecord(0);
+        self::assertSame($bio0, $record->get('bio'));
+        self::assertSame(5140, $record->getGenuine('bio'));
+        self::assertSame(5070 - 24, $record->getGenuine('bio_bin'));
+
+        $record = $table->pickRecord(1);
+        self::assertSame($bio1, $record->get('bio'));
+        self::assertSame(5094 - 24, $record->getGenuine('bio'));
+        self::assertSame(5110 - 24, $record->getGenuine('bio_bin'));
+
+        $record = $table->pickRecord(2);
+        self::assertSame($bio2, $record->get('bio'));
+        self::assertSame(5126 - 24, $record->getGenuine('bio'));
+        self::assertSame(5145 - 24, $record->getGenuine('bio_bin'));
+    }
+
+    public function testVisualFoxProDeleteMemo(): void
+    {
+        $copyTo = $this->duplicateFile(__DIR__.'/Resources/foxpro/vfp.dbf');
+        $table = new WritableTable($copyTo);
+        self::assertSame(3, $table->getRecordCount());
+        $info = pathinfo($copyTo);
+        $memoFile = "{$info['dirname']}/{$info['filename']}.fpt";
+        self::assertFileExists($memoFile);
+        self::assertSame(330496, filesize($memoFile));
+        /** @var VisualFoxproRecord $record */
+        $table->nextRecord();
+
+        $record = $table->pickRecord(1);
+        $bio1 = $record->get('bio');
+        self::assertSame(5094, $record->getGenuine('bio'));
+        $record = $table->pickRecord(2);
+        $bio2 = $record->get('bio');
+        self::assertSame(5126, $record->getGenuine('bio'));
+
+        $table
+            ->deleteRecord()
+            ->pack()
+            ->save()
+            ->close();
+
+        $deletedBlocks = 427 + 160;
+        $table = new Table($copyTo);
+        self::assertSame(2, $table->getRecordCount());
+        $record = $table->pickRecord(0);
+        self::assertSame($bio1, $record->get('bio'));
+        self::assertSame(5094 - $deletedBlocks, $record->getGenuine('bio'));
+        $record = $table->pickRecord(1);
+        self::assertSame($bio2, $record->get('bio'));
+        self::assertSame(5126 - $deletedBlocks, $record->getGenuine('bio'));
+        clearstatcache();
+        self::assertSame(330496 - $deletedBlocks * 64, filesize($memoFile));
     }
 }

@@ -21,7 +21,7 @@ class DBase3Memo extends AbstractMemo
         $endMarker = $this->getBlockEndMarker();
         $result = '';
         $memoLength = 0;
-        while (!$this->fp->eof()) {
+        while (!$this->fp->eof()) { //todo too slow need speedup
             $memoLength++;
             $result .= $this->fp->read(1);
 
@@ -43,11 +43,6 @@ class DBase3Memo extends AbstractMemo
         }
 
         return new MemoObject($result, $type, $pointer, $memoLength);
-    }
-
-    public function persist(MemoObject $memoObject): MemoObject
-    {
-        throw new \Exception('not realized'); //todo realize
     }
 
     protected function calculateBlockCount(string $data): int

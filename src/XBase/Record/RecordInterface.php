@@ -29,6 +29,8 @@ interface RecordInterface
      */
     public function set($columnName, $value): self;
 
+    public function setGenuine(string $columnName, $value);
+
     /**
      * @deprecated since 1.3 and will be delete in 2.0. Use (string) $record->get('name')
      */

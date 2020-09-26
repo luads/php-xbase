@@ -2,6 +2,7 @@
 
 namespace XBase\DataConverter\Record;
 
+use XBase\DataConverter\Field\VisualFoxpro\BlobConverter;
 use XBase\DataConverter\Field\VisualFoxpro\CurrencyConverter;
 use XBase\DataConverter\Field\VisualFoxpro\DateTimeConverter;
 use XBase\DataConverter\Field\VisualFoxpro\DoubleConverter;
@@ -17,6 +18,7 @@ class VisualFoxproDataConverter extends FoxproDataConverter
     protected static function getFiledConverters(): array
     {
         return array_merge([
+            BlobConverter::class,
             CurrencyConverter::class,
             DateTimeConverter::class,
             DoubleConverter::class,

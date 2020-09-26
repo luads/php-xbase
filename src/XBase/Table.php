@@ -136,7 +136,7 @@ class Table
      * Table constructor.
      *
      * @param array|null  $availableColumns
-     * @param string|null $convertFrom      Encoding of file
+     * @param string|null $convertFrom Encoding of file
      *
      * @throws \Exception
      */
@@ -145,11 +145,9 @@ class Table
         $this->filepath = $filepath;
         $this->availableColumns = $availableColumns;
         $this->convertFrom = $convertFrom; //todo autodetect from languageCode
-        $this->open();
 
-        if (TableType::hasMemo($this->getVersion())) {
-            $this->memo = MemoFactory::create($this);
-        }
+        $this->open();
+        $this->openMemo();
     }
 
     protected function open(): void
@@ -166,9 +164,19 @@ class Table
         $this->readHeader();
     }
 
+    protected function openMemo(): void
+    {
+        if (TableType::hasMemo($this->getVersion())) {
+            $this->memo = MemoFactory::create($this);
+        }
+    }
+
     public function close(): void
     {
         $this->fp->close();
+        if ($this->memo) {
+            $this->memo->close();
+        }
     }
 
     protected function readHeader(): void

@@ -113,11 +113,7 @@ abstract class AbstractRecord implements RecordInterface
 
     public function getGenuine(string $columnName)
     {
-        if (!array_key_exists($columnName, $this->data)) {
-            throw new \LogicException('Unknown column '.$columnName);
-        }
-
-        return $this->data[$columnName];
+        return $this->data[$columnName] ?? null;
     }
 
     /**
@@ -246,7 +242,16 @@ abstract class AbstractRecord implements RecordInterface
                 return $this->setNum($column->getName(), $value);
             case FieldType::IGNORE:
                 return $this;
+            default:
+                $this->setGenuine($column->getName(), $value);
         }
+
+        return $this;
+    }
+
+    public function setGenuine(string $columnName, $value): self
+    {
+        $this->data[$columnName] = $value;
 
         return $this;
     }
@@ -265,7 +270,7 @@ abstract class AbstractRecord implements RecordInterface
     public function setString($columnName, $value): self
     {
         $column = $this->toColumn($columnName);
-        $this->data[$column->getName()] = $value;
+        $this->setGenuine($column->getName(), $value);
 
         return $this;
     }
@@ -282,7 +287,7 @@ abstract class AbstractRecord implements RecordInterface
             $value = (float) str_replace(',', '.', $value);
         }
 
-        $this->data[$column->getName()] = $value;
+        $this->setGenuine($column->getName(), $value);
 
         return $this;
     }
@@ -322,7 +327,7 @@ abstract class AbstractRecord implements RecordInterface
             $value = date('Ymd', $value);
         }
 
-        $this->data[$column->getName()] = $value;
+        $this->setGenuine($column->getName(), $value);
 
         return $this;
     }
@@ -336,7 +341,7 @@ abstract class AbstractRecord implements RecordInterface
         $this->checkType($column, FieldType::LOGICAL);
 
         if (is_bool($value)) {
-            $this->data[$column->getName()] = $value;
+            $this->setGenuine($column->getName(), $value);
         } elseif (is_string($value)) {
             switch (strtoupper($value)) {
                 case 'T':
@@ -361,18 +366,16 @@ abstract class AbstractRecord implements RecordInterface
     /**
      * @param $value
      */
-    public function setMemo($columnName, $value): self
+    public function setMemo($columnName, $value): RecordInterface
     {
-        //todo
         $column = $this->toColumn($columnName);
         $this->checkType($column, FieldType::MEMO);
 
-        if ($value instanceof MemoObject) {
-            //todo
-        } elseif (empty($this->data[$column->getName()])) {
+        if (empty($this->data[$column->getName()]) && $value) {
             $this->data[$column->getName()] = $this->table->getMemo()->create($value); //todo
-        } else {
-            $this->table->getMemo()->update($this->data[$column->getName()], $value);//todo
+        } elseif (!empty($this->data[$column->getName()])) {
+            $pointer = $this->data[$column->getName()];
+            $this->table->getMemo()->update($pointer, $value);//todo
         }
 
         return $this;

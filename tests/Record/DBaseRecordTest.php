@@ -8,8 +8,10 @@ use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
 use XBase\Memo\MemoInterface;
+use XBase\Memo\MemoObject;
 use XBase\Record\DBaseRecord;
 use XBase\Table;
+use XBase\Writable\Memo\WritableMemoInterface;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
@@ -62,12 +64,20 @@ class DBaseRecordTest extends TestCase
         $c->method('getBytePos')->willReturn(60);
         $c->method('getLength')->willReturn(10);
 
-        $memo = $this->createMock(MemoInterface::class);
+        $memo = $this->createMock(WritableMemoInterface::class);
+        $memo
+            ->expects(self::atLeastOnce())
+            ->method('create')
+            ->willReturnMap([
+                ['memo text', 1],
+                ['memo_image_data', 2],
+            ]);
         $memo
             ->expects(self::atLeastOnce())
             ->method('get')
             ->willReturnMap([
-                [1, 'memo text']
+                [1, new MemoObject('memo text')],
+                [2, new MemoObject('memo_image_data')],
             ]);
 
         $table = $this->createMock(Table::class);

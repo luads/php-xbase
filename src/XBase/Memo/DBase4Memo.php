@@ -50,9 +50,4 @@ class DBase4Memo extends AbstractMemo
 
         return new MemoObject($result, $type, $pointer, $memoLength[1]);
     }
-
-    public function persist(MemoObject $memoObject): MemoObject
-    {
-        throw new \Exception('not realized'); //todo realize
-    }
 }
