@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Writable;
+namespace XBase\Traits;
 
 /**
  * @property $filepath

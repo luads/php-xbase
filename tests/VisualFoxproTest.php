@@ -256,7 +256,7 @@ TEXT;
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType());
         self::assertSame(27297, strlen($memoImg->getData()));
         self::assertSame(1.2, $record->getFloat('rate'));
-        self::assertEquals(1, $record->getString('general'));
+        self::assertEquals(1, $record->get('general'));
         self::assertSame('1', $record->getString('general'));
         self::assertInstanceOf(MemoObject::class, $blobMemo = $record->getMemoObject('blob'));
         self::assertSame(2, $blobMemo->getType());

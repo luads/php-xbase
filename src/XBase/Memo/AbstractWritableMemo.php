@@ -1,37 +1,59 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Writable\Memo;
+namespace XBase\Memo;
 
-use XBase\Memo\FoxproMemo;
+use XBase\BlocksMerger;
 use XBase\Stream\Stream;
-use XBase\Writable\CloneTrait;
+use XBase\Table;
+use XBase\Traits\CloneTrait;
 
-class WritableFoxproMemo extends FoxproMemo implements WritableMemoInterface
+abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemoInterface
 {
     use CloneTrait;
+
+    /** @var bool */
+    protected $writable = false;
 
     /**
      * @var BlocksMerger Garbage blocks. Delete blocks while saving.
      */
     protected $blocksToDelete;
 
+    /** @var int */
+    protected $nextFreeBlock;
+
+    abstract protected function getBlockSize(): int;
+
+    abstract protected function calculateBlockCount(string $data): int;
+
+    public function __construct(Table $table, string $filepath, ?string $convertFrom = null, bool $writable = false)
+    {
+        $this->writable = $writable;
+        parent::__construct($table, $filepath, $convertFrom);
+    }
+
     public function open(): void
     {
+        if (!$this->writable) {
+            parent::open();
+            return;
+        }
+
         $this->clone();
         $this->fp = Stream::createFromFile($this->cloneFilepath, 'rb+');
         $this->blocksToDelete = new BlocksMerger();
     }
 
-    protected function writeHeader(): void
+    protected function readHeader(): void
     {
-        $this->fp->seek(0);
-        $this->fp->write(pack('N', $this->nextFreeBlock));
+        $stat = $this->fp->stat();
+        $this->nextFreeBlock = $stat['size'] - 1;
     }
 
     public function close(): void
     {
         parent::close();
-        if ($this->cloneFilepath) {
+        if ($this->writable && $this->cloneFilepath) {
             unlink($this->cloneFilepath);
             $this->cloneFilepath = null;
         }
@@ -42,7 +64,7 @@ class WritableFoxproMemo extends FoxproMemo implements WritableMemoInterface
         $pointer = $this->nextFreeBlock;
         //write record
         $length = $this->calculateBlockCount($data);
-        $this->fp->seek($pointer * $this->blockSize);
+        $this->fp->seek($pointer * $this->getBlockSize());
         $this->fp->write($this->toBinaryString($data, $length));
 
         $this->nextFreeBlock += $length;
@@ -71,15 +93,9 @@ class WritableFoxproMemo extends FoxproMemo implements WritableMemoInterface
         copy($this->cloneFilepath, $this->filepath);
     }
 
-    protected function calculateBlockCount(string $data): int
-    {
-        $requiredBytesCount = self::BLOCK_TYPE_LENGTH + self::BLOCK_LENGTH_LENGTH + strlen($data);
-        return (int) ceil($requiredBytesCount / $this->blockSize);
-    }
-
     private function toBinaryString(string $data, int $lengthInBlocks): string
     {
-        return str_pad(pack('N*', 1, strlen($data)).$data, $lengthInBlocks * $this->blockSize, chr(0x00));
+        return str_pad(pack('N*', 1, strlen($data)).$data, $lengthInBlocks * $this->getBlockSize(), chr(0x00));
     }
 
     /**
@@ -99,26 +115,29 @@ class WritableFoxproMemo extends FoxproMemo implements WritableMemoInterface
             $shift += $length;
         }
 
-        $this->table->onMemoBlocksDelete($blocks);
+        if (method_exists($this->table, 'onMemoBlocksDelete')) {
+            $this->table->onMemoBlocksDelete($blocks);
+        }
     }
 
     private function shiftRecords(int $fromPointer, int $offset): void
     {
         $allPointers = $this->getAllPointers($fromPointer);
+        $blockSize = $this->getBlockSize();
 
         foreach ($allPointers as $p => $size) {
-            $this->fp->seek($p * $this->blockSize);
+            $this->fp->seek($p * $blockSize);
             // copy record
-            $byteLength = $size * $this->blockSize;
+            $byteLength = $size * $blockSize;
             $binaryData = $this->fp->read($byteLength);
             $pointer = $p - $offset;
-            $this->fp->seek($pointer * $this->blockSize);
+            $this->fp->seek($pointer * $blockSize);
             $this->fp->write($binaryData);
 
             $this->nextFreeBlock = $pointer + $size;
         }
 
-        $this->fp->truncate($this->nextFreeBlock * $this->blockSize);
+        $this->fp->truncate($this->nextFreeBlock * $blockSize);
     }
 
     private function getAllPointers(int $fromPointer): array

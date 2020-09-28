@@ -1,8 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Writable\Memo;
-
-use XBase\Memo\MemoInterface;
+namespace XBase\Memo;
 
 interface WritableMemoInterface extends MemoInterface
 {

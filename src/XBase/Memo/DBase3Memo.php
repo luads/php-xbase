@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Memo;
 
-class DBase3Memo extends AbstractMemo
+class DBase3Memo extends AbstractWritableMemo
 {
     const BLOCK_LENGTH = 512;
 
@@ -43,11 +43,16 @@ class DBase3Memo extends AbstractMemo
 
     protected function calculateBlockCount(string $data): int
     {
-        return ceil(strlen($data) + strlen($this->getBlockEndMarker()) / self::BLOCK_LENGTH);
+        return (int) ceil(strlen($data) + strlen($this->getBlockEndMarker()) / self::BLOCK_LENGTH);
     }
 
     private function getBlockEndMarker(): string
     {
         return chr(0x1A).chr(0x1A).chr(0x00);
+    }
+
+    protected function getBlockSize(): int
+    {
+        return self::BLOCK_LENGTH;
     }
 }

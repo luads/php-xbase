@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Memo;
 
-class DBase4Memo extends AbstractMemo
+class DBase4Memo extends AbstractWritableMemo
 {
     const BLOCK_SIGN          = 0xFFFF0800;
     const BLOCK_SIGN_LENGTH   = 4;
@@ -10,6 +10,7 @@ class DBase4Memo extends AbstractMemo
 
     /** @var int */
     protected $blockSize;
+
     /** @var int */
     protected $blockLength;
 
@@ -45,5 +46,15 @@ class DBase4Memo extends AbstractMemo
         }
 
         return new MemoObject($result, $type, $pointer, $memoLength[1]);
+    }
+
+    protected function getBlockSize(): int
+    {
+        return $this->blockSize;
+    }
+
+    protected function calculateBlockCount(string $data): int
+    {
+        throw new \LogicException('realize');
     }
 }

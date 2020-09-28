@@ -12,11 +12,9 @@ class DBase7TableTest extends TestCase
 
     public function testAppendRecord(): void
     {
-
     }
 
     public function testDeleteRecord(): void
     {
-
     }
 }

@@ -11,8 +11,8 @@ use XBase\Memo\MemoInterface;
 use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
-use XBase\Writable\CloneTrait;
-use XBase\Writable\Memo\WritableMemoInterface;
+use XBase\Traits\CloneTrait;
+use XBase\Memo\WritableMemoInterface;
 
 class WritableTable extends Table
 {

@@ -1,18 +1,15 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Memo;
 
-class FoxproMemo extends AbstractMemo
+class FoxproMemo extends AbstractWritableMemo
 {
     const BLOCK_LENGTH_LENGTH = 4;
 
     const BLOCK_TYPE_LENGTH = 4;
 
     /** @var int */
-    protected $nextFreeBlock;
-
-    /** @var int */
-    protected $blockSize;
+    private $blockSize;
 
     protected function readHeader(): void
     {
@@ -23,6 +20,12 @@ class FoxproMemo extends AbstractMemo
         if (filesize($this->filepath) !== $this->nextFreeBlock * $this->blockSize) {
             @trigger_error('Incorrect next_available_block pointer', E_USER_WARNING);
         }
+    }
+
+    protected function writeHeader(): void
+    {
+        $this->fp->seek(0);
+        $this->fp->write(pack('N', $this->nextFreeBlock));
     }
 
     public static function getExtension(): string
@@ -55,5 +58,21 @@ class FoxproMemo extends AbstractMemo
         }
 
         return new MemoObject($result, $type, $pointer, $memoLength[1]);
+    }
+
+    protected function calculateBlockCount(string $data): int
+    {
+        $requiredBytesCount = self::BLOCK_TYPE_LENGTH + self::BLOCK_LENGTH_LENGTH + strlen($data);
+        return (int) ceil($requiredBytesCount / $this->getBlockSize());
+    }
+
+    protected function getNextFreeBlock(): int
+    {
+        return $this->nextFreeBlock;
+    }
+
+    protected function getBlockSize(): int
+    {
+        return $this->blockSize;
     }
 }

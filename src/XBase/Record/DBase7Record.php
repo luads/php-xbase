@@ -2,7 +2,6 @@
 
 namespace XBase\Record;
 
-use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 
 class DBase7Record extends DBase4Record

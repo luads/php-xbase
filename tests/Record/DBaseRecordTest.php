@@ -7,11 +7,10 @@ use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
-use XBase\Memo\MemoInterface;
 use XBase\Memo\MemoObject;
 use XBase\Record\DBaseRecord;
 use XBase\Table;
-use XBase\Writable\Memo\WritableMemoInterface;
+use XBase\Memo\WritableMemoInterface;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>

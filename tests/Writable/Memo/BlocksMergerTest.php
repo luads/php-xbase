@@ -3,7 +3,7 @@
 namespace XBase\Tests\Writable\Memo;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Writable\Memo\BlocksMerger;
+use XBase\BlocksMerger;
 
 class BlocksMergerTest extends TestCase
 {

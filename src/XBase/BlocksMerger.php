@@ -1,13 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Writable\Memo;
+namespace XBase;
 
 /**
  * Used to store and merge memo deleted area.
  *
  * @author Alexander Strizhak <gam6itko@gmail.com>
+ *
+ * @internal
  */
-class BlocksMerger
+final class BlocksMerger
 {
     private $blocksToDelete = [];
 
