@@ -51,4 +51,9 @@ class BlocksMerger
 
         return $result;
     }
+
+    public function isEmpty(): bool
+    {
+        return empty($this->blocksToDelete);
+    }
 }

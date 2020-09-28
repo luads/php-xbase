@@ -30,10 +30,6 @@ class DBase4Memo extends AbstractMemo
             $this->open();
         }
 
-//        if (is_string($pointer)) {
-//            $pointer = (int) ltrim($pointer);
-//        }
-
         $this->fp->seek($pointer * $this->blockLength);
         $sign = unpack('N', $this->fp->read(self::BLOCK_SIGN_LENGTH));
         if (self::BLOCK_SIGN !== $sign[1]) {

@@ -34,8 +34,6 @@ class WritableTable extends Table
     {
         $this->clone();
         $this->fp = Stream::createFromFile($this->cloneFilepath, 'rb+');
-
-        $this->readHeader();
     }
 
     protected function openMemo(): void
@@ -163,7 +161,7 @@ class WritableTable extends Table
 
     protected function writeHeader(): void
     {
-        $this->headerLength = ($this->isFoxpro() ? 296 : 33) + ($this->getColumnCount() * 32);
+//        $this->headerLength = ($this->isFoxpro() ? 296 : 33) + ($this->getColumnCount() * 32);
 
         $this->fp->seek(0);
 
@@ -209,17 +207,14 @@ class WritableTable extends Table
 
         $this->fp->writeUChar(0x0d);
 
-        if ($this->foxpro) {
+        if (in_array($this->version, [TableType::VISUAL_FOXPRO, TableType::VISUAL_FOXPRO_AI, TableType::VISUAL_FOXPRO_VAR])) {
             $this->fp->write(str_pad($this->backlist, 263, ' '));
         }
     }
 
-    /**
-     * @return RecordInterface
-     */
-    public function appendRecord()
+    public function appendRecord(): RecordInterface
     {
-        $this->recordPos = $this->recordCount++;
+        $this->recordPos = $this->recordCount;
         $this->record = RecordFactory::create($this, $this->recordPos);
         $this->insertion = true;
 
@@ -238,6 +233,7 @@ class WritableTable extends Table
         $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($record));
 
         if ($this->insertion) {
+            $this->recordCount++;
             $this->writeHeader();
         }
 
@@ -248,16 +244,21 @@ class WritableTable extends Table
         return $this;
     }
 
-    public function deleteRecord(): self
+    public function deleteRecord(?RecordInterface $record = null): self
     {
-        if ($this->insertion) {
+        if ($this->record && $this->insertion) {
             $this->record = null;
             $this->recordPos = -1;
             return $this;
         }
 
-        $this->record->setDeleted(true);
-        $this->writeRecord();
+        $record = $record ?? $this->record;
+        if (!$record) {
+            return $this;
+        }
+
+        $record->setDeleted(true);
+        $this->writeRecord($record);
 
         return $this;
     }
@@ -291,13 +292,14 @@ class WritableTable extends Table
             }
 
             $r->setRecordIndex($newRecordCount++);
-            $this->writeRecord();
+            $this->writeRecord($r);
         }
 
         $this->recordCount = $newRecordCount;
         $this->writeHeader();
 
-        $this->fp->truncate($this->headerLength + ($this->recordCount * $this->recordByteLength));
+        $size = $this->headerLength + ($this->recordCount * $this->recordByteLength);
+        $this->fp->truncate($size);
 
         return $this;
     }
@@ -306,6 +308,13 @@ class WritableTable extends Table
     {
         if ($this->memo) {
             $this->memo->save();
+        }
+
+        //check end-of-file marker
+        $stat = $this->fp->stat();
+        $this->fp->seek($stat['size'] - 1);
+        if (self::END_OF_FILE_MARKER !== ($lastByte = $this->fp->readUChar())) {
+            $this->fp->writeUChar(self::END_OF_FILE_MARKER);
         }
 
         copy($this->cloneFilepath, $this->filepath);
@@ -326,7 +335,10 @@ class WritableTable extends Table
             $record = $this->pickRecord($i);
             $save = false;
             foreach ($columns as $column) {
-                $pointer = $record->getGenuine($column->getName());
+                if (!$pointer = $record->getGenuine($column->getName())) {
+                    continue;
+                }
+
                 $sub = 0;
                 foreach ($blocks as $deletedPointer => $length) {
                     if ($pointer && $pointer > $deletedPointer) {

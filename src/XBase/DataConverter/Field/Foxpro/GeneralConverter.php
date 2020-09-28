@@ -23,7 +23,6 @@ class GeneralConverter extends AbstractFieldDataConverter
 
     public function toBinaryString($value): string
     {
-        //todo
-        throw new \Exception('NotRealized');
+        return str_pad((string) $value, $this->column->getLength(), ' ', STR_PAD_LEFT);
     }
 }

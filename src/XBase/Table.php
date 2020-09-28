@@ -25,6 +25,8 @@ class Table
     /** @var int Visual FoxPro backlist length */
     const VFP_BACKLIST_LENGTH = 263;
 
+    const END_OF_FILE_MARKER = 0x1a;
+
     /** @var string Table filepath. */
     protected $filepath;
 
@@ -136,7 +138,7 @@ class Table
      * Table constructor.
      *
      * @param array|null  $availableColumns
-     * @param string|null $convertFrom Encoding of file
+     * @param string|null $convertFrom      Encoding of file
      *
      * @throws \Exception
      */
@@ -147,6 +149,7 @@ class Table
         $this->convertFrom = $convertFrom; //todo autodetect from languageCode
 
         $this->open();
+        $this->readHeader();
         $this->openMemo();
     }
 
@@ -161,22 +164,6 @@ class Table
         }
 
         $this->fp = Stream::createFromFile($this->filepath);
-        $this->readHeader();
-    }
-
-    protected function openMemo(): void
-    {
-        if (TableType::hasMemo($this->getVersion())) {
-            $this->memo = MemoFactory::create($this);
-        }
-    }
-
-    public function close(): void
-    {
-        $this->fp->close();
-        if ($this->memo) {
-            $this->memo->close();
-        }
     }
 
     protected function readHeader(): void
@@ -211,6 +198,21 @@ class Table
 //        $this->setFilePos($this->headerLength);
         $this->recordPos = -1;
         $this->deleteCount = 0;
+    }
+
+    protected function openMemo(): void
+    {
+        if (TableType::hasMemo($this->getVersion())) {
+            $this->memo = MemoFactory::create($this);
+        }
+    }
+
+    public function close(): void
+    {
+        $this->fp->close();
+        if ($this->memo) {
+            $this->memo->close();
+        }
     }
 
     /**

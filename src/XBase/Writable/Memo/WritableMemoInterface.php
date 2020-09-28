@@ -7,8 +7,6 @@ use XBase\Memo\MemoInterface;
 interface WritableMemoInterface extends MemoInterface
 {
     /**
-     * @param string $data
-     *
      * @return int Block pointer
      */
     public function create(string $data): int;

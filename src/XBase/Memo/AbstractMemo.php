@@ -22,7 +22,6 @@ abstract class AbstractMemo implements MemoInterface
     /**
      * Memo constructor.
      *
-     * @param string $filepath
      * @param string $convertFrom
      */
     public function __construct(Table $table, string $filepath, ?string $convertFrom = null)

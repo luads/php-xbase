@@ -12,10 +12,6 @@ class DBase3Memo extends AbstractMemo
             $this->open();
         }
 
-//        if (is_string($pointer)) {
-//            $pointer = (int) ltrim($pointer, ' ');
-//        }
-
         $this->fp->seek($pointer * self::BLOCK_LENGTH);
 
         $endMarker = $this->getBlockEndMarker();

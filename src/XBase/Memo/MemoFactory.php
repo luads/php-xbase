@@ -32,7 +32,7 @@ class MemoFactory
 
     private static function getClass(string $version, bool $writable): string
     {
-        if ($writable){
+        if ($writable) {
             return self::getWritableClass($version);
         }
 

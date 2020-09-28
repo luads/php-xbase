@@ -77,17 +77,43 @@ class FoxproTest extends AbstractTestCase
         $columns = $table->getColumns();
 
         //<editor-fold desc="columns">
+        $column = $columns['name'];
+        self::assertSame(FieldType::CHAR, $column->getType());
+        self::assertSame(1, $column->getBytePos());
+        self::assertSame(20, $column->getLength());
+        $column = $columns['birthday'];
+        self::assertSame(FieldType::DATE, $column->getType());
+        self::assertSame(21, $column->getBytePos());
+        self::assertSame(8, $column->getLength());
+        $column = $columns['is_man'];
+        self::assertSame(FieldType::LOGICAL, $column->getType());
+        self::assertSame(29, $column->getBytePos());
+        self::assertSame(1, $column->getLength());
+        $column = $columns['bio'];
+        self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(30, $column->getBytePos());
+        self::assertSame(10, $column->getLength());
+        $column = $columns['money'];
+        self::assertSame(FieldType::NUMERIC, $column->getType());
+        self::assertSame(40, $column->getBytePos());
+        self::assertSame(20, $column->getLength());
+        self::assertSame(4, $column->getDecimalCount());
+        $column = $columns['image'];
+        self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(60, $column->getBytePos());
+        self::assertSame(10, $column->getLength());
         $column = $columns['rate'];
         self::assertSame(FieldType::FLOAT, $column->getType());
+        self::assertSame(70, $column->getBytePos());
         self::assertSame(10, $column->getLength());
         self::assertSame(2, $column->getDecimalCount());
         $column = $columns['general'];
         self::assertSame(FieldType::GENERAL, $column->getType());
+        self::assertSame(80, $column->getBytePos());
         self::assertSame(10, $column->getLength());
 
         $record = $table->moveTo(0);
         self::assertSame(1.2, $record->getFloat('rate'));
-        /** @var MemoObject $memoGeneral */
         self::assertSame('1', $record->get('general'));
 
         $record = $table->nextRecord();

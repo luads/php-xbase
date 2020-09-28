@@ -87,6 +87,10 @@ class WritableFoxproMemo extends FoxproMemo implements WritableMemoInterface
      */
     private function doDelete(): void
     {
+        if ($this->blocksToDelete->isEmpty()) {
+            return;
+        }
+
         $blocks = $this->blocksToDelete->get();
         $this->blocksToDelete->clear();
         $shift = 0;
@@ -129,5 +133,4 @@ class WritableFoxproMemo extends FoxproMemo implements WritableMemoInterface
 
         return $result;
     }
-
 }

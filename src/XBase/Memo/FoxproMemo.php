@@ -39,10 +39,6 @@ class FoxproMemo extends AbstractMemo
             $this->open();
         }
 
-//        if (is_string($pointer)) {
-//            $pointer = (int) ltrim($pointer, ' ');
-//        }
-
         if (0 === $pointer) {
             return null;
         }
