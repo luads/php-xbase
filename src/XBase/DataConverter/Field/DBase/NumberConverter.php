@@ -2,8 +2,8 @@
 
 namespace XBase\DataConverter\Field\DBase;
 
-use XBase\Enum\FieldType;
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
+use XBase\Enum\FieldType;
 
 class NumberConverter extends AbstractFieldDataConverter
 {
@@ -30,7 +30,14 @@ class NumberConverter extends AbstractFieldDataConverter
 
     public function toBinaryString($value): string
     {
-        $value = null === $value ? '' : number_format($value, $this->column->getDecimalCount(), '.', '');
-        return str_pad($value, $this->column->getLength(), ' ', STR_PAD_LEFT);
+        if (null === $value) {
+            return str_repeat(chr(0x00), $this->column->getLength());
+        }
+
+        if ($value % 1 > 0) {
+            $value = number_format($value, $this->column->getDecimalCount(), '.', '');
+        }
+
+        return str_pad((string) $value, $this->column->getLength(), ' ', STR_PAD_LEFT);
     }
 }

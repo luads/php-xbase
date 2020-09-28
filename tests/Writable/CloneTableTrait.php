@@ -23,7 +23,7 @@ trait CloneTableTrait
         $this->cloneFiles[] = $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
         self::assertTrue(copy($file, $copyTo));
 
-        $memoExt = ['fpt'];
+        $memoExt = ['fpt', 'dbt'];
         foreach ($memoExt as $ext) {
             $memoFile = "{$info['dirname']}/{$info['filename']}.$ext";
             if (file_exists($memoFile)) {

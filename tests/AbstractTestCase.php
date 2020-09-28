@@ -49,10 +49,11 @@ The character was reintroduced as a heroic, noble being in 2006, and appeared in
 TEXT;
         self::assertSame(trim($str), str_replace("\r\n", "\n", trim($record->get('bio'))));
         self::assertSame(12.1235, $record->getNum('money'));
+        /** @var MemoObject $memoImg */
         $memoImg = $record->getMemoObject('image');
         self::assertInstanceOf(MemoObject::class, $memoImg);
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType());
-        self::assertSame(27297, strlen($memoImg->getData()));
+        self::assertSame($memoImg->getLength(), strlen($memoImg->getData()));
 
         $record = $table->nextRecord();
         self::assertSame('Rocket Raccoon', $record->getString('name'));

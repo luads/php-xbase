@@ -2,6 +2,8 @@
 
 namespace XBase\Record;
 
+use XBase\Enum\FieldType;
+
 class DBase4Record extends AbstractRecord
 {
     public function get($columnName)
@@ -9,7 +11,7 @@ class DBase4Record extends AbstractRecord
         $column = $this->toColumn($columnName);
 
         switch ($column->getType()) {
-            case 'B':
+            case FieldType::DBASE4_BLOB: //todo dbase7 or 5 or 4? need to find documentation
                 return $this->getMemo($column->getName());
             default:
                 return parent::get($columnName);

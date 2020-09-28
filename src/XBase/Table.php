@@ -134,11 +134,14 @@ class Table
      */
     public $memo;
 
+    /** @var string|null DBase7 only */
+    protected $languageName;
+
     /**
      * Table constructor.
      *
      * @param array|null  $availableColumns
-     * @param string|null $convertFrom      Encoding of file
+     * @param string|null $convertFrom Encoding of file
      *
      * @throws \Exception
      */
@@ -183,7 +186,7 @@ class Table
         $this->languageCode = $this->fp->read();
         $this->fp->read(2); //reserved
         if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
-            $languageName = rtrim($this->fp->read(32), chr(0));
+            $this->languageName = rtrim($this->fp->read(32), chr(0));
             $this->fp->read(4);
         }
 

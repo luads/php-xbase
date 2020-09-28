@@ -9,20 +9,24 @@ class DBase4Memo extends AbstractWritableMemo
     const BLOCK_LENGTH_LENGTH = 4;
 
     /** @var int */
-    protected $blockSize;
+    protected $sizeOfBlock;
+
+    /** @var string */
+    private $name;
 
     /** @var int */
-    protected $blockLength;
+    protected $blockLengthInBytes;
 
     protected function readHeader(): void
     {
-        $this->fp->seek(4);
-        $bytes = unpack('N', $this->fp->read(4));
-        $this->blockSize = $bytes[1];
+        $this->fp->seek(0);
+        $this->nextFreeBlock = $this->fp->readUInt();
+
+        $this->sizeOfBlock = unpack('N', $this->fp->read(4))[1];
+        $this->name = $this->fp->read(8);
 
         $this->fp->seek(20);
-        $bytes = unpack('S', $this->fp->read(2));
-        $this->blockLength = $bytes[1];
+        $this->blockLengthInBytes = unpack('S', $this->fp->read(2))[1];
     }
 
     public function get(int $pointer): ?MemoObject
@@ -31,14 +35,15 @@ class DBase4Memo extends AbstractWritableMemo
             $this->open();
         }
 
-        $this->fp->seek($pointer * $this->blockLength);
+        $this->fp->seek($pointer * $this->blockLengthInBytes);
         $sign = unpack('N', $this->fp->read(self::BLOCK_SIGN_LENGTH));
         if (self::BLOCK_SIGN !== $sign[1]) {
             throw new \LogicException('Wrong dBaseIV block sign');
         }
 
         $memoLength = unpack('L', $this->fp->read(self::BLOCK_LENGTH_LENGTH));
-        $result = $this->fp->read($memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
+        $result = $this->fp->read($memoLength[1]);
+//        $result = $this->fp->read($memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
 
         $type = $this->guessDataType($result);
         if (MemoObject::TYPE_TEXT === $type && $this->convertFrom) {
@@ -48,13 +53,20 @@ class DBase4Memo extends AbstractWritableMemo
         return new MemoObject($result, $type, $pointer, $memoLength[1]);
     }
 
-    protected function getBlockSize(): int
+    protected function getBlockLengthInBytes(): int
     {
-        return $this->blockSize;
+        return $this->blockLengthInBytes;
     }
 
     protected function calculateBlockCount(string $data): int
     {
-        throw new \LogicException('realize');
+        $requiredBytesCount = self::BLOCK_SIGN_LENGTH + self::BLOCK_LENGTH_LENGTH + strlen($data);
+        return (int) ceil($requiredBytesCount / $this->getBlockLengthInBytes());
+    }
+
+    protected function toBinaryString(string $data, int $lengthInBlocks): string
+    {
+        $value = pack('N', self::BLOCK_SIGN).pack('L', strlen($data));
+        return str_pad($value.$data, $lengthInBlocks * $this->getBlockLengthInBytes(), chr(0));
     }
 }

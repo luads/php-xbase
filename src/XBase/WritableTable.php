@@ -8,11 +8,11 @@ use XBase\Enum\TableType;
 use XBase\Exception\TableException;
 use XBase\Memo\MemoFactory;
 use XBase\Memo\MemoInterface;
+use XBase\Memo\WritableMemoInterface;
 use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
 use XBase\Traits\CloneTrait;
-use XBase\Memo\WritableMemoInterface;
 
 class WritableTable extends Table
 {
@@ -165,49 +165,58 @@ class WritableTable extends Table
 
         $this->fp->seek(0);
 
-        $this->fp->writeUChar($this->version);
-        $this->fp->write3ByteDate(time());
-        $this->fp->writeUInt($this->recordCount);
-        $this->fp->writeUShort($this->headerLength);
-        $this->fp->writeUShort($this->recordByteLength);
-        $this->fp->write(str_pad('', 2, chr(0)));
-        $this->fp->write(chr($this->inTransaction ? 1 : 0));
-        $this->fp->write(chr($this->encrypted ? 1 : 0));
-        $this->fp->write(str_pad('', 4, chr(0)));
-        $this->fp->write(str_pad('', 8, chr(0)));
-        $this->fp->write($this->mdxFlag);
-        $this->fp->write($this->languageCode);
-        $this->fp->write(str_pad('', 2, chr(0)));
+        $this->fp->writeUChar($this->version);//0
+        $this->fp->write3ByteDate(time());//1-3
+        $this->fp->writeUInt($this->recordCount);//4-7
+        $this->fp->writeUShort($this->headerLength);//8-9
+        $this->fp->writeUShort($this->recordByteLength);//10-11
+        $this->fp->write(str_pad('', 2, chr(0)));//12-13
+        $this->fp->write(chr($this->inTransaction ? 1 : 0));//14
+        $this->fp->write(chr($this->encrypted ? 1 : 0));//15
+        $this->fp->write(str_pad('', 4, chr(0)));//16-19 //todo-different-tabel
+        $this->fp->write(str_pad('', 8, chr(0)));//20-27 //todo-different-tabel
+        $this->fp->write($this->mdxFlag);//28
+        $this->fp->write($this->languageCode);//29
+        $this->fp->write(str_pad('', 2, chr(0)));//30-31 //todo-different-tabel
+
+        if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
+            $this->fp->write(str_pad($this->languageName, 36, chr(0)));
+        }
 
         foreach ($this->columns as $column) {
-            $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0))); // 0-10
-            $this->fp->write($column->getType());// 11
-            $this->fp->writeUInt($column->getMemAddress());//12-15
-            $this->fp->writeUChar($column->getLength());//16
-            $this->fp->writeUChar($column->getDecimalCount());//17
-            $this->fp->write(
-                method_exists($column, 'getReserved1')
-                    ? call_user_func([$column, 'getReserved1'])
-                    : str_pad('', 2, chr(0))
-            );//18-19
-            $this->fp->writeUChar($column->getWorkAreaID());//20
-            $this->fp->write(
-                method_exists($column, 'getReserved2')
-                    ? call_user_func([$column, 'getReserved2'])
-                    : str_pad('', 2, chr(0))
-            );//21-22
-            $this->fp->write(chr($column->isSetFields() ? 1 : 0));//23
-            $this->fp->write(
-                method_exists($column, 'getReserved3')
-                    ? call_user_func([$column, 'getReserved3'])
-                    : str_pad('', 7, chr(0))
-            );//24-30
-            $this->fp->write(chr($column->isIndexed() ? 1 : 0));//31
+            $column->toBinaryString($this->fp);
+//            $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0))); // 0-10
+//            $this->fp->write($column->getType());// 11
+//            $this->fp->writeUInt($column->getMemAddress());//12-15
+//            $this->fp->writeUChar($column->getLength());//16
+//            $this->fp->writeUChar($column->getDecimalCount());//17
+//            $this->fp->write(
+//                method_exists($column, 'getReserved1')
+//                    ? call_user_func([$column, 'getReserved1'])
+//                    : str_pad('', 2, chr(0))
+//            );//18-19
+//            $this->fp->writeUChar($column->getWorkAreaID());//20
+//            $this->fp->write(
+//                method_exists($column, 'getReserved2')
+//                    ? call_user_func([$column, 'getReserved2'])
+//                    : str_pad('', 2, chr(0))
+//            );//21-22
+//            $this->fp->write(chr($column->isSetFields() ? 1 : 0));//23
+//            $this->fp->write(
+//                method_exists($column, 'getReserved3')
+//                    ? call_user_func([$column, 'getReserved3'])
+//                    : str_pad('', 7, chr(0))
+//            );//24-30
+//            $this->fp->write(chr($column->isIndexed() ? 1 : 0));//31
         }
 
         $this->fp->writeUChar(0x0d);
 
-        if (in_array($this->version, [TableType::VISUAL_FOXPRO, TableType::VISUAL_FOXPRO_AI, TableType::VISUAL_FOXPRO_VAR])) {
+        if (in_array($this->version, [
+            TableType::VISUAL_FOXPRO,
+            TableType::VISUAL_FOXPRO_AI,
+            TableType::VISUAL_FOXPRO_VAR,
+        ])) {
             $this->fp->write(str_pad($this->backlist, 263, ' '));
         }
     }
@@ -234,7 +243,6 @@ class WritableTable extends Table
 
         if ($this->insertion) {
             $this->recordCount++;
-            $this->writeHeader();
         }
 
         $this->fp->flush();
@@ -310,6 +318,7 @@ class WritableTable extends Table
             $this->memo->save();
         }
 
+        $this->writeHeader();
         //check end-of-file marker
         $stat = $this->fp->stat();
         $this->fp->seek($stat['size'] - 1);

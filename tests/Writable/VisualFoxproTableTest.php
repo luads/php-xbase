@@ -21,6 +21,27 @@ class VisualFoxproTableTest extends TestCase
 
     const FILEPATH = __DIR__.'/../Resources/foxpro/vfp.dbf';
 
+    public function testReSave(): void
+    {
+        $copyTo = $this->duplicateFile(self::FILEPATH);
+        $table = new WritableTable($copyTo);
+        $table->nextRecord();
+        $table
+            ->writeRecord()
+            ->save()
+            ->close();
+
+        $fp = Stream::createFromFile($copyTo, 'rb+');
+        $fp->seek(1);
+        $fp->write(pack('C*', 0x78, 0x02, 0x11));
+        $fp->seek(16);
+        $fp->write(pack('C*', 0xd9, 0x25, 0xc7, 0x05));
+        $fp->flush();
+        $fp->close();
+
+        self::assertFileEquals(self::FILEPATH, $copyTo);
+    }
+
     /**
      * Not set current record. Should not fall
      */

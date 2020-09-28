@@ -3,6 +3,7 @@
 namespace XBase\Column;
 
 use XBase\Stream\Stream;
+use XBase\Stream\StreamWrapper;
 
 class DBase7Column extends AbstractColumn
 {
@@ -21,14 +22,14 @@ class DBase7Column extends AbstractColumn
 
         return new self(
             $s->read(32),
-            $s->read(1),
-            $s->readUChar(),
-            $s->readUChar(),
-            $s->readUShort(),
-            $s->readUChar(),
-            $s->readUShort(),
-            $s->readUInt(),
-            $s->read(4),
+            $s->read(1),//type
+            $s->readUChar(),//length
+            $s->readUChar(),//decimalCount
+            $s->readUShort(),//reserved1
+            $s->readUChar(),//mdxFlag
+            $s->readUShort(),//reserved2
+            $s->readUInt(),//nextAI
+            $s->read(4),//reserved3
             $colIndex,
             $bytePos
         );
@@ -62,5 +63,18 @@ class DBase7Column extends AbstractColumn
         // not protocol
         $this->colIndex = $colIndex;
         $this->bytePos = $bytePos;
+    }
+
+    public function toBinaryString(StreamWrapper $fp): void
+    {
+        $fp->write($this->rawName);
+        $fp->write($this->type);
+        $fp->writeUChar($this->length);
+        $fp->writeUChar($this->decimalCount);
+        $fp->write(str_pad('', 2, chr(0)));
+        $fp->writeUChar($this->mdxFlag);
+        $fp->write(str_pad('', 2, chr(0)));
+        $fp->writeInt($this->nextAI);
+        $fp->write(str_pad('', 4, chr(0)));
     }
 }

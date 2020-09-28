@@ -4,6 +4,7 @@ namespace XBase\Column;
 
 use XBase\Enum\FieldType;
 use XBase\Stream\Stream;
+use XBase\Stream\StreamWrapper;
 
 class DBaseColumn extends AbstractColumn
 {
@@ -44,7 +45,7 @@ class DBaseColumn extends AbstractColumn
     }
 
     public function __construct(
-        string $name,
+        string $rawName,
         string $type,
         int $memAddress,
         int $length,
@@ -58,9 +59,9 @@ class DBaseColumn extends AbstractColumn
         int $colIndex,
         ?int $bytePos = null
     ) {
-        $name = (false !== strpos($name, chr(0x00))) ? substr($name, 0, strpos($name, chr(0x00))) : $name;
+        $this->rawName = $rawName;
+        $name = (false !== strpos($rawName, chr(0x00))) ? substr($rawName, 0, strpos($rawName, chr(0x00))) : trim($rawName);
 
-        $this->rawName = $name;
         // chop all garbage from 0x00
         $this->name = strtolower($name);
         $this->type = $type;
@@ -83,21 +84,6 @@ class DBaseColumn extends AbstractColumn
         $this->bytePos = $bytePos;
     }
 
-//    public function getDataLength(): int
-//    {
-//        switch ($this->type) {
-//            case FieldType::DATE:
-//            case FieldType::DATETIME:
-//                return 8;
-//            case FieldType::LOGICAL:
-//                return 1;
-//            case FieldType::MEMO:
-//                return 10;
-//            default:
-//                return $this->length;
-//        }
-//    }
-
     /**
      * @return bool|string
      */
@@ -106,18 +92,18 @@ class DBaseColumn extends AbstractColumn
         return $this->name;
     }
 
-    public function getReserved1()
+    public function toBinaryString(StreamWrapper $fp): void
     {
-        return $this->reserved1;
-    }
-
-    public function getReserved2()
-    {
-        return $this->reserved2;
-    }
-
-    public function getReserved3()
-    {
-        return $this->reserved3;
+        $fp->write($this->rawName); // 0-10
+        $fp->write($this->type);// 11
+        $fp->writeUInt($this->memAddress);//12-15
+        $fp->writeUChar($this->length);//16
+        $fp->writeUChar($this->decimalCount);//17
+        $fp->write($this->reserved1);//18-19
+        $fp->writeUChar($this->workAreaID);//20
+        $fp->write($this->reserved2);//21-22
+        $fp->write(chr($this->setFields ? 1 : 0));//23
+        $fp->write($this->reserved3);//24-30
+        $fp->write(chr($this->indexed ? 1 : 0));//31
     }
 }

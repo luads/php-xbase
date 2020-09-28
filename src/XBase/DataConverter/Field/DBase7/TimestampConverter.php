@@ -2,6 +2,7 @@
 
 namespace XBase\DataConverter\Field\DBase7;
 
+use XBase\DataConverter\Field\VisualFoxpro\DateTimeConverter;
 use XBase\Enum\FieldType;
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
 
@@ -28,7 +29,8 @@ class TimestampConverter extends AbstractFieldDataConverter
 
     public function toBinaryString($value): string
     {
-        //todo
-        throw new \Exception('NotRealized');
+        $hex = dechex($value * self::SEC_TO_JD + self::UTC_TO_JD);
+
+        return pack('H16', $hex.'00');
     }
 }

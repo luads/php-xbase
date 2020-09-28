@@ -9,7 +9,7 @@ class Stream extends StreamWrapper
         return new self(fopen($filepath, $mode));
     }
 
-    public static function createFromString(string $string, string $mode = 'rb+'): Stream
+    public static function createFromString(string $string = '', string $mode = 'rb+'): Stream
     {
         $stream = fopen('php://temp', $mode);
         fwrite($stream, $string);

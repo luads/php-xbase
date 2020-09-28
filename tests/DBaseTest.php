@@ -185,6 +185,35 @@ JSON;
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
         self::assertSame(0x03, $table->getLanguageCode());
 
+        //<editor-fold desc="columns">
+        $columns = $table->getColumns();
+        $column = $columns['name'];
+        self::assertSame(FieldType::CHAR, $column->getType());
+        self::assertSame(1, $column->getBytePos());
+        self::assertSame(20, $column->getLength());
+        $column = $columns['birthday'];
+        self::assertSame(FieldType::DATE, $column->getType());
+        self::assertSame(21, $column->getBytePos());
+        self::assertSame(8, $column->getLength());
+        $column = $columns['is_man'];
+        self::assertSame(FieldType::LOGICAL, $column->getType());
+        self::assertSame(29, $column->getBytePos());
+        self::assertSame(1, $column->getLength());
+        $column = $columns['bio'];
+        self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(30, $column->getBytePos());
+        self::assertSame(10, $column->getLength());
+        $column = $columns['money'];
+        self::assertSame(FieldType::NUMERIC, $column->getType());
+        self::assertSame(40, $column->getBytePos());
+        self::assertSame(20, $column->getLength());
+        self::assertSame(4, $column->getDecimalCount());
+        $column = $columns['image'];
+        self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(60, $column->getBytePos());
+        self::assertSame(10, $column->getLength());
+        //</editor-fold>
+
         $this->assertRecords($table);
         $this->assertMemoImg($table);
     }
@@ -234,6 +263,59 @@ JSON;
         self::assertSame(false, $table->isEncrypted());
         self::assertSame(TableFlag::NONE, ord($table->mdxFlag));
 
+        //<editor-fold desc="columns">
+        $columns = $table->getColumns();
+        $column = $columns['name'];
+        self::assertSame(FieldType::CHAR, $column->getType());
+        self::assertSame(1, $column->getBytePos());
+        self::assertSame(20, $column->getLength());
+        $column = $columns['birthday'];
+        self::assertSame(FieldType::DATE, $column->getType());
+        self::assertSame(21, $column->getBytePos());
+        self::assertSame(8, $column->getLength());
+        $column = $columns['is_man'];
+        self::assertSame(FieldType::LOGICAL, $column->getType());
+        self::assertSame(29, $column->getBytePos());
+        self::assertSame(1, $column->getLength());
+        $column = $columns['bio'];
+        self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(30, $column->getBytePos());
+        self::assertSame(10, $column->getLength());
+        $column = $columns['money'];
+        self::assertSame(FieldType::NUMERIC, $column->getType());
+        self::assertSame(40, $column->getBytePos());
+        self::assertSame(20, $column->getLength());
+        self::assertSame(4, $column->getDecimalCount());
+        $column = $columns['image'];
+        self::assertSame(FieldType::MEMO, $column->getType());
+        self::assertSame(60, $column->getBytePos());
+        self::assertSame(10, $column->getLength());
+        $column = $columns['auto_inc'];
+        self::assertSame(FieldType::AUTO_INCREMENT, $column->getType());
+        self::assertSame(70, $column->getBytePos());
+        self::assertSame(4, $column->getLength());
+        $column = $columns['integer'];
+        self::assertSame(FieldType::INTEGER, $column->getType());
+        self::assertSame(74, $column->getBytePos());
+        self::assertSame(4, $column->getLength());
+        $column = $columns['large_int'];
+        self::assertSame(FieldType::NUMERIC, $column->getType());
+        self::assertSame(78, $column->getBytePos());
+        self::assertSame(20, $column->getLength());
+        $column = $columns['datetime'];
+        self::assertSame(FieldType::TIMESTAMP, $column->getType());
+        self::assertSame(98, $column->getBytePos());
+        self::assertSame(8, $column->getLength());
+        $column = $columns['blob'];
+        self::assertSame(FieldType::DBASE4_BLOB, $column->getType());
+        self::assertSame(106, $column->getBytePos());
+        self::assertSame(10, $column->getLength());
+        $column = $columns['dbase_ole'];
+        self::assertSame(FieldType::GENERAL, $column->getType());
+        self::assertSame(116, $column->getBytePos());
+        self::assertSame(10, $column->getLength());
+        //</editor-fold>
+
         $this->assertRecords($table);
 
         $record = $table->moveTo(0);
@@ -242,7 +324,7 @@ JSON;
         self::assertSame(4.0, $record->getNum('large_int'));
         self::assertNotEmpty($record->getTimestamp('datetime'));
         self::assertSame('1800-01-01 01:01:01', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
-        self::assertSame('qwe', $record->get('blob'));
+        self::assertSame('qwe', trim($record->get('blob')));
         self::assertSame(null, $record->getObject($table->getColumn('dbase_ole')));
 
         $record = $table->nextRecord();
@@ -256,7 +338,7 @@ JSON;
         self::assertSame(0x3f, $memoImg->getPointer());
         self::assertSame(98034, $memoImg->getLength());
         self::assertSame(MemoObject::TYPE_IMAGE, $memoImg->getType()); //png
-        self::assertSame(98026, strlen($memoImg->getData())); //png
+        self::assertSame($memoImg->getLength(), strlen($memoImg->getData())); //png
 
         $record = $table->nextRecord();
         self::assertSame(2, $record->getInt('auto_inc'));
@@ -265,7 +347,7 @@ JSON;
         self::assertNotEmpty($record->getTimestamp('datetime'));
         self::assertSame('2020-02-20 20:20:20', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         $memoImg = $record->getMemoObject('image');
-        self::assertSame(169745, strlen($memoImg->getData()));
+        self::assertSame($memoImg->getLength(), strlen($memoImg->getData()));
     }
 
     public function testDbase7ts(): void
@@ -305,10 +387,11 @@ JSON;
     protected function assertMemoImg(Table $table)
     {
         $record = $table->moveTo(1);
+        /** @var MemoObject $memoImg */
         $memoImg = $record->getMemoObject('image');
-        self::assertSame(95714, strlen($memoImg->getData())); //png
+        self::assertSame($memoImg->getLength(), strlen($memoImg->getData())); //png
         $record = $table->nextRecord();
         $memoImg = $record->getMemoObject('image');
-        self::assertSame(187811, strlen($memoImg->getData()));
+        self::assertSame($memoImg->getLength(), strlen($memoImg->getData()));
     }
 }

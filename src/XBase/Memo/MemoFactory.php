@@ -35,9 +35,10 @@ class MemoFactory
             case TableType::DBASE_III_PLUS_MEMO:
                 return DBase3Memo::class;
             case TableType::DBASE_IV_MEMO:
+                return DBase4Memo::class;
             case TableType::DBASE_7_MEMO:
             case TableType::DBASE_7_NOMEMO:
-                return DBase4Memo::class;
+                return DBase7Memo::class;
             case TableType::FOXPRO_MEMO:
             case TableType::VISUAL_FOXPRO:
             case TableType::VISUAL_FOXPRO_AI:

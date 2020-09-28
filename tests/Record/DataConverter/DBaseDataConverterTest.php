@@ -63,15 +63,6 @@ class DBaseDataConverterTest extends TestCase
         $c->method('getBytePos')->willReturn(60);
         $c->method('getLength')->willReturn(10);
 
-//        $memo = $this->createMock(MemoInterface::class);
-//        $memo
-//            ->expects(self::atLeastOnce())
-//            ->method('get')
-//            ->willReturnMap([
-//                ['         1', new MemoObject('memo text', MemoObject::TYPE_TEXT, 1, 1)],
-//                ['         4', new MemoObject('memo_image_data', MemoObject::TYPE_IMAGE, 4, 1)],
-//            ]);
-
         $table = $this->createMock(Table::class);
         $table
             ->expects(self::atLeastOnce())
@@ -81,18 +72,6 @@ class DBaseDataConverterTest extends TestCase
             ->expects(self::atLeastOnce())
             ->method('getColumns')
             ->willReturn($columns);
-//        $table
-//            ->expects(self::atLeastOnce())
-//            ->method('getColumn')
-//            ->willReturnCallback(static function (string $name) use ($columns): ?ColumnInterface {
-//                foreach ($columns as $c) {
-//                    if ($name === $c->getName()) {
-//                        return $c;
-//                    }
-//                }
-//
-//                return null;
-//            });
         $table
             ->expects(self::atLeastOnce())
             ->method('getConvertFrom')
@@ -101,10 +80,6 @@ class DBaseDataConverterTest extends TestCase
             ->expects(self::atLeastOnce())
             ->method('getRecordByteLength')
             ->willReturn(70);
-//        $table
-//            ->expects(self::atLeastOnce())
-//            ->method('getMemo')
-//            ->willReturn($memo);
 
         $converter = new DBaseDataConverter($table);
         $rawData = base64_decode($base64RowData);

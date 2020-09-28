@@ -4,7 +4,20 @@ namespace XBase\Memo;
 
 class DBase3Memo extends AbstractWritableMemo
 {
-    const BLOCK_LENGTH = 512;
+    const BLOCK_LENGTH_IN_BYTES = 512;
+
+    /** @var int */
+    private $version;
+
+    protected function readHeader(): void
+    {
+        $this->fp->seek(0);
+        $bytes = unpack('N', $this->fp->read(4));
+        $this->nextFreeBlock = $bytes[1];
+
+        $this->fp->seek(16);
+        $this->version = $this->fp->readChar();
+    }
 
     public function get(int $pointer): ?MemoObject
     {
@@ -12,7 +25,7 @@ class DBase3Memo extends AbstractWritableMemo
             $this->open();
         }
 
-        $this->fp->seek($pointer * self::BLOCK_LENGTH);
+        $this->fp->seek($pointer * self::BLOCK_LENGTH_IN_BYTES);
 
         $endMarker = $this->getBlockEndMarker();
         $result = '';
@@ -23,6 +36,7 @@ class DBase3Memo extends AbstractWritableMemo
 
             $substr = substr($result, -3);
             if ($endMarker === $substr) {
+                $memoLength -= 3;
                 $result = substr($result, 0, -3);
                 break;
             }
@@ -43,7 +57,7 @@ class DBase3Memo extends AbstractWritableMemo
 
     protected function calculateBlockCount(string $data): int
     {
-        return (int) ceil(strlen($data) + strlen($this->getBlockEndMarker()) / self::BLOCK_LENGTH);
+        return (int) ceil(strlen($data) + strlen($this->getBlockEndMarker()) / self::BLOCK_LENGTH_IN_BYTES);
     }
 
     private function getBlockEndMarker(): string
@@ -51,8 +65,8 @@ class DBase3Memo extends AbstractWritableMemo
         return chr(0x1A).chr(0x1A).chr(0x00);
     }
 
-    protected function getBlockSize(): int
+    protected function getBlockLengthInBytes(): int
     {
-        return self::BLOCK_LENGTH;
+        return self::BLOCK_LENGTH_IN_BYTES;
     }
 }

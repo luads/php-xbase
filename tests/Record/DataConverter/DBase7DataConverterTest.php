@@ -4,18 +4,18 @@ namespace XBase\Tests\Record\DataConverter;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Column\ColumnInterface;
-use XBase\DataConverter\Record\FoxproDataConverter;
+use XBase\DataConverter\Record\DBase7DataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
-use XBase\Record\FoxproRecord;
+use XBase\Record\DBase7Record;
 use XBase\Table;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
  *
- * @coversDefaultClass \XBase\DataConverter\Record\FoxproDataConverter
+ * @coversDefaultClass \XBase\DataConverter\Record\DBase7DataConverter
  */
-class FoxproDataConverterTest extends TestCase
+class DBase7DataConverterTest extends TestCase
 {
     /**
      * @dataProvider dataProvider
@@ -63,16 +63,40 @@ class FoxproDataConverterTest extends TestCase
         $c->method('getLength')->willReturn(10);
 
         $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('rate');
-        $c->method('getType')->willReturn(FieldType::FLOAT);
+        $c->method('getName')->willReturn('auto_inc');
+        $c->method('getType')->willReturn(FieldType::AUTO_INCREMENT);
         $c->method('getBytePos')->willReturn(70);
-        $c->method('getLength')->willReturn(10);
-        $c->method('getDecimalCount')->willReturn(2);
+        $c->method('getLength')->willReturn(4);
 
         $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('general');
+        $c->method('getName')->willReturn('integer');
+        $c->method('getType')->willReturn(FieldType::INTEGER);
+        $c->method('getBytePos')->willReturn(74);
+        $c->method('getLength')->willReturn(4);
+
+        $columns[] = $c = $this->createMock(ColumnInterface::class);
+        $c->method('getName')->willReturn('large_int');
+        $c->method('getType')->willReturn(FieldType::NUMERIC);
+        $c->method('getBytePos')->willReturn(78);
+        $c->method('getLength')->willReturn(20);
+        $c->method('getDecimalCount')->willReturn(4);
+
+        $columns[] = $c = $this->createMock(ColumnInterface::class);
+        $c->method('getName')->willReturn('datetime');
+        $c->method('getType')->willReturn(FieldType::TIMESTAMP);
+        $c->method('getBytePos')->willReturn(98);
+        $c->method('getLength')->willReturn(8);
+
+        $columns[] = $c = $this->createMock(ColumnInterface::class);
+        $c->method('getName')->willReturn('blob');
+        $c->method('getType')->willReturn(FieldType::DBASE4_BLOB);
+        $c->method('getBytePos')->willReturn(106);
+        $c->method('getLength')->willReturn(10);
+
+        $columns[] = $c = $this->createMock(ColumnInterface::class);
+        $c->method('getName')->willReturn('dbase_ole');
         $c->method('getType')->willReturn(FieldType::GENERAL);
-        $c->method('getBytePos')->willReturn(80);
+        $c->method('getBytePos')->willReturn(116);
         $c->method('getLength')->willReturn(10);
         //</editor-fold>
 
@@ -88,18 +112,18 @@ class FoxproDataConverterTest extends TestCase
         $table
             ->expects(self::atLeastOnce())
             ->method('getRecordByteLength')
-            ->willReturn(90);
+            ->willReturn(126);
 
-        $converter = new FoxproDataConverter($table);
+        $converter = new DBase7DataConverter($table);
         $array = $converter->fromBinaryString($rawData);
-        $binaryString = $converter->toBinaryString(new FoxproRecord($table, 1, $array));
+        $binaryString = $converter->toBinaryString(new DBase7Record($table, 1, $array));
         self::assertSame($rawData, $binaryString);
     }
 
     public function dataProvider()
     {
         yield [
-            base64_decode('IEdyb290ICAgICAgICAgICAgICAgMTk2MDExMDFGICAgICAgICAgOCAgICAgICAgICAgICAxMi4xMjM1ICAgICAgICAzMiAgICAgIDEuMjAgICAgICAgNDU5'),
+            base64_decode('IEdyb290ICAgICAgICAgICAgICAgMTk2MDExMDFGMDAwMDAwMDAwMSAgICAgICAgICAgICAxMi4xMjM1MDAwMDAwMDAwOYAAAACAAAABICAgICAgICAgICAgICAgICAgIDRCydEEX45kADAwMDAwMDA1ODcwMDAwMDAwMDAw'),
         ];
     }
 }

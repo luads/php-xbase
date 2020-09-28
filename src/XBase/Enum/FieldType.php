@@ -35,6 +35,8 @@ final class FieldType
     /** @var string dBase7 */
     const AUTO_INCREMENT = '+';
 
+    const DBASE4_BLOB = 'B';
+
     public static function has($type): bool
     {
         return in_array($type, self::all());

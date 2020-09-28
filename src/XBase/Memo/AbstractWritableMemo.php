@@ -22,7 +22,7 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
     /** @var int */
     protected $nextFreeBlock;
 
-    abstract protected function getBlockSize(): int;
+    abstract protected function getBlockLengthInBytes(): int;
 
     abstract protected function calculateBlockCount(string $data): int;
 
@@ -46,8 +46,8 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
 
     protected function readHeader(): void
     {
-        $stat = $this->fp->stat();
-        $this->nextFreeBlock = $stat['size'] - 1;
+        $this->fp->seek(0);
+        $this->nextFreeBlock = unpack('N', $this->fp->read(4))[1];
     }
 
     public function close(): void
@@ -59,12 +59,16 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
         }
     }
 
+    protected function writeHeader(): void
+    {
+    }
+
     public function create(string $data): int
     {
         $pointer = $this->nextFreeBlock;
         //write record
         $length = $this->calculateBlockCount($data);
-        $this->fp->seek($pointer * $this->getBlockSize());
+        $this->fp->seek($pointer * $this->getBlockLengthInBytes());
         $this->fp->write($this->toBinaryString($data, $length));
 
         $this->nextFreeBlock += $length;
@@ -93,9 +97,9 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
         copy($this->cloneFilepath, $this->filepath);
     }
 
-    private function toBinaryString(string $data, int $lengthInBlocks): string
+    protected function toBinaryString(string $data, int $lengthInBlocks): string
     {
-        return str_pad(pack('N*', 1, strlen($data)).$data, $lengthInBlocks * $this->getBlockSize(), chr(0x00));
+        return str_pad(pack('N*', 1, strlen($data)).$data, $lengthInBlocks * $this->getBlockLengthInBytes(), chr(0x00));
     }
 
     /**
@@ -123,7 +127,7 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
     private function shiftRecords(int $fromPointer, int $offset): void
     {
         $allPointers = $this->getAllPointers($fromPointer);
-        $blockSize = $this->getBlockSize();
+        $blockSize = $this->getBlockLengthInBytes();
 
         foreach ($allPointers as $p => $size) {
             $this->fp->seek($p * $blockSize);

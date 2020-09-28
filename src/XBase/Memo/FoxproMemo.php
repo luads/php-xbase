@@ -9,15 +9,16 @@ class FoxproMemo extends AbstractWritableMemo
     const BLOCK_TYPE_LENGTH = 4;
 
     /** @var int */
-    private $blockSize;
+    private $blockLengthInBytes;
 
     protected function readHeader(): void
     {
+        $this->fp->seek(0);
         $this->nextFreeBlock = unpack('N', $this->fp->read(4))[1];
         $this->fp->seek(6);
-        $this->blockSize = unpack('n', $this->fp->read(2))[1];
+        $this->blockLengthInBytes = unpack('n', $this->fp->read(2))[1];
 
-        if (filesize($this->filepath) !== $this->nextFreeBlock * $this->blockSize) {
+        if (filesize($this->filepath) !== $this->nextFreeBlock * $this->blockLengthInBytes) {
             @trigger_error('Incorrect next_available_block pointer', E_USER_WARNING);
         }
     }
@@ -46,7 +47,7 @@ class FoxproMemo extends AbstractWritableMemo
             return null;
         }
 
-        $this->fp->seek($pointer * $this->blockSize);
+        $this->fp->seek($pointer * $this->blockLengthInBytes);
         $type = unpack('N', $this->fp->read(self::BLOCK_TYPE_LENGTH)); //todo figure out type-enums
 
         $memoLength = unpack('N', $this->fp->read(self::BLOCK_LENGTH_LENGTH));
@@ -63,7 +64,7 @@ class FoxproMemo extends AbstractWritableMemo
     protected function calculateBlockCount(string $data): int
     {
         $requiredBytesCount = self::BLOCK_TYPE_LENGTH + self::BLOCK_LENGTH_LENGTH + strlen($data);
-        return (int) ceil($requiredBytesCount / $this->getBlockSize());
+        return (int) ceil($requiredBytesCount / $this->getBlockLengthInBytes());
     }
 
     protected function getNextFreeBlock(): int
@@ -71,8 +72,8 @@ class FoxproMemo extends AbstractWritableMemo
         return $this->nextFreeBlock;
     }
 
-    protected function getBlockSize(): int
+    protected function getBlockLengthInBytes(): int
     {
-        return $this->blockSize;
+        return $this->blockLengthInBytes;
     }
 }

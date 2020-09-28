@@ -13,13 +13,18 @@ class MemoConverter extends AbstractFieldDataConverter
         return FieldType::MEMO;
     }
 
+    protected function getFillerChar(): string
+    {
+        return ' ';
+    }
+
     public function fromBinaryString(string $value): ?int
     {
         if (!TableType::hasMemo($this->table->getVersion())) {
             throw new \LogicException('Table not supports Memo');
         }
 
-        if (empty($pointer = ltrim($value, ' '))) {
+        if (empty($pointer = ltrim($value, $this->getFillerChar()))) {
             return null;
         }
 
@@ -31,10 +36,10 @@ class MemoConverter extends AbstractFieldDataConverter
      */
     public function toBinaryString($value): string
     {
-        if (!$value) {
-            return str_pad('', $this->column->getLength(), chr(0x00), STR_PAD_LEFT);
+        if (null === $value) {
+            return str_repeat(chr(0x00), $this->column->getLength());
         }
 
-        return str_pad((string) $value, $this->column->getLength(), ' ', STR_PAD_LEFT);
+        return str_pad((string) $value, $this->column->getLength(), $this->getFillerChar(), STR_PAD_LEFT);
     }
 }

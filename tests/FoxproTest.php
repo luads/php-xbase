@@ -111,6 +111,7 @@ class FoxproTest extends AbstractTestCase
         self::assertSame(FieldType::GENERAL, $column->getType());
         self::assertSame(80, $column->getBytePos());
         self::assertSame(10, $column->getLength());
+        //</editor-fold>
 
         $record = $table->moveTo(0);
         self::assertSame(1.2, $record->getFloat('rate'));

@@ -2,6 +2,8 @@
 
 namespace XBase\Column;
 
+use XBase\Stream\StreamWrapper;
+
 abstract class AbstractColumn implements ColumnInterface
 {
     /** @var string */
@@ -22,12 +24,13 @@ abstract class AbstractColumn implements ColumnInterface
     /**@var int Field address within record. */
     protected $memAddress;
 
+    /** @var int|null */
     protected $workAreaID;
 
-    /** @var bool */
+    /** @var bool|null */
     protected $setFields = false;
 
-    /** @var bool */
+    /** @var bool|null */
     protected $indexed = false;
 
     /** @var int|null Data starts from index */
@@ -49,7 +52,7 @@ abstract class AbstractColumn implements ColumnInterface
         return $this->name;
     }
 
-    public function isSetFields(): bool
+    public function isSetFields(): ?bool
     {
         return $this->setFields;
     }
@@ -59,7 +62,7 @@ abstract class AbstractColumn implements ColumnInterface
         return $this->type;
     }
 
-    public function getWorkAreaID(): int
+    public function getWorkAreaID(): ?int
     {
         return $this->workAreaID;
     }
@@ -69,7 +72,7 @@ abstract class AbstractColumn implements ColumnInterface
         return $this->decimalCount;
     }
 
-    public function isIndexed(): bool
+    public function isIndexed(): ?bool
     {
         return $this->indexed;
     }
