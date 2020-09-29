@@ -2,7 +2,6 @@
 
 namespace XBase\DataConverter\Field\VisualFoxpro;
 
-use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
 use XBase\Enum\FieldType;
 

@@ -7,7 +7,7 @@ use XBase\Enum\FieldType;
 class DBase7Record extends DBase4Record
 {
     /**
-     * Get DATE(D) or DATETIME(T) data as object of \DateTime class
+     * Get DATE(D) or DATETIME(T) data as object of \DateTime class.
      */
     public function getDateTimeObject($columnName): ?\DateTimeInterface
     {

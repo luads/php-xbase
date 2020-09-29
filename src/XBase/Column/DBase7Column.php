@@ -41,15 +41,15 @@ class DBase7Column extends AbstractColumn
     protected $nextAI;
 
     /**
-     * @var string $name         Field name in ASCII (zero-filled).
-     * @var string $type         Field type in ASCII (B, C, D, N, L, M, @, I, +, F, 0 or G).
-     * @var int    $length       Field length in binary.
-     * @var int    $decimalCount Field decimal count in binary.
-     * @var mixed  $reserved1    Reserved.
-     * @var int    $mdxFlag      Production .MDX field flag; 0x01 if field has an index tag in the production .MDX file; 0x00 if the field is not indexed.
-     * @var mixed  $reserved2    Reserved.
-     * @var int    $nextAI       Next Autoincrement value, if the Field type is Autoincrement, 0x00 otherwise.
-     * @var mixed  $reserved3    Reserved.
+     * @var string field name in ASCII (zero-filled)
+     * @var string field type in ASCII (B, C, D, N, L, M, @, I, +, F, 0 or G)
+     * @var int    field length in binary
+     * @var int    field decimal count in binary
+     * @var mixed  reserved
+     * @var int    Production .MDX field flag; 0x01 if field has an index tag in the production .MDX file; 0x00 if the field is not indexed.
+     * @var mixed  reserved
+     * @var int    next Autoincrement value, if the Field type is Autoincrement, 0x00 otherwise
+     * @var mixed  reserved
      */
     public function __construct(string $name, string $type, int $length, int $decimalCount, $reserved1, int $mdxFlag, $reserved2, int $nextAI, $reserved3, int $colIndex, ?int $bytePos = null)
     {

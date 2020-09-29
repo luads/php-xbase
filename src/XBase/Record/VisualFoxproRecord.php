@@ -5,7 +5,7 @@ namespace XBase\Record;
 use XBase\Enum\FieldType;
 
 /**
- * Visual Foxpro record
+ * Visual Foxpro record.
  */
 class VisualFoxproRecord extends FoxproRecord
 {
@@ -155,7 +155,7 @@ class VisualFoxproRecord extends FoxproRecord
     }
 
     /**
-     * Get DATE(D) or DATETIME(T) data as object of \DateTime class
+     * Get DATE(D) or DATETIME(T) data as object of \DateTime class.
      */
     public function getDateTimeObject($columnName): ?\DateTimeInterface
     {

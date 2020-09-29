@@ -36,6 +36,7 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
     {
         if (!$this->writable) {
             parent::open();
+
             return;
         }
 
@@ -103,7 +104,7 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
     }
 
     /**
-     * Deletes garbage
+     * Deletes garbage.
      */
     private function doDelete(): void
     {

@@ -357,7 +357,7 @@ JSON;
         self::assertSame(15, $table->getRecordCount()); //has deleted
         self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
 
-        /** @var DBase7Column $record */
+        /* @var DBase7Column $record */
         self::assertSame('1900-01-01 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
         self::assertSame('1900-01-02 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
         self::assertSame('1900-01-03 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));

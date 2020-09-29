@@ -43,7 +43,7 @@ class VisualFoxproTableTest extends TestCase
     }
 
     /**
-     * Not set current record. Should not fall
+     * Not set current record. Should not fall.
      */
     public function testWriteCopy(): void
     {
@@ -213,7 +213,7 @@ class VisualFoxproTableTest extends TestCase
         $memoFile = "{$info['dirname']}/{$info['filename']}.fpt";
         self::assertFileExists($memoFile);
         self::assertSame(330496, filesize($memoFile));
-        /** @var VisualFoxproRecord $record */
+        /* @var VisualFoxproRecord $record */
         $table->nextRecord();
 
         $record = $table->pickRecord(1);

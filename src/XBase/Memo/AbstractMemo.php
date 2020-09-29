@@ -48,7 +48,7 @@ abstract class AbstractMemo implements MemoInterface
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function isOpen(): bool
     {

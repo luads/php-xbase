@@ -2,14 +2,14 @@
 
 namespace XBase\DataConverter\Field\DBase7;
 
-use XBase\DataConverter\Field\VisualFoxpro\DateTimeConverter;
-use XBase\Enum\FieldType;
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
+use XBase\Enum\FieldType;
 
 class TimestampConverter extends AbstractFieldDataConverter
 {
     /**
      * @var int Julian Day of Unix epoch start
+     *
      * @see https://planetcalc.com/503/
      */
     private const UTC_TO_JD = 0x42cc418ba99a00;
@@ -24,6 +24,7 @@ class TimestampConverter extends AbstractFieldDataConverter
     public function fromBinaryString(string $value): int
     {
         $buf = unpack('H14', $value);
+
         return (int) ((hexdec($buf[1]) - self::UTC_TO_JD) / self::SEC_TO_JD);
     }
 

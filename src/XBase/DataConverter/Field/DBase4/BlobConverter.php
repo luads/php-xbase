@@ -24,6 +24,7 @@ class BlobConverter extends AbstractFieldDataConverter
     public function toBinaryString($value): string
     {
         $value = null === $value ? '' : (string) $value;
+
         return str_pad($value, $this->column->getLength(), '0', STR_PAD_LEFT);
     }
 }

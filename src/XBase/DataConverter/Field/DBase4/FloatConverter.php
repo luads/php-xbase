@@ -2,8 +2,8 @@
 
 namespace XBase\DataConverter\Field\DBase4;
 
-use XBase\Enum\FieldType;
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
+use XBase\Enum\FieldType;
 
 class FloatConverter extends AbstractFieldDataConverter
 {

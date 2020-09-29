@@ -97,9 +97,9 @@ class Table
     public $mdxFlag;
 
     /**
-     * @var string Language codepage.
-     * @see        https://blog.codetitans.pl/post/dbf-and-language-code-page/
+     * @var string language codepage
      *
+     * @see        https://blog.codetitans.pl/post/dbf-and-language-code-page/
      * @deprecated in 1.2 and will be protected in 1.3. Use getLanguageCode() method.
      */
     public $languageCode;
@@ -141,7 +141,7 @@ class Table
      * Table constructor.
      *
      * @param array|null  $availableColumns
-     * @param string|null $convertFrom Encoding of file
+     * @param string|null $convertFrom      Encoding of file
      *
      * @throws \Exception
      */

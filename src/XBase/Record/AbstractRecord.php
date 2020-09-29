@@ -11,7 +11,7 @@ use XBase\Table;
 abstract class AbstractRecord implements RecordInterface
 {
     public const FLAG_NOT_DELETED = 0x20;
-    public const FLAG_DELETED     = 0x2a;
+    public const FLAG_DELETED = 0x2a;
 
     /** @var Table */
     protected $table;
@@ -19,6 +19,7 @@ abstract class AbstractRecord implements RecordInterface
     protected $data;
     /**
      * @var array
+     *
      * @deprecated
      */
     protected $choppedData = [];
@@ -157,7 +158,7 @@ abstract class AbstractRecord implements RecordInterface
     }
 
     /**
-     * Get DATE(D) or DATETIME(T) data as object of \DateTime class
+     * Get DATE(D) or DATETIME(T) data as object of \DateTime class.
      */
     public function getDateTimeObject($columnName): ?\DateTimeInterface
     {
@@ -218,6 +219,7 @@ abstract class AbstractRecord implements RecordInterface
     {
         return $this->data[$columnName];
     }
+
     //</editor-fold>
 
     //<editor-fold desc="setters">
@@ -375,7 +377,7 @@ abstract class AbstractRecord implements RecordInterface
             $this->data[$column->getName()] = $this->table->getMemo()->create($value); //todo
         } elseif (!empty($this->data[$column->getName()])) {
             $pointer = $this->data[$column->getName()];
-            $this->table->getMemo()->update($pointer, $value);//todo
+            $this->table->getMemo()->update($pointer, $value); //todo
         }
 
         return $this;
@@ -453,7 +455,7 @@ abstract class AbstractRecord implements RecordInterface
     }
 
     /**
-     * Returns typed column values according to their types
+     * Returns typed column values according to their types.
      */
     public function getData(): array
     {
@@ -461,7 +463,7 @@ abstract class AbstractRecord implements RecordInterface
     }
 
     /**
-     * Returns raw values trimmed and converted according to encoding
+     * Returns raw values trimmed and converted according to encoding.
      *
      * @return array|string[]
      *

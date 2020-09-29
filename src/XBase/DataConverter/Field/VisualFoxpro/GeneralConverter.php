@@ -15,6 +15,7 @@ class GeneralConverter extends AbstractFieldDataConverter
     public function fromBinaryString(string $value): int
     {
         $data = unpack('L', $value);
+
         return $data[1];
     }
 

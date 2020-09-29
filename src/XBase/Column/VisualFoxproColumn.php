@@ -4,5 +4,4 @@ namespace XBase\Column;
 
 class VisualFoxproColumn extends DBaseColumn
 {
-
 }

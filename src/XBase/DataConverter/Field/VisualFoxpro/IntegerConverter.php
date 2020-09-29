@@ -19,6 +19,7 @@ class IntegerConverter extends AbstractFieldDataConverter
         }
 
         $su = unpack('i', $value);
+
         return $su[1];
     }
 

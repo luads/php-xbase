@@ -4,7 +4,7 @@ namespace XBase\Memo;
 
 class MemoObject
 {
-    const TYPE_TEXT  = 1;
+    const TYPE_TEXT = 1;
     const TYPE_IMAGE = 2;
 
     /** @var string */

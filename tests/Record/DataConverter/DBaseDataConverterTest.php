@@ -7,7 +7,6 @@ use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
-use XBase\Memo\MemoInterface;
 use XBase\Memo\MemoObject;
 use XBase\Record\DBaseRecord;
 use XBase\Table;
@@ -90,9 +89,9 @@ class DBaseDataConverterTest extends TestCase
         self::assertSame('19601101', $array['data']['birthday']);
         self::assertSame(false, $array['data']['is_man']);
         self::assertSame(12.1235, $array['data']['money']);
-        /** @var MemoObject $memoBio */
+        /* @var MemoObject $memoBio */
         self::assertSame(1, $array['data']['bio']);
-        /** @var MemoObject $memoImage */
+        /* @var MemoObject $memoImage */
         self::assertSame(4, $array['data']['image']);
         // opposite force
         $binaryString = $converter->toBinaryString(new DBaseRecord($table, 1, $array));

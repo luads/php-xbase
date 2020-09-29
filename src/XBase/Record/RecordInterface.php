@@ -7,7 +7,7 @@ use XBase\Column\ColumnInterface;
 interface RecordInterface
 {
     /**
-     * @return int Zero based row index.
+     * @return int zero based row index
      */
     public function getRecordIndex(): int;
 

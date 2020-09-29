@@ -2,8 +2,6 @@
 
 namespace XBase\Column;
 
-use XBase\Stream\StreamWrapper;
-
 abstract class AbstractColumn implements ColumnInterface
 {
     /** @var string */
@@ -21,7 +19,7 @@ abstract class AbstractColumn implements ColumnInterface
     /** @var int|null */
     protected $decimalCount;
 
-    /**@var int Field address within record. */
+    /** @var int Field address within record. */
     protected $memAddress;
 
     /** @var int|null */

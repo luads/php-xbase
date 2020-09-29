@@ -6,9 +6,6 @@ use PHPUnit\Framework\TestCase;
 use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Record\VisualFoxproDataConverter;
 use XBase\Enum\FieldType;
-use XBase\Enum\TableType;
-use XBase\Memo\MemoInterface;
-use XBase\Memo\MemoObject;
 use XBase\Record\VisualFoxproRecord;
 use XBase\Table;
 

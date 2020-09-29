@@ -4,8 +4,8 @@ namespace XBase\Memo;
 
 class DBase4Memo extends AbstractWritableMemo
 {
-    const BLOCK_SIGN          = 0xFFFF0800;
-    const BLOCK_SIGN_LENGTH   = 4;
+    const BLOCK_SIGN = 0xFFFF0800;
+    const BLOCK_SIGN_LENGTH = 4;
     const BLOCK_LENGTH_LENGTH = 4;
 
     /** @var int */
@@ -61,12 +61,14 @@ class DBase4Memo extends AbstractWritableMemo
     protected function calculateBlockCount(string $data): int
     {
         $requiredBytesCount = self::BLOCK_SIGN_LENGTH + self::BLOCK_LENGTH_LENGTH + strlen($data);
+
         return (int) ceil($requiredBytesCount / $this->getBlockLengthInBytes());
     }
 
     protected function toBinaryString(string $data, int $lengthInBlocks): string
     {
         $value = pack('N', self::BLOCK_SIGN).pack('L', strlen($data));
+
         return str_pad($value.$data, $lengthInBlocks * $this->getBlockLengthInBytes(), chr(0));
     }
 }

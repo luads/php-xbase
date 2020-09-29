@@ -8,9 +8,9 @@ use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
+use XBase\Memo\WritableMemoInterface;
 use XBase\Record\DBaseRecord;
 use XBase\Table;
-use XBase\Memo\WritableMemoInterface;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>

@@ -6,7 +6,6 @@ use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
-use XBase\Memo\MemoObject;
 use XBase\Table;
 
 class FoxproTest extends AbstractTestCase

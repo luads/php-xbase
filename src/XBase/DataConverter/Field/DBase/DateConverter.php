@@ -2,8 +2,8 @@
 
 namespace XBase\DataConverter\Field\DBase;
 
-use XBase\Enum\FieldType;
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
+use XBase\Enum\FieldType;
 
 class DateConverter extends AbstractFieldDataConverter
 {

@@ -26,7 +26,7 @@ class WritableTable extends Table
     private $autoSave = false;
 
     /**
-     * @var bool record property is new.
+     * @var bool record property is new
      */
     private $insertion = false;
 
@@ -165,19 +165,19 @@ class WritableTable extends Table
 
         $this->fp->seek(0);
 
-        $this->fp->writeUChar($this->version);//0
-        $this->fp->write3ByteDate(time());//1-3
-        $this->fp->writeUInt($this->recordCount);//4-7
-        $this->fp->writeUShort($this->headerLength);//8-9
-        $this->fp->writeUShort($this->recordByteLength);//10-11
-        $this->fp->write(str_pad('', 2, chr(0)));//12-13
-        $this->fp->write(chr($this->inTransaction ? 1 : 0));//14
-        $this->fp->write(chr($this->encrypted ? 1 : 0));//15
-        $this->fp->write(str_pad('', 4, chr(0)));//16-19 //todo-different-tabel
-        $this->fp->write(str_pad('', 8, chr(0)));//20-27 //todo-different-tabel
-        $this->fp->write($this->mdxFlag);//28
-        $this->fp->write($this->languageCode);//29
-        $this->fp->write(str_pad('', 2, chr(0)));//30-31 //todo-different-tabel
+        $this->fp->writeUChar($this->version); //0
+        $this->fp->write3ByteDate(time()); //1-3
+        $this->fp->writeUInt($this->recordCount); //4-7
+        $this->fp->writeUShort($this->headerLength); //8-9
+        $this->fp->writeUShort($this->recordByteLength); //10-11
+        $this->fp->write(str_pad('', 2, chr(0))); //12-13
+        $this->fp->write(chr($this->inTransaction ? 1 : 0)); //14
+        $this->fp->write(chr($this->encrypted ? 1 : 0)); //15
+        $this->fp->write(str_pad('', 4, chr(0))); //16-19 //todo-different-tabel
+        $this->fp->write(str_pad('', 8, chr(0))); //20-27 //todo-different-tabel
+        $this->fp->write($this->mdxFlag); //28
+        $this->fp->write($this->languageCode); //29
+        $this->fp->write(str_pad('', 2, chr(0))); //30-31 //todo-different-tabel
 
         if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
             $this->fp->write(str_pad($this->languageName, 36, chr(0)));
@@ -257,6 +257,7 @@ class WritableTable extends Table
         if ($this->record && $this->insertion) {
             $this->record = null;
             $this->recordPos = -1;
+
             return $this;
         }
 

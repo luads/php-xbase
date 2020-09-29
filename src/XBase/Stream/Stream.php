@@ -14,6 +14,7 @@ class Stream extends StreamWrapper
         $stream = fopen('php://temp', $mode);
         fwrite($stream, $string);
         rewind($stream);
+
         return new self($stream);
     }
 

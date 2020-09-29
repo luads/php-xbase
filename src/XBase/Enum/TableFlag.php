@@ -3,7 +3,7 @@
 namespace XBase\Enum;
 
 /**
- * MDX flags
+ * MDX flags.
  */
 final class TableFlag
 {

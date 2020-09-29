@@ -1,14 +1,20 @@
 <?php
 
 $rules = [
-    '@PSR2'                        => true,
-//    'blank_line_after_opening_tag' => false, // <?php declare(strict_types=1);
+    '@Symfony'                     => true,
+    'binary_operator_spaces'       => [
+        'operators'    => [
+            '=>' => 'align',
+        ],
+    ],
+    'blank_line_after_opening_tag' => false, // <?php declare(strict_types=1);
     'single_quote'                 => true,
     'yoda_style'                   => true,
     'no_empty_phpdoc'              => true,
     'no_extra_blank_lines'         => true,
     'phpdoc_align'                 => true,
     'phpdoc_trim'                  => true,
+    'increment_style'              => ['style' => 'post'],
     'no_superfluous_phpdoc_tags'   => true,
 //    'declare_strict_types'         => true,
 ];

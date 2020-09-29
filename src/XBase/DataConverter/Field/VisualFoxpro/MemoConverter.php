@@ -4,7 +4,6 @@ namespace XBase\DataConverter\Field\VisualFoxpro;
 
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
 use XBase\Enum\FieldType;
-use XBase\Memo\MemoObject;
 
 class MemoConverter extends AbstractFieldDataConverter
 {

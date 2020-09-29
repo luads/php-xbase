@@ -35,7 +35,7 @@ class FoxproMemo extends AbstractWritableMemo
     }
 
     /**
-     * @param int $pointer Block address.
+     * @param int $pointer block address
      */
     public function get(int $pointer): ?MemoObject
     {
@@ -64,6 +64,7 @@ class FoxproMemo extends AbstractWritableMemo
     protected function calculateBlockCount(string $data): int
     {
         $requiredBytesCount = self::BLOCK_TYPE_LENGTH + self::BLOCK_LENGTH_LENGTH + strlen($data);
+
         return (int) ceil($requiredBytesCount / $this->getBlockLengthInBytes());
     }
 

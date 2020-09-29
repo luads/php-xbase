@@ -95,15 +95,15 @@ class DBaseColumn extends AbstractColumn
     public function toBinaryString(StreamWrapper $fp): void
     {
         $fp->write($this->rawName); // 0-10
-        $fp->write($this->type);// 11
-        $fp->writeUInt($this->memAddress);//12-15
-        $fp->writeUChar($this->length);//16
-        $fp->writeUChar($this->decimalCount);//17
-        $fp->write($this->reserved1);//18-19
-        $fp->writeUChar($this->workAreaID);//20
-        $fp->write($this->reserved2);//21-22
-        $fp->write(chr($this->setFields ? 1 : 0));//23
-        $fp->write($this->reserved3);//24-30
-        $fp->write(chr($this->indexed ? 1 : 0));//31
+        $fp->write($this->type); // 11
+        $fp->writeUInt($this->memAddress); //12-15
+        $fp->writeUChar($this->length); //16
+        $fp->writeUChar($this->decimalCount); //17
+        $fp->write($this->reserved1); //18-19
+        $fp->writeUChar($this->workAreaID); //20
+        $fp->write($this->reserved2); //21-22
+        $fp->write(chr($this->setFields ? 1 : 0)); //23
+        $fp->write($this->reserved3); //24-30
+        $fp->write(chr($this->indexed ? 1 : 0)); //31
     }
 }

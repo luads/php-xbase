@@ -3,8 +3,6 @@
 namespace XBase\DataConverter\Record;
 
 use XBase\Column\ColumnInterface;
-use XBase\Exception\InvalidColumnException;
-use XBase\Record\AbstractRecord;
 use XBase\DataConverter\Field\DBase\DateConverter;
 use XBase\DataConverter\Field\DBase\IgnoreConverter;
 use XBase\DataConverter\Field\DBase\LogicalConverter;
@@ -12,6 +10,8 @@ use XBase\DataConverter\Field\DBase\MemoConverter;
 use XBase\DataConverter\Field\DBase\NumberConverter;
 use XBase\DataConverter\Field\DBase\StringConverter;
 use XBase\DataConverter\Field\FieldDataConverterInterface;
+use XBase\Exception\InvalidColumnException;
+use XBase\Record\AbstractRecord;
 use XBase\Record\RecordInterface;
 use XBase\Table;
 
@@ -48,7 +48,7 @@ class DBaseDataConverter implements RecordDataConverterInterface
         $result = [
             'deleted'     => $rawData && (AbstractRecord::FLAG_DELETED === ord($rawData[0])),
             'data'        => [],
-            'choppedData' => [],//todo remove in 1.4
+            'choppedData' => [], //todo remove in 1.4
         ];
 
         foreach ($this->table->getColumns() as $column) {

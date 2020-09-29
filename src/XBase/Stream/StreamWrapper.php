@@ -11,7 +11,6 @@ namespace XBase\Stream;
  * @method int readChar(): int
  * @method int readShort(): int
  * @method int readInt(): int
- *
  * @method int writeUChar(int $value)
  * @method int writeUShort(int $value)
  * @method int writeUInt(int $value)
@@ -130,6 +129,7 @@ class StreamWrapper
             case 'read':
                 $str = $this->read($length);
                 $buf = unpack($format, $str);
+
                 return $buf[1];
 
             case 'write':
