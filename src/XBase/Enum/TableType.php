@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Enum;
 
@@ -77,7 +77,7 @@ final class TableType
         ]);
     }
 
-    public static function getMemoTypes(string $tableType): array
+    public static function getMemoTypes(int $tableType): array
     {
         if (!self::hasMemo($tableType)) {
             return [];

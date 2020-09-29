@@ -16,7 +16,7 @@ $rules = [
     'phpdoc_trim'                  => true,
     'increment_style'              => ['style' => 'post'],
     'no_superfluous_phpdoc_tags'   => true,
-//    'declare_strict_types'         => true,
+    'declare_strict_types'         => true,
 ];
 
 $finder = PhpCsFixer\Finder::create()

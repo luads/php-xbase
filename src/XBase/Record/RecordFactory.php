@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Record;
 
@@ -28,7 +28,7 @@ class RecordFactory
         );
     }
 
-    private static function getClass(string $version): string
+    private static function getClass(int $version): string
     {
         switch ($version) {
 //            case TableType::DBASE_IV_MEMO:

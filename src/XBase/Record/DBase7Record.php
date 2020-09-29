@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Record;
 
@@ -16,7 +16,7 @@ class DBase7Record extends DBase4Record
 
         $data = $this->get($columnName);
         if (in_array($column->getType(), [FieldType::TIMESTAMP])) {
-            return \DateTime::createFromFormat('U', $this->getTimestamp($columnName));
+            return \DateTime::createFromFormat('U', (string) $this->getTimestamp($columnName));
         }
 
         return new \DateTime($data);

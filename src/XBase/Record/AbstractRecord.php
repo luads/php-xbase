@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Record;
 
@@ -138,7 +138,7 @@ abstract class AbstractRecord implements RecordInterface
      */
     public function getString(string $columnName): string
     {
-        return $this->get($columnName);
+        return (string) $this->get($columnName);
     }
 
     /**
