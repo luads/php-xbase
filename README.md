@@ -18,12 +18,16 @@ $ composer require hisamu/php-xbase
 
 Sample usage
 -----
+More samples in `tests` folder.
+
 ``` php
 use XBase\Table;
 
-$table = new Table(dirname(__FILE__).'/test.dbf');
+$table = new Table('test.dbf');
 
 while ($record = $table->nextRecord()) {
+    echo $record->get('my_column');
+    //or
     echo $record->my_column;
 }
 ```
@@ -31,10 +35,10 @@ while ($record = $table->nextRecord()) {
 If the data in DB is not in UTF-8 you can specify a charset to convert the data from:
 
 ``` php
-$table = new Table(dirname(__FILE__).'/test.dbf', null, 'CP1251');
+$table = new Table('test.dbf', null, 'CP1251');
 ```
 
-It is also possible to read Memos from dedicated files. Just make sure that *.fpt* file with the same name as main database exists
+It is also possible to read Memos from dedicated files. Just make sure that *.fpt* file with the same name as main database exists.
 
 Performance
 -----
@@ -44,7 +48,7 @@ You can pass an array of the columns that you need to the constructor, then if y
 ``` php
 use XBase\Table;
 
-$table = new Table(dirname(__FILE__).'/test.dbf', ['my_column', 'another_column']);
+$table = new Table('test.dbf', ['my_column', 'another_column']);
 
 while ($record = $table->nextRecord()) {
     echo $record->my_column;
@@ -69,17 +73,21 @@ To open a table for writing, you have to use a `WritableTable` object, as on thi
 ``` php
 use XBase\WritableTable;
 
-$table = new WritableTable(dirname(__FILE__).'/test.dbf');
-$table->openWrite();
+$table = new WritableTable('test.dbf');
 
 for ($i = 0; $i < 10; $i++) {
     $record = $table->nextRecord();
+    
+    $record->set('field', 'string');
+    //or
     $record->field = 'string';
+
     $table->writeRecord();
 }
 
-# optional
-$table->close();
+$table
+    ->save()
+    ->close();
 ```
 
 Delete record
@@ -89,14 +97,17 @@ Delete record
 use XBase\WritableTable;
 
 $table = new WritableTable('file.dbf');
-$table->openWrite();
+
 while ($record = $table->nextRecord()) {
-    if ($record->getBoolean('delete_this_row')){
+    if ($record->get('delete_this_row')) {
         $table->deleteRecord(); //mark record deleted
     }    
 }
-$table->pack(); //save
-$table->close();
+
+$table
+    ->pack() //remove deleted rows
+    ->save() // save changes
+    ->close();
 ```
 
 Troubleshooting
