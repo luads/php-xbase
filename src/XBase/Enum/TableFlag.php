@@ -1,9 +1,9 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Enum;
 
 /**
- * MDX flags
+ * MDX flags.
  */
 final class TableFlag
 {

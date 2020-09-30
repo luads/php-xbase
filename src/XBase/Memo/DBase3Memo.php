@@ -1,43 +1,72 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Memo;
 
-class DBase3Memo extends AbstractMemo
+class DBase3Memo extends AbstractWritableMemo
 {
-    const BLOCK_LENGTH = 512;
+    const BLOCK_LENGTH_IN_BYTES = 512;
 
-    public function get($pointer)
+    /** @var int */
+    private $version;
+
+    protected function readHeader(): void
+    {
+        $this->fp->seek(0);
+        $bytes = unpack('N', $this->fp->read(4));
+        $this->nextFreeBlock = $bytes[1];
+
+        $this->fp->seek(16);
+        $this->version = $this->fp->readChar();
+    }
+
+    public function get(int $pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();
         }
 
-        if (is_string($pointer)) {
-            $pointer = (int) ltrim($pointer, ' ');
-        }
-        fseek($this->fp, $pointer * self::BLOCK_LENGTH);
+        $this->fp->seek($pointer * self::BLOCK_LENGTH_IN_BYTES);
 
-        $endMarker = chr(0x1A).chr(0x1A).chr(0x00);
+        $endMarker = $this->getBlockEndMarker();
         $result = '';
-        while (!feof($this->fp)) {
-            $result .= fread($this->fp, 1);
+        $memoLength = 0;
+        while (!$this->fp->eof()) { //todo too slow need speedup
+            $memoLength++;
+            $result .= $this->fp->read(1);
 
             $substr = substr($result, -3);
             if ($endMarker === $substr) {
+                $memoLength -= 3;
                 $result = substr($result, 0, -3);
                 break;
             }
         }
 
         $type = $this->guessDataType($result);
-        if (MemoObject::TYPE_TEXT === $type && chr(0x00) === substr($result, -1)) {
-            $result = substr($result, 0, -1); // remove endline symbol (0x00)
+        if (MemoObject::TYPE_TEXT === $type) {
+            if (chr(0x00) === substr($result, -1)) {
+                $result = substr($result, 0, -1); // remove endline symbol (0x00)
+            }
+            if ($this->convertFrom) {
+                $result = iconv($this->convertFrom, 'utf-8', $result);
+            }
         }
 
-        if (MemoObject::TYPE_TEXT === $type && $this->convertFrom) {
-            $result = iconv($this->convertFrom, 'utf-8', $result);
-        }
+        return new MemoObject($result, $type, $pointer, $memoLength);
+    }
 
-        return new MemoObject($type, $result);
+    protected function calculateBlockCount(string $data): int
+    {
+        return (int) ceil(strlen($data) + strlen($this->getBlockEndMarker()) / self::BLOCK_LENGTH_IN_BYTES);
+    }
+
+    private function getBlockEndMarker(): string
+    {
+        return chr(0x1A).chr(0x1A).chr(0x00);
+    }
+
+    protected function getBlockLengthInBytes(): int
+    {
+        return self::BLOCK_LENGTH_IN_BYTES;
     }
 }

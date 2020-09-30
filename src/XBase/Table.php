@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase;
 
@@ -25,6 +25,8 @@ class Table
     /** @var int Visual FoxPro backlist length */
     const VFP_BACKLIST_LENGTH = 263;
 
+    const END_OF_FILE_MARKER = 0x1a;
+
     /** @var string Table filepath. */
     protected $filepath;
 
@@ -50,7 +52,7 @@ class Table
     protected $convertFrom;
 
     /**
-     * @var string
+     * @var int
      *
      * @deprecated in 1.2 and will be protected in 1.3. Use getVersion() method.
      */
@@ -68,7 +70,7 @@ class Table
      *
      * @deprecated in 1.2 and will be protected in 1.3. Use getRecordCount() method.
      */
-    public $recordCount;
+    public $recordCount = 0;
 
     /**
      * @var int
@@ -95,9 +97,9 @@ class Table
     public $mdxFlag;
 
     /**
-     * @var string Language codepage.
-     * @see https://blog.codetitans.pl/post/dbf-and-language-code-page/
+     * @var string language codepage
      *
+     * @see        https://blog.codetitans.pl/post/dbf-and-language-code-page/
      * @deprecated in 1.2 and will be protected in 1.3. Use getLanguageCode() method.
      */
     public $languageCode;
@@ -107,7 +109,7 @@ class Table
      *
      * @deprecated in 1.2 and will be protected in 1.3. Use getColumns() method.
      */
-    public $columns;
+    public $columns = [];
 
     /**
      * @var int
@@ -132,6 +134,9 @@ class Table
      */
     public $memo;
 
+    /** @var string|null DBase7 only */
+    protected $languageName;
+
     /**
      * Table constructor.
      *
@@ -145,11 +150,10 @@ class Table
         $this->filepath = $filepath;
         $this->availableColumns = $availableColumns;
         $this->convertFrom = $convertFrom; //todo autodetect from languageCode
-        $this->open();
 
-        if (TableType::hasMemo($this->getVersion())) {
-            $this->memo = MemoFactory::create($this);
-        }
+        $this->open();
+        $this->readHeader();
+        $this->openMemo();
     }
 
     protected function open(): void
@@ -163,12 +167,6 @@ class Table
         }
 
         $this->fp = Stream::createFromFile($this->filepath);
-        $this->readHeader();
-    }
-
-    public function close(): void
-    {
-        $this->fp->close();
     }
 
     protected function readHeader(): void
@@ -188,7 +186,7 @@ class Table
         $this->languageCode = $this->fp->read();
         $this->fp->read(2); //reserved
         if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
-            $languageName = rtrim($this->fp->read(32), chr(0));
+            $this->languageName = rtrim($this->fp->read(32), chr(0));
             $this->fp->read(4);
         }
 
@@ -202,8 +200,22 @@ class Table
 
 //        $this->setFilePos($this->headerLength);
         $this->recordPos = -1;
-        $this->record = false;
         $this->deleteCount = 0;
+    }
+
+    protected function openMemo(): void
+    {
+        if (TableType::hasMemo($this->getVersion())) {
+            $this->memo = MemoFactory::create($this);
+        }
+    }
+
+    public function close(): void
+    {
+        $this->fp->close();
+        if ($this->memo) {
+            $this->memo->close();
+        }
     }
 
     /**
@@ -400,7 +412,7 @@ class Table
         }
     }
 
-    public function addColumn(ColumnInterface $column)
+    public function addColumn(ColumnInterface $column): self
     {
         $name = $nameBase = $column->getName();
         $index = 0;
@@ -410,14 +422,11 @@ class Table
         }
 
         $this->columns[$name] = $column;
+
+        return $this;
     }
 
-    /**
-     * @param $name
-     *
-     * @return ColumnInterface
-     */
-    public function getColumn($name)
+    public function getColumn(string $name): ColumnInterface
     {
         foreach ($this->columns as $column) {
             if ($column->getName() === $name) {
@@ -425,13 +434,13 @@ class Table
             }
         }
 
-        throw new \Exception(sprintf('Column %s not found', $name));
+        throw new \Exception("Column $name not found");
     }
 
     /**
-     * @return Record
+     * @return RecordInterface
      */
-    public function getRecord()
+    public function getRecord(): ?RecordInterface
     {
         return $this->record;
     }
@@ -444,23 +453,17 @@ class Table
     /**
      * @return ColumnInterface[]
      */
-    public function getColumns()
+    public function getColumns(): array
     {
         return $this->columns;
     }
 
-    /**
-     * @return int
-     */
-    public function getColumnCount()
+    public function getColumnCount(): int
     {
         return count($this->columns);
     }
 
-    /**
-     * @return int
-     */
-    public function getRecordCount()
+    public function getRecordCount(): int
     {
         return $this->recordCount;
     }
@@ -486,7 +489,7 @@ class Table
         return $this->filepath;
     }
 
-    public function getVersion()
+    public function getVersion(): int
     {
         return $this->version;
     }
@@ -512,10 +515,7 @@ class Table
         return $this->deleteCount;
     }
 
-    /**
-     * @return string|null
-     */
-    public function getConvertFrom()
+    public function getConvertFrom(): ?string
     {
         return $this->convertFrom;
     }

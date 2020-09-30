@@ -1,8 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Column;
 
-use XBase\Record;
+use XBase\Stream\StreamWrapper;
 
 interface ColumnInterface
 {
@@ -12,6 +12,8 @@ interface ColumnInterface
      * @return ColumnInterface
      */
     public static function create(string $memoryChunk, int $colIndex, ?int $bytePos = null);
+
+    public function toBinaryString(StreamWrapper $fp): void;
 
     public function getDecimalCount();
 
@@ -43,7 +45,6 @@ interface ColumnInterface
 
     /**
      * @return int
-     * @deprecated use getMemAddress
      */
     public function getBytePos();
 

@@ -1,14 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Memo;
 
 use XBase\Enum\TableType;
-use XBase\Memo;
 use XBase\Table;
 
 class MemoFactory
 {
-    public static function create(Table $table): ?MemoInterface
+    public static function create(Table $table, bool $writable = false): ?MemoInterface
     {
         $class = self::getClass($table->getVersion());
         $refClass = new \ReflectionClass($class);
@@ -27,27 +26,26 @@ class MemoFactory
             return null; //todo create file?
         }
 
-        return $refClass->newInstance($memoFilepath, $table->getConvertFrom());
+        return $refClass->newInstance($table, $memoFilepath, $table->getConvertFrom(), $writable);
     }
 
-    private static function getClass(string $version): string
+    private static function getClass(int $version): string
     {
         switch ($version) {
             case TableType::DBASE_III_PLUS_MEMO:
                 return DBase3Memo::class;
             case TableType::DBASE_IV_MEMO:
+                return DBase4Memo::class;
             case TableType::DBASE_7_MEMO:
             case TableType::DBASE_7_NOMEMO:
-                return DBase4Memo::class;
+                return DBase7Memo::class;
             case TableType::FOXPRO_MEMO:
-                return FoxproMemo::class;
             case TableType::VISUAL_FOXPRO:
             case TableType::VISUAL_FOXPRO_AI:
             case TableType::VISUAL_FOXPRO_VAR:
-                return VisualFoxproMemo::class;
-
-            default:
-                return Memo::class;
+                return FoxproMemo::class;
         }
+
+        throw new \LogicException('Unknown table memo type: '.$version);
     }
 }

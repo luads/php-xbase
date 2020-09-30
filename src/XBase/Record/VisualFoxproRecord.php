@@ -1,182 +1,136 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Record;
 
-use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 
 /**
- * Visual Foxpro record
+ * Visual Foxpro record.
  */
 class VisualFoxproRecord extends FoxproRecord
 {
-    /** @var int */
-    protected $zeroDate = 0x253d8c;
-
-    public function getObject(ColumnInterface $column)
+    public function get($columnName)
     {
-        switch ($column->getType()) {
-            case FieldType::INTEGER:
-                return $this->getInt($column->getName());
-            case FieldType::DOUBLE:
-                return $this->getDouble($column->getName());
-            case FieldType::DATETIME:
-                return $this->getDateTime($column->getName());
-            case FieldType::CURRENCY:
-                return $this->getCurrency($column->getName());
-            case FieldType::FLOAT:
-                return $this->getFloat($column->getName());
-            case FieldType::VAR_FIELD:
-            case FieldType::VARBINARY:
-                return $this->getVarchar($column->getName());
-            default:
-                return parent::getObject($column);
-        }
-    }
+        $column = $this->toColumn($columnName);
 
-    public function setObject(ColumnInterface $column, $value)
-    {
         switch ($column->getType()) {
-            case FieldType::INTEGER:
-                return $this->setInt($column, $value);
-            case FieldType::DOUBLE:
-                return $this->setDouble($column, $value);
-            case FieldType::DATETIME:
-                return $this->setDateTime($column, $value);
-            case FieldType::CURRENCY:
-                return $this->setCurrency($column, $value);
+            case FieldType::BLOB:
+                return $this->getMemo($column->getName());
             case FieldType::GENERAL:
-                return $this->setGeneral($column, $value);
+                return $this->data[$column->getName()];
+            default:
+                return parent::get($columnName);
+        }
+    }
+
+    public function set($columnName, $value): RecordInterface
+    {
+        $column = $this->toColumn($columnName);
+        switch ($column->getType()) {
+            case FieldType::BLOB:
+            case FieldType::MEMO:
+                return $this->setMemo($column->getName(), $value);
+            case FieldType::INTEGER:
+                return $this->setInt($column->getName(), $value);
+            case FieldType::DOUBLE:
+                return $this->setDouble($column->getName(), $value);
+            case FieldType::DATETIME:
+                return $this->setDateTime($column->getName(), $value);
+            case FieldType::CURRENCY:
+                return $this->setCurrency($column->getName(), $value);
+            case FieldType::GENERAL:
+                return $this->setGeneral($column->getName(), $value);
             case FieldType::FLOAT:
-                return $this->setFloat($column, $value);
+                return $this->setFloat($column->getName(), $value);
             case FieldType::VAR_FIELD:
             case FieldType::VARBINARY:
-                return $this->setVarchar($column, $value);
+                return $this->setVarchar($column->getName(), $value);
             default:
-                return parent::setObject($column, $value);
+                return parent::set($column->getName(), $value);
         }
-    }
-
-    public function getGeneral(string $columnName)
-    {
-        $data = unpack('L', $this->choppedData[$columnName]);
-        return $data[1];
-    }
-
-    public function setGeneral(ColumnInterface $column, $value): self
-    {
-        $this->choppedData[$column->getName()] = pack('L', $value);
-        return $this;
     }
 
     /**
-     * @return bool|float|int
+     * @param $value
      */
-    public function getInt(string $columnName)
+    public function setMemo($columnName, $value): RecordInterface
     {
-        $s = $this->choppedData[$columnName];
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, [FieldType::BLOB, FieldType::MEMO]);
 
-        if (!$s) {
-            return false;
-        }
-
-        if ($this->table->isFoxpro()) {
-            $su = unpack('i', $s);
-            $ret = $su[1];
-        } else {
-            $ret = ord($s[0]);
-
-            $length = $this->getColumn($columnName)->getLength();
-
-            for ($i = 1; $i < $length; $i++) {
-                $ret += $i * 256 * ord($s[$i]);
-            }
-        }
-
-        return $ret;
-    }
-
-    public function setInt(ColumnInterface $column, $value)
-    {
-        if (FieldType::INTEGER !== $column->getType()) {
-            trigger_error($column->getName().' is not a Number column', E_USER_ERROR);
-        }
-
-        if ($this->table->isFoxpro()) {
-            $this->choppedData[$column->getName()] = pack('i', $value);
-        } else {
-            //todo
+        if (empty($this->data[$column->getName()]) && $value) {
+            $this->data[$column->getName()] = $this->table->getMemo()->create($value);
+        } elseif (!empty($this->data[$column->getName()])) {
+            $this->data[$column->getName()] = $this->table->getMemo()->update($this->data[$column->getName()], $value);
         }
 
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getDouble(string $columnName)
+    public function setGeneral($columnName, $value): self
     {
-        $s = $this->choppedData[$columnName];
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::GENERAL);
 
-        $s = unpack('d', $s);
-
-        if ($s) {
-            return $s[1];
+        if (null !== $value) {
+            $value = (int) $value;
         }
 
-        return 0;
-    }
-
-    public function setDouble(ColumnInterface $column, $value): self
-    {
-        $this->choppedData[$column->getName()] = pack('d', $value);
+        $this->data[$column->getName()] = $value;
 
         return $this;
     }
 
-    public function getCurrency(string $columnName)
+    public function setInt($columnName, $value): self
     {
-        $s = $this->choppedData[$columnName];
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::INTEGER);
 
-        $s = unpack('q', $s);
-
-        if ($s) {
-            return $s[1] / 10000;
+        if (null !== $value) {
+            $value = (int) $value;
         }
 
-        return 0;
-    }
-
-    private function setCurrency(ColumnInterface $column, $value): self
-    {
-        //todo
+        $this->data[$column->getName()] = $value;
 
         return $this;
     }
 
-    public function getVarchar(string $columnName)
+    public function setDouble($columnName, $value): self
     {
-        $s = $this->forceGetString($columnName);
-        if (false !== ($pos = strpos($s, chr(0x00)))) {
-            $s = substr($s, 0, $pos);
-        }
-        return $s;
-    }
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::DOUBLE);
 
-    private function setVarchar(ColumnInterface $column, $value): self
-    {
-        $this->choppedData[$column->getName()] = $value;
+        if (is_string($value)) {
+            $value = (float) str_replace(',', '.', trim($value));
+        }
+
+        $this->data[$column->getName()] = $value;
 
         return $this;
     }
 
-    public function getVarbinary(string $columnName)
+    private function setCurrency($columnName, $value): self
     {
-        $s = $this->forceGetString($columnName);
-        if (false !== ($pos = strpos($s, chr(0x00)))) {
-            $s = substr($s, 0, $pos);
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::CURRENCY);
+
+        if (is_string($value)) {
+            $value = (float) str_replace(',', '.', trim($value));
         }
-        return $s;
+
+        $this->data[$column->getName()] = $value;
+
+        return $this;
+    }
+
+    private function setVarchar($columnName, $value): self
+    {
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, [FieldType::VAR_FIELD, FieldType::VARBINARY]);
+
+        $this->data[$column->getName()] = $value;
+
+        return $this;
     }
 
     /**
@@ -184,81 +138,89 @@ class VisualFoxproRecord extends FoxproRecord
      *
      * @return bool
      */
-    public function setFloat(ColumnInterface $column, $value)
+    public function setDateTime($columnName, $value): self
     {
-        if (FieldType::FLOAT !== $column->getType()) {
-            trigger_error($column->getName().' is not a Float column', E_USER_ERROR);
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::DATETIME);
+
+        if (is_int($value)) {
+            $value = \DateTime::createFromFormat('U', $value);
+        } elseif (is_string($value)) {
+            $value = new \DateTime($value);
         }
 
-        if (0 == strlen($value)) {
-            $this->forceSetString($column, '');
-            return false;
-        }
+        $this->data[$column->getName()] = $value;
 
-        $value = str_replace(',', '.', $value);
-        $this->forceSetString($column, $value);
+        return $this;
     }
 
     /**
-     * @return bool|float|int
+     * Get DATE(D) or DATETIME(T) data as object of \DateTime class.
+     */
+    public function getDateTimeObject($columnName): ?\DateTimeInterface
+    {
+        $column = $this->getColumn($columnName);
+        $this->checkType($column, [FieldType::DATE, FieldType::DATETIME]);
+        if (in_array($column->getType(), [FieldType::DATETIME])) {
+            return $this->getDateTime($column->getName());
+        }
+
+        return parent::getDateTimeObject($column->getName());
+    }
+
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
+     */
+    public function getGeneral(string $columnName)
+    {
+        return $this->get($columnName);
+    }
+
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
     public function getDateTime(string $columnName)
     {
-        $raw = $this->choppedData[$columnName];
-        $buf = unpack('i*', $raw);
-        $intDate = $buf[1];
-        $intTime = $buf[2];
-
-        if (0 == $intDate && 0 == $intTime) {
-            return false;
-        }
-
-        $longDate = ($intDate - $this->zeroDate) * 86400;
-
-        return $longDate + ($intTime / 1000);
+        return $this->get($columnName);
     }
 
     /**
-     * @param $value
-     *
-     * @return bool
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
-    public function setDateTime(ColumnInterface $column, $value)
+    public function getVarbinary(string $columnName)
     {
-        if (FieldType::DATETIME !== $column->getType()) {
-            trigger_error($column->getName().' is not a DateTime column', E_USER_ERROR);
-        }
-
-        if ($value instanceof \DateTimeInterface) {
-            $value = $value->format('U');
-        }
-
-        if (0 == strlen($value)) {
-            $this->forceSetString($column, '');
-            return false;
-        }
-
-        $a = getdate($value);
-        $intDate = $this->zeroDate + (mktime(0, 0, 0, $a['mon'], $a['mday'], $a['year']) / 86400);
-        $intTime = ($a['hours'] * 3600 + $a['minutes'] * 60 + $a['seconds']) * 1000;
-        $this->choppedData[$column->getName()] = pack('i', $intDate).pack('i', $intTime);
+        return $this->get($columnName);
     }
 
     /**
-     * Get DATE(D) or DATETIME(T) data as object of \DateTime class
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */
-    public function getDateTimeObject(string $columnName): \DateTime
+    public function getVarchar(string $columnName)
     {
-        $column = $this->getColumn($columnName);
-        if (!in_array($column->getType(), [FieldType::DATE, FieldType::DATETIME])) {
-            trigger_error($column->getName().' is not a Date or DateTime column', E_USER_ERROR);
-        }
+        return $this->get($columnName);
+    }
 
-        $data = $this->forceGetString($columnName);
-        if (in_array($column->getType(), [FieldType::DATETIME])) {
-            return \DateTime::createFromFormat('U', $this->getDateTime($columnName));
-        }
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
+     */
+    public function getCurrency(string $columnName)
+    {
+        return $this->get($columnName);
+    }
 
-        return new \DateTime($data);
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
+     */
+    public function getDouble(string $columnName)
+    {
+        return $this->data[$columnName];
+    }
+
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
+     */
+    public function getInt(string $columnName)
+    {
+        return $this->data[$columnName];
     }
 }

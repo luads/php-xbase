@@ -1,52 +1,74 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Memo;
 
-class DBase4Memo extends AbstractMemo
+class DBase4Memo extends AbstractWritableMemo
 {
-    const BLOCK_SIGN          = 0xFFFF0800;
-    const BLOCK_SIGN_LENGTH   = 4;
+    const BLOCK_SIGN = 0xFFFF0800;
+    const BLOCK_SIGN_LENGTH = 4;
     const BLOCK_LENGTH_LENGTH = 4;
 
     /** @var int */
-    protected $blockSize;
+    protected $sizeOfBlock;
+
+    /** @var string */
+    private $name;
+
     /** @var int */
-    protected $blockLength;
+    protected $blockLengthInBytes;
 
-    protected function readHeader()
+    protected function readHeader(): void
     {
-        fseek($this->fp, 4);
-        $bytes = unpack('N', fread($this->fp, 4));
-        $this->blockSize = $bytes[1];
+        $this->fp->seek(0);
+        $this->nextFreeBlock = $this->fp->readUInt();
 
-        fseek($this->fp, 20);
-        $bytes = unpack('S', fread($this->fp, 2));
-        $this->blockLength = $bytes[1];
+        $this->sizeOfBlock = unpack('N', $this->fp->read(4))[1];
+        $this->name = $this->fp->read(8);
+
+        $this->fp->seek(20);
+        $this->blockLengthInBytes = unpack('S', $this->fp->read(2))[1];
     }
 
-    public function get($pointer)
+    public function get(int $pointer): ?MemoObject
     {
         if (!$this->isOpen()) {
             $this->open();
         }
 
-        if (is_string($pointer)) {
-            $pointer = (int) ltrim($pointer, ' ');
-        }
-        fseek($this->fp, $pointer * $this->blockLength);
-        $sign = unpack('N', fread($this->fp, self::BLOCK_SIGN_LENGTH));
+        $this->fp->seek($pointer * $this->blockLengthInBytes);
+        $sign = unpack('N', $this->fp->read(self::BLOCK_SIGN_LENGTH));
         if (self::BLOCK_SIGN !== $sign[1]) {
-            throw new \LogicException('Wrong dBaseIV block sign/');
+            throw new \LogicException('Wrong dBaseIV block sign');
         }
 
-        $memoLength = unpack('L', fread($this->fp, self::BLOCK_LENGTH_LENGTH));
-        $result = fread($this->fp, $memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
+        $memoLength = unpack('L', $this->fp->read(self::BLOCK_LENGTH_LENGTH));
+        $result = $this->fp->read($memoLength[1]);
+//        $result = $this->fp->read($memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
 
         $type = $this->guessDataType($result);
         if (MemoObject::TYPE_TEXT === $type && $this->convertFrom) {
             $result = iconv($this->convertFrom, 'utf-8', $result);
         }
 
-        return new MemoObject($type, $result);
+        return new MemoObject($result, $type, $pointer, $memoLength[1]);
+    }
+
+    protected function getBlockLengthInBytes(): int
+    {
+        return $this->blockLengthInBytes;
+    }
+
+    protected function calculateBlockCount(string $data): int
+    {
+        $requiredBytesCount = self::BLOCK_SIGN_LENGTH + self::BLOCK_LENGTH_LENGTH + strlen($data);
+
+        return (int) ceil($requiredBytesCount / $this->getBlockLengthInBytes());
+    }
+
+    protected function toBinaryString(string $data, int $lengthInBlocks): string
+    {
+        $value = pack('N', self::BLOCK_SIGN).pack('L', strlen($data));
+
+        return str_pad($value.$data, $lengthInBlocks * $this->getBlockLengthInBytes(), chr(0));
     }
 }

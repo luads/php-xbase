@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Column;
 
@@ -7,7 +7,7 @@ abstract class AbstractColumn implements ColumnInterface
     /** @var string */
     protected $name;
 
-    /** @var string */
+    /** @var string|null */
     protected $rawName;
 
     /** @var string */
@@ -16,18 +16,20 @@ abstract class AbstractColumn implements ColumnInterface
     /** @var int */
     protected $length;
 
-    /** @var int */
+    /** @var int|null */
     protected $decimalCount;
 
-    /**@var int Field address within record. */
+    /** @var int Field address within record. */
     protected $memAddress;
 
+    /** @var int|null */
     protected $workAreaID;
 
-    /** @var bool */
-    protected $setFields;
+    /** @var bool|null */
+    protected $setFields = false;
 
-    protected $indexed;
+    /** @var bool|null */
+    protected $indexed = false;
 
     /** @var int|null Data starts from index */
     protected $bytePos;
@@ -43,60 +45,47 @@ abstract class AbstractColumn implements ColumnInterface
         return $this->memAddress;
     }
 
-    /**
-     * @return bool|string
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function isSetFields()
+    public function isSetFields(): ?bool
     {
         return $this->setFields;
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
 
-    public function getWorkAreaID()
+    public function getWorkAreaID(): ?int
     {
         return $this->workAreaID;
     }
 
-    public function getDecimalCount()
+    public function getDecimalCount(): ?int
     {
         return $this->decimalCount;
     }
 
-    /**
-     * @return bool
-     */
-    public function isIndexed()
+    public function isIndexed(): ?bool
     {
         return $this->indexed;
     }
 
-    /**
-     * @return int
-     */
-    public function getLength()
+    public function getLength(): int
     {
         return $this->length;
     }
 
-    public function getColIndex()
+    public function getColIndex(): int
     {
         return $this->colIndex;
     }
 
-    /**
-     * @return int
-     * @deprecated use getMemAddress
-     */
-    public function getBytePos()
+    public function getBytePos(): int
     {
         return $this->bytePos;
     }
@@ -109,12 +98,15 @@ abstract class AbstractColumn implements ColumnInterface
     /**
      * @return string
      */
-    public function getRawName()
+    public function getRawName(): ?string
     {
         return $this->rawName;
     }
 
-    public function getDataLength()
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use getLength()
+     */
+    public function getDataLength(): int
     {
         return $this->length;
     }
