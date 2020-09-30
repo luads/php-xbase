@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Stream;
 
@@ -9,11 +9,12 @@ class Stream extends StreamWrapper
         return new self(fopen($filepath, $mode));
     }
 
-    public static function createFromString(string $string, string $mode = 'rb+'): Stream
+    public static function createFromString(string $string = '', string $mode = 'rb+'): Stream
     {
         $stream = fopen('php://temp', $mode);
         fwrite($stream, $string);
         rewind($stream);
+
         return new self($stream);
     }
 

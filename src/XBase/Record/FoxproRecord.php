@@ -1,34 +1,31 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Record;
 
-use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 
 class FoxproRecord extends AbstractRecord
 {
-    public function getObject(ColumnInterface $column)
+    public function get($columnName)
     {
+        $column = $this->toColumn($columnName);
+
         switch ($column->getType()) {
-            case FieldType::FLOAT:
-                return $this->getFloat($column->getName());
             case FieldType::GENERAL:
                 return $this->getGeneral($column->getName());
             default:
-                return parent::getObject($column);
+                return parent::get($columnName);
         }
     }
 
+    /**
+     * @deprecated since 1.3 and will be delete in 2.0. Use get()
+     */
     public function getGeneral(string $columnName)
     {
-        return $this->table->getMemo()->get($this->choppedData[$columnName])->getData();
-    }
+        $column = $this->toColumn($columnName);
+        $this->checkType($column, FieldType::GENERAL);
 
-    /**
-     * @return int
-     */
-    public function getFloat(string $columnName)
-    {
-        return (float) ltrim($this->choppedData[$columnName]);
+        return $this->getMemoObject($columnName)->getData();
     }
 }

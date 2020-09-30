@@ -1,16 +1,68 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase;
 
+use XBase\Column\ColumnInterface;
 use XBase\Column\DBaseColumn;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
+use XBase\Memo\MemoFactory;
+use XBase\Memo\MemoInterface;
+use XBase\Memo\WritableMemoInterface;
 use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
+use XBase\Traits\CloneTrait;
 
 class WritableTable extends Table
 {
+    use CloneTrait;
+
+    /**
+     * @var bool
+     *
+     * @deprecated in 1.3
+     */
+    private $autoSave = false;
+
+    /**
+     * @var bool record property is new
+     */
+    private $insertion = false;
+
+    protected function open(): void
+    {
+        $this->clone();
+        $this->fp = Stream::createFromFile($this->cloneFilepath, 'rb+');
+    }
+
+    protected function openMemo(): void
+    {
+        if (TableType::hasMemo($this->getVersion())) {
+            $this->memo = MemoFactory::create($this, true);
+        }
+    }
+
+    public function close(): void
+    {
+        if ($this->autoSave) {
+            @trigger_error('You should call `save` method directly.');
+            $this->save();
+        }
+
+        parent::close();
+
+        unlink($this->cloneFilepath);
+    }
+
+    /**
+     * @return WritableMemoInterface|null
+     */
+    public function getMemo(): ?MemoInterface
+    {
+        return $this->memo;
+    }
+
     /**
      * @param $table
      *
@@ -58,7 +110,7 @@ class WritableTable extends Table
                 throw new TableException('fields argument error, must be array of arrays', $this->filepath);
             }
             $column = new DBaseColumn($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
-            $recordByteLength += $column->getDataLength();
+            $recordByteLength += $column->getLength();
             $columnNames[$i] = $field[0];
             $columns[$i] = $column;
             $i++;
@@ -86,127 +138,138 @@ class WritableTable extends Table
     }
 
     /**
-     * @param bool $filename
-     * @param bool $overwrite
-     *
-     * @return bool
+     * @deprecated since 1.3 and will be deleted in 2.0. Do not use this.
      */
     public function openWrite($filename = false, $overwrite = false)
     {
-        if (!$filename) {
-            $filename = $this->filepath;
-        }
-
-        if (file_exists($filename) && !$overwrite) {
-            if ($this->fp = Stream::createFromFile($filename, 'r+')) {
-                $this->readHeader();
-            }
-        } else {
-            if ($this->fp = Stream::createFromFile($filename, 'w+')) {
-                $this->writeHeader();
-            }
-        }
-
-        return false != $this->fp;
+        @trigger_error('Method `openWrite` is deprecated. Do not use it!');
+        $this->autoSave = true;
+//        if (!$filename) {
+//            $filename = $this->filepath;
+//        }
+//
+//        if (file_exists($filename) && !$overwrite) {
+//            if ($this->fp = Stream::createFromFile($filename, 'r+')) {
+//                $this->readHeader();
+//            }
+//        } elseif ($this->fp = Stream::createFromFile($filename, 'w+')) {
+//            $this->writeHeader();
+//        }
+//
+//        return false != $this->fp;
     }
 
-    public function writeHeader(): void
+    protected function writeHeader(): void
     {
-        $this->headerLength = ($this->isFoxpro() ? 296 : 33) + ($this->getColumnCount() * 32);
+//        $this->headerLength = ($this->isFoxpro() ? 296 : 33) + ($this->getColumnCount() * 32);
 
         $this->fp->seek(0);
 
-        $this->fp->writeUChar($this->version);
-        $this->fp->write3ByteDate(time());
-        $this->fp->writeUInt($this->recordCount);
-        $this->fp->writeUShort($this->headerLength);
-        $this->fp->writeUShort($this->recordByteLength);
-        $this->fp->write(str_pad('', 2, chr(0)));
-        $this->fp->write(chr($this->inTransaction ? 1 : 0));
-        $this->fp->write(chr($this->encrypted ? 1 : 0));
-        $this->fp->write(str_pad('', 4, chr(0)));
-        $this->fp->write(str_pad('', 8, chr(0)));
-        $this->fp->write($this->mdxFlag);
-        $this->fp->write($this->languageCode);
-        $this->fp->write(str_pad('', 2, chr(0)));
+        $this->fp->writeUChar($this->version); //0
+        $this->fp->write3ByteDate(time()); //1-3
+        $this->fp->writeUInt($this->recordCount); //4-7
+        $this->fp->writeUShort($this->headerLength); //8-9
+        $this->fp->writeUShort($this->recordByteLength); //10-11
+        $this->fp->write(str_pad('', 2, chr(0))); //12-13
+        $this->fp->write(chr($this->inTransaction ? 1 : 0)); //14
+        $this->fp->write(chr($this->encrypted ? 1 : 0)); //15
+        $this->fp->write(str_pad('', 4, chr(0))); //16-19 //todo-different-tabel
+        $this->fp->write(str_pad('', 8, chr(0))); //20-27 //todo-different-tabel
+        $this->fp->write($this->mdxFlag); //28
+        $this->fp->write($this->languageCode); //29
+        $this->fp->write(str_pad('', 2, chr(0))); //30-31 //todo-different-tabel
+
+        if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
+            $this->fp->write(str_pad($this->languageName, 36, chr(0)));
+        }
 
         foreach ($this->columns as $column) {
-            $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0))); // 0-10
-            $this->fp->write($column->getType());// 11
-            $this->fp->writeUInt($column->getMemAddress());//12-15
-            $this->fp->writeUChar($column->getDataLength());//16
-            $this->fp->writeUChar($column->getDecimalCount());//17
-            $this->fp->write(
-                method_exists($column, 'getReserved1')
-                    ? call_user_func([$column, 'getReserved1'])
-                    : str_pad('', 2, chr(0))
-            );//18-19
-            $this->fp->writeUChar($column->getWorkAreaID());//20
-            $this->fp->write(
-                method_exists($column, 'getReserved2')
-                    ? call_user_func([$column, 'getReserved2'])
-                    : str_pad('', 2, chr(0))
-            );//21-22
-            $this->fp->write(chr($column->isSetFields() ? 1 : 0));//23
-            $this->fp->write(
-                method_exists($column, 'getReserved3')
-                ? call_user_func([$column, 'getReserved3'])
-                : str_pad('', 7, chr(0))
-            );//24-30
-            $this->fp->write(chr($column->isIndexed() ? 1 : 0));//31
+            $column->toBinaryString($this->fp);
+//            $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0))); // 0-10
+//            $this->fp->write($column->getType());// 11
+//            $this->fp->writeUInt($column->getMemAddress());//12-15
+//            $this->fp->writeUChar($column->getLength());//16
+//            $this->fp->writeUChar($column->getDecimalCount());//17
+//            $this->fp->write(
+//                method_exists($column, 'getReserved1')
+//                    ? call_user_func([$column, 'getReserved1'])
+//                    : str_pad('', 2, chr(0))
+//            );//18-19
+//            $this->fp->writeUChar($column->getWorkAreaID());//20
+//            $this->fp->write(
+//                method_exists($column, 'getReserved2')
+//                    ? call_user_func([$column, 'getReserved2'])
+//                    : str_pad('', 2, chr(0))
+//            );//21-22
+//            $this->fp->write(chr($column->isSetFields() ? 1 : 0));//23
+//            $this->fp->write(
+//                method_exists($column, 'getReserved3')
+//                    ? call_user_func([$column, 'getReserved3'])
+//                    : str_pad('', 7, chr(0))
+//            );//24-30
+//            $this->fp->write(chr($column->isIndexed() ? 1 : 0));//31
         }
 
         $this->fp->writeUChar(0x0d);
 
-        if ($this->foxpro) {
+        if (in_array($this->version, [
+            TableType::VISUAL_FOXPRO,
+            TableType::VISUAL_FOXPRO_AI,
+            TableType::VISUAL_FOXPRO_VAR,
+        ])) {
             $this->fp->write(str_pad($this->backlist, 263, ' '));
         }
     }
 
-    /**
-     * @return RecordInterface
-     */
-    public function appendRecord()
+    public function appendRecord(): RecordInterface
     {
-        $this->recordPos = $this->recordCount++;
+        $this->recordPos = $this->recordCount;
         $this->record = RecordFactory::create($this, $this->recordPos);
+        $this->insertion = true;
 
         return $this->record;
     }
 
-    public function writeRecord(): void
+    public function writeRecord(RecordInterface $record = null): self
     {
-        if (!$this->record) {
-            return;
+        $record = $record ?? $this->record;
+        if (!$record) {
+            return $this;
         }
 
-        $offset = $this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength);
+        $offset = $this->headerLength + ($record->getRecordIndex() * $this->recordByteLength);
         $this->fp->seek($offset);
-        $data = $this->record->serializeRawData(); // removed referencing
-        $this->fp->write($data);
+        $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($record));
 
-        if ($this->record->isInserted()) {
-            $this->writeHeader();
+        if ($this->insertion) {
+            $this->recordCount++;
         }
 
         $this->fp->flush();
 
-        $this->record->setInserted(false);
+        $this->insertion = false;
+
+        return $this;
     }
 
-    public function deleteRecord(): void
+    public function deleteRecord(?RecordInterface $record = null): self
     {
-        if ($this->record->isInserted()) {
+        if ($this->record && $this->insertion) {
             $this->record = null;
             $this->recordPos = -1;
-            return;
+
+            return $this;
         }
 
-        $this->record->setDeleted(true);
+        $record = $record ?? $this->record;
+        if (!$record) {
+            return $this;
+        }
 
-        $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
-        $this->fp->write('!');
-        $this->fp->flush();
+        $record->setDeleted(true);
+        $this->writeRecord($record);
+
+        return $this;
     }
 
     public function undeleteRecord()
@@ -221,25 +284,98 @@ class WritableTable extends Table
     /**
      * Remove deleted records.
      */
-    public function pack()
+    public function pack(): self
     {
         $newRecordCount = 0;
-        $newFilepos = $this->headerLength;
-
         for ($i = 0; $i < $this->getRecordCount(); $i++) {
             $r = $this->moveTo($i);
 
             if ($r->isDeleted()) {
+                // remove memo columns
+                foreach ($this->getMemoColumns() as $column) {
+                    if ($pointer = $this->record->getGenuine($column->getName())) {
+                        $this->getMemo()->delete($pointer);
+                    }
+                }
                 continue;
             }
 
             $r->setRecordIndex($newRecordCount++);
-            $this->writeRecord();
+            $this->writeRecord($r);
         }
 
         $this->recordCount = $newRecordCount;
         $this->writeHeader();
 
-        $this->fp->truncate($this->headerLength + ($this->recordCount * $this->recordByteLength));
+        $size = $this->headerLength + ($this->recordCount * $this->recordByteLength);
+        $this->fp->truncate($size);
+
+        return $this;
+    }
+
+    public function save(): self
+    {
+        if ($this->memo) {
+            $this->memo->save();
+        }
+
+        $this->writeHeader();
+        //check end-of-file marker
+        $stat = $this->fp->stat();
+        $this->fp->seek($stat['size'] - 1);
+        if (self::END_OF_FILE_MARKER !== ($lastByte = $this->fp->readUChar())) {
+            $this->fp->writeUChar(self::END_OF_FILE_MARKER);
+        }
+
+        copy($this->cloneFilepath, $this->filepath);
+
+        return $this;
+    }
+
+    /**
+     * @internal
+     *
+     * @todo Find better solution for notifying table from memo.
+     */
+    public function onMemoBlocksDelete(array $blocks): void
+    {
+        $columns = $this->getMemoColumns();
+
+        for ($i = 0; $i < $this->recordCount; $i++) {
+            $record = $this->pickRecord($i);
+            $save = false;
+            foreach ($columns as $column) {
+                if (!$pointer = $record->getGenuine($column->getName())) {
+                    continue;
+                }
+
+                $sub = 0;
+                foreach ($blocks as $deletedPointer => $length) {
+                    if ($pointer && $pointer > $deletedPointer) {
+                        $sub += $length;
+                    }
+                }
+                $save = $sub > 0;
+                $record->setGenuine($column->getName(), $pointer - $sub);
+            }
+            if ($save) {
+                $this->writeRecord($record);
+            }
+        }
+    }
+
+    /**
+     * @return ColumnInterface[]
+     */
+    private function getMemoColumns(): array
+    {
+        $result = [];
+        foreach ($this->columns as $column) {
+            if (in_array($column->getType(), TableType::getMemoTypes($this->version))) {
+                $result[] = $column;
+            }
+        }
+
+        return $result;
     }
 }

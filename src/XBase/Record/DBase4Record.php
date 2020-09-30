@@ -1,27 +1,20 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Record;
 
-use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 
-class DBase4Record extends DBaseRecord
+class DBase4Record extends AbstractRecord
 {
-    public function getObject(ColumnInterface $column)
+    public function get($columnName)
     {
-        switch ($column->getType()) {
-            case FieldType::FLOAT:
-                return $this->getFloat($column->getName());
-            default:
-                return parent::getObject($column);
-        }
-    }
+        $column = $this->toColumn($columnName);
 
-    /**
-     * @return int
-     */
-    public function getFloat(string $columnName)
-    {
-        return (float) ltrim($this->choppedData[$columnName]);
+        switch ($column->getType()) {
+            case FieldType::DBASE4_BLOB: //todo dbase7 or 5 or 4? need to find documentation
+                return $this->getMemo($column->getName());
+            default:
+                return parent::get($columnName);
+        }
     }
 }

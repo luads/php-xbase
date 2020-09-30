@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Enum;
 
@@ -75,5 +75,17 @@ final class TableType
             self::VISUAL_FOXPRO_VAR,
             self::FOXPRO_MEMO,
         ]);
+    }
+
+    public static function getMemoTypes(int $tableType): array
+    {
+        if (!self::hasMemo($tableType)) {
+            return [];
+        }
+
+        switch ($tableType) {
+            default:
+                return [FieldType::BLOB, FieldType::MEMO];
+        }
     }
 }

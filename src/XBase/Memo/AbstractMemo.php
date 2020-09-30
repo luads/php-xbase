@@ -1,24 +1,32 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Memo;
 
+use XBase\Stream\Stream;
+use XBase\Table;
+
 abstract class AbstractMemo implements MemoInterface
 {
-    /** @var resource */
+    /** @var Table */
+    protected $table;
+
+    /** @var Stream */
     protected $fp;
+
     /** @var string */
     protected $filepath;
+
     /** @var string */
     protected $convertFrom;
 
     /**
      * Memo constructor.
      *
-     * @param string $filepath
      * @param string $convertFrom
      */
-    public function __construct($filepath, $convertFrom = null)
+    public function __construct(Table $table, string $filepath, ?string $convertFrom = null)
     {
+        $this->table = $table;
         $this->filepath = $filepath;
         $this->convertFrom = $convertFrom; //todo autodetect from languageCode
         $this->open();
@@ -30,38 +38,37 @@ abstract class AbstractMemo implements MemoInterface
         $this->close();
     }
 
-    protected function readHeader()
+    protected function readHeader(): void
     {
     }
 
-    public static function getExtension()
+    public static function getExtension(): string
     {
         return 'dbt';
     }
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
-    public function isOpen()
+    public function isOpen(): bool
     {
         return null !== $this->fp;
     }
 
-    public function open()
+    public function open(): void
     {
-        $this->close();
-        $this->fp = fopen($this->filepath, 'rb');
+        $this->fp = Stream::createFromFile($this->filepath); //todo configure write mode
     }
 
-    public function close()
+    public function close(): void
     {
         if (null !== $this->fp) {
-            fclose($this->fp);
+            $this->fp->close();
         }
         $this->fp = null;
     }
 
-    protected function guessDataType(string $result)
+    protected function guessDataType(string $result): int
     {
         if (strlen($result) > 4) {
             $bytes = unpack('n*', substr($result, 0, 4));

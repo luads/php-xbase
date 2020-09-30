@@ -1,23 +1,22 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace XBase\Stream;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
  *
- * @method int readUChar()
- * @method int readUShort()
- * @method int readUInt()
- * @method int readChar()
- * @method int readShort()
- * @method int readInt()
- *
- * @method int writeUChar()
- * @method int writeUShort()
- * @method int writeUInt()
- * @method int writeChar()
- * @method int writeShort()
- * @method int writeInt()
+ * @method int readUChar(): int
+ * @method int readUShort(): int
+ * @method int readUInt(): int
+ * @method int readChar(): int
+ * @method int readShort(): int
+ * @method int readInt(): int
+ * @method int writeUChar(int $value)
+ * @method int writeUShort(int $value)
+ * @method int writeUInt(int $value)
+ * @method int writeChar(int $value)
+ * @method int writeShort(int $value)
+ * @method int writeInt(int $value)
  */
 class StreamWrapper
 {
@@ -53,9 +52,9 @@ class StreamWrapper
         return rewind($this->fp);
     }
 
-    public function seek(int $offset)
+    public function seek(int $offset, int $whence = SEEK_SET)
     {
-        return fseek($this->fp, $offset);
+        return fseek($this->fp, $offset, $whence);
     }
 
     public function tell()
@@ -68,7 +67,7 @@ class StreamWrapper
         return fflush($this->fp);
     }
 
-    public function isOpen()
+    public function isOpen(): bool
     {
         return null !== $this->fp;
     }
@@ -97,7 +96,17 @@ class StreamWrapper
         return fwrite($this->fp, $string); //todo length arg
     }
 
-    public function __call($method, $args)
+    public function eof(): bool
+    {
+        return feof($this->fp);
+    }
+
+    public function stat(): array
+    {
+        return fstat($this->fp);
+    }
+
+    public function __call(string $method, $args)
     {
         $mapping = [
             'char'  => [1, 'c'],
@@ -120,6 +129,7 @@ class StreamWrapper
             case 'read':
                 $str = $this->read($length);
                 $buf = unpack($format, $str);
+
                 return $buf[1];
 
             case 'write':
