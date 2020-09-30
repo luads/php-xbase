@@ -287,4 +287,31 @@ class VisualFoxproTableTest extends TestCase
 
         self::assertSame(0x1a, ord($endMarker));
     }
+
+    public function testIssue91(): void
+    {
+        $copyTo = $this->duplicateFile(__DIR__.'/../Resources/foxpro/91.dbf');
+        $table = new WritableTable($copyTo, null, 'CP1250');
+        self::assertSame(0, $table->getRecordCount());
+        $data = ['str1', 'str2', 'str3', 'str4'];
+
+        foreach ($data as $value) {
+            $record = $table->appendRecord();
+            $record->zkratka = $value;
+            $table->writeRecord();
+        }
+
+        $table
+            ->save()
+            ->close();
+
+        $table = new Table($copyTo, null, 'CP1250');
+        self::assertSame(4, $table->getRecordCount());
+
+        $actual = [];
+        while ($record = $table->nextRecord()) {
+            $actual[] = $record->zkratka;
+        }
+        self::assertEquals($data, $actual);
+    }
 }

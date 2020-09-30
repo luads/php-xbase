@@ -23,7 +23,7 @@ class StringConverter extends AbstractFieldDataConverter
 
     public function toBinaryString($value): string
     {
-        if ($outCharset = $this->table->getConvertFrom()) {
+        if ($value && $outCharset = $this->table->getConvertFrom()) {
             $value = iconv('utf-8', $outCharset, $value);
         }
 
