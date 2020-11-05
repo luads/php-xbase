@@ -18,11 +18,15 @@ class DateTimeConverter extends AbstractFieldDataConverter
 
     public function fromBinaryString(string $value): ?\DateTimeInterface
     {
+        if (empty($value)) {
+            return null;
+        }
+
         $buf = unpack('i*', $value);
         $intDate = $buf[1];
         $intTime = $buf[2];
 
-        if (0 == $intDate && 0 == $intTime) {
+        if (0 === $intDate && 0 === $intTime) {
             return null;
         }
 
