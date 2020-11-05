@@ -28,7 +28,7 @@ class DateTimeConverter extends AbstractFieldDataConverter
 
         $longDate = ($intDate - self::ZERO_DATE) * self::SEC_IN_DAY;
 
-        return \DateTime::createFromFormat('U', (string) ($longDate + $intTime / 1000));
+        return \DateTime::createFromFormat('U', (string) intval($longDate + $intTime / 1000));
     }
 
     /**
