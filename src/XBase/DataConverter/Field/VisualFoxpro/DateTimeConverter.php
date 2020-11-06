@@ -34,7 +34,7 @@ class DateTimeConverter extends AbstractFieldDataConverter
         $ts = $longDate + intdiv($intTime, 1000);
         $ms = $intTime % 1000;
 
-        return \DateTime::createFromFormat('U.v', "{$ts}.{$ms}");
+        return \DateTime::createFromFormat('U.u', "{$ts}.{$ms}");
     }
 
     /**
