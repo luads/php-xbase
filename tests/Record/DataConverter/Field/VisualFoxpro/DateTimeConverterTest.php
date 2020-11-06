@@ -25,19 +25,19 @@ class DateTimeConverterTest extends TestCase
         $column = $this->createMock(ColumnInterface::class);
 
         $converter = new DateTimeConverter($table, $column);
-        $binaryString = $converter->toBinaryString(\DateTime::createFromFormat(DATE_RFC3339_EXTENDED, $dtSting));
+        $binaryString = $converter->toBinaryString(\DateTime::createFromFormat('Y-m-d\TH:i:s.uP', $dtSting));
         $dt = $converter->fromBinaryString($binaryString);
         self::assertInstanceOf(\DateTimeInterface::class, $dt);
-        self::assertSame($dtSting, $dt->format(DATE_RFC3339_EXTENDED));
+        self::assertSame($dtSting, $dt->format('Y-m-d\TH:i:s.uP'));
     }
 
     public function dataProvider()
     {
-        yield ['1800-01-01T01:01:01.000+00:00'];
-        yield ['1917-11-07T23:10:10.999+00:00'];
-        yield ['1970-01-01T00:00:00.000+00:00'];
-        yield ['2020-02-20T20:20:20.000+00:00'];
-        yield ['2020-11-06T10:10:10.123+00:00'];
+        yield ['1800-01-01T01:01:01.000000+00:00'];
+        yield ['1917-11-07T23:10:10.999000+00:00'];
+        yield ['1970-01-01T00:00:00.000000+00:00'];
+        yield ['2020-02-20T20:20:20.000000+00:00'];
+        yield ['2020-11-06T10:10:10.123000+00:00'];
     }
 
     /**
