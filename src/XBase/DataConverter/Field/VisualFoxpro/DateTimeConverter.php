@@ -31,8 +31,10 @@ class DateTimeConverter extends AbstractFieldDataConverter
         }
 
         $longDate = ($intDate - self::ZERO_DATE) * self::SEC_IN_DAY;
+        $ts = $longDate + intdiv($intTime, 1000);
+        $ms = $intTime % 1000;
 
-        return \DateTime::createFromFormat('U', (string) intval($longDate + $intTime / 1000));
+        return \DateTime::createFromFormat('U.v', "{$ts}.{$ms}");
     }
 
     /**
@@ -44,15 +46,16 @@ class DateTimeConverter extends AbstractFieldDataConverter
             return pack('i*', 0, 0);
         }
 
-        $value = (float) $value->format('U');
+        $ts = (int) $value->format('U');
+        $ms = (int) $value->format('v');
 
-        $intTime = ($value % self::SEC_IN_DAY);
+        $intTime = ($ts % self::SEC_IN_DAY);
         if ($intTime < 0) {
             $intTime += self::SEC_IN_DAY;
         }
 
-        $intDate = ($value - $intTime) / self::SEC_IN_DAY + self::ZERO_DATE;
+        $intDate = ($ts - $intTime) / self::SEC_IN_DAY + self::ZERO_DATE;
 
-        return pack('i*', $intDate, $intTime * 1000);
+        return pack('i*', $intDate, ($intTime * 1000 + $ms));
     }
 }
