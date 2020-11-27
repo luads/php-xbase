@@ -90,6 +90,23 @@ $table
     ->close();
 ```
 
+Add new record
+-----
+
+``` php
+use XBase\WritableTable;
+
+$table = new WritableTable('file.dbf');
+$record = $table->appendRecord();
+$record->set('name', 'test name');
+$record->set('age', 20);
+
+$table
+    ->writeRecord()
+    ->save()
+    ->close();
+```
+
 Delete record
 -----
 
