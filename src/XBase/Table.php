@@ -30,9 +30,6 @@ class Table
     /** @var string Table filepath. */
     protected $filepath;
 
-    /** @var array|null */
-    protected $availableColumns;
-
     /** @var Stream */
     protected $fp;
 
@@ -47,9 +44,6 @@ class Table
 
     /** @var RecordInterface|null */
     protected $record;
-
-    /** @var string|null */
-    protected $convertFrom;
 
     /**
      * @var int
@@ -137,23 +131,49 @@ class Table
     /** @var string|null DBase7 only */
     protected $languageName;
 
+    /** @var array */
+    protected $options = [];
+
     /**
      * Table constructor.
      *
-     * @param array|null  $availableColumns
-     * @param string|null $convertFrom      Encoding of file
+     * @param array $options Array of options:<br>
+     *                       encoding - convert text data from<br>
+     *                       columns - available columns<br>
      *
      * @throws \Exception
      */
-    public function __construct(string $filepath, $availableColumns = null, $convertFrom = null)
+    public function __construct(string $filepath, $options = [], $convertFrom = null)
     {
         $this->filepath = $filepath;
-        $this->availableColumns = $availableColumns;
-        $this->convertFrom = $convertFrom; //todo autodetect from languageCode
+        $this->options = $this->resolveOptions($options, $convertFrom);
 
         $this->open();
         $this->readHeader();
         $this->openMemo();
+    }
+
+    protected function resolveOptions($options, $convertFrom = null): array
+    {
+        // right options
+        if (!empty($options) && array_intersect(['encoding', 'columns'], array_keys($options))) {
+            return array_merge([
+                'columns'  => [],
+                'encoding' => null,
+            ], $options);
+        }
+
+        if (!empty($options)) {
+            @trigger_error('You should pass availableColumns as `columns` option');
+        }
+        if (!empty($convertFrom)) {
+            @trigger_error('You should pass convertFrom as `encoding` option');
+        }
+
+        return [
+            'columns'  => $options ?? [],
+            'encoding' => $convertFrom,
+        ];
     }
 
     protected function open(): void
@@ -206,7 +226,7 @@ class Table
     protected function openMemo(): void
     {
         if (TableType::hasMemo($this->getVersion())) {
-            $this->memo = MemoFactory::create($this);
+            $this->memo = MemoFactory::create($this, $this->options);
         }
     }
 
@@ -517,7 +537,7 @@ class Table
 
     public function getConvertFrom(): ?string
     {
-        return $this->convertFrom;
+        return $this->options['encoding'];
     }
 
     /**

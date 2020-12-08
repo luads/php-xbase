@@ -30,6 +30,9 @@ final class BlocksMerger
         return $this->squeeze();
     }
 
+    /**
+     * Combines several adjacent blocks into one.
+     */
     private function squeeze(): array
     {
         $pointers = array_column($this->blocksToDelete, 0);

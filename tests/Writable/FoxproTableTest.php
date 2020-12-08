@@ -14,7 +14,7 @@ class FoxproTableTest extends TestCase
     const FILEPATH = __DIR__.'/../Resources/foxpro/Foxpro2.dbf';
 
     /**
-     * Method appendRecord must not increase recordCount. Only after writeRecord will it will be increased.
+     * Method appendRecord must not increase recordCount. Only after call writeRecord it will be increased.
      */
     public function testAppendNotIncreaseRecordsCount(): void
     {

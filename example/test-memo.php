@@ -20,7 +20,7 @@ if (false === $filepath || !is_file($filepath)) {
     die('Bad path to file realpath '.$argv[1]);
 }
 
-$table = new Table($filepath, null, 'cp1252');
+$table = new Table($filepath, ['encoding' => 'cp1252']);
 echo 'Record count: '.$table->getRecordCount() . PHP_EOL;
 
 $columns = $table->getColumns();

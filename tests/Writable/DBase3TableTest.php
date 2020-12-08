@@ -15,7 +15,7 @@ class DBase3TableTest extends TestCase
 
     public function testAppendRecord(): void
     {
-        self:self::markTestIncomplete();
+        self::markTestIncomplete();
 
         $copyTo = $this->duplicateFile(self::FILEPATH);
         $size = filesize($copyTo);

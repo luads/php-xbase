@@ -7,7 +7,7 @@ use XBase\Table;
 
 class MemoFactory
 {
-    public static function create(Table $table, bool $writable = false): ?MemoInterface
+    public static function create(Table $table, array $options = []): ?MemoInterface
     {
         $class = self::getClass($table->getVersion());
         $refClass = new \ReflectionClass($class);
@@ -26,7 +26,7 @@ class MemoFactory
             return null; //todo create file?
         }
 
-        return $refClass->newInstance($table, $memoFilepath, $table->getConvertFrom(), $writable);
+        return $refClass->newInstance($table, $memoFilepath, $options);
     }
 
     private static function getClass(int $version): string

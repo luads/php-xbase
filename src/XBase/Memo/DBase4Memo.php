@@ -46,8 +46,8 @@ class DBase4Memo extends AbstractWritableMemo
 //        $result = $this->fp->read($memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
 
         $type = $this->guessDataType($result);
-        if (MemoObject::TYPE_TEXT === $type && $this->convertFrom) {
-            $result = iconv($this->convertFrom, 'utf-8', $result);
+        if (MemoObject::TYPE_TEXT === $type && $this->options['encoding']) {
+            $result = iconv($this->options['encoding'], 'utf-8', $result);
         }
 
         return new MemoObject($result, $type, $pointer, $memoLength[1]);

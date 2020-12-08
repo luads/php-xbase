@@ -47,8 +47,8 @@ class DBase3Memo extends AbstractWritableMemo
             if (chr(0x00) === substr($result, -1)) {
                 $result = substr($result, 0, -1); // remove endline symbol (0x00)
             }
-            if ($this->convertFrom) {
-                $result = iconv($this->convertFrom, 'utf-8', $result);
+            if ($this->options['encoding']) {
+                $result = iconv($this->options['encoding'], 'utf-8', $result);
             }
         }
 

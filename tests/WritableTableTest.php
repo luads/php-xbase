@@ -179,4 +179,78 @@ class WritableTableTest extends TestCase
         self::assertSame(5000.0, $record->getNum('salario'));
         $table->close();
     }
+
+    /**
+     * Issue #97
+     * Write data in clone mode. Need to call `save` method.
+     */
+    public function testCloneMode(): void
+    {
+        $copyTo = $this->duplicateFile(self::FILEPATH);
+
+        $tableRead = new Table($copyTo, ['encoding' => 'cp866']);
+        $recordsCountBeforeInsert = $tableRead->getRecordCount();
+        $tableRead->close();
+
+        $tableWrite = new WritableTable($copyTo, [
+            'encoding' => 'cp866',
+            'editMode' => 'clone',
+        ]);
+        $recordWrite = $tableWrite->appendRecord();
+        $recordWrite
+            ->set('regn', 2)
+            ->set('plan', 'Ы');
+        $tableWrite->writeRecord($recordWrite);
+
+        // nothing has changed
+        $tableRead = new Table($copyTo, ['encoding' => 'cp866']);
+        self::assertSame($recordsCountBeforeInsert, $tableRead->getRecordCount());
+        $tableRead->close();
+
+        // save changes
+        $tableWrite
+            ->save()
+            ->close();
+
+        $tableRead = new Table($copyTo, ['encoding' => 'cp866']);
+        self::assertSame($recordsCountBeforeInsert + 1, $tableRead->getRecordCount());
+        $recordRead = $tableRead->pickRecord($recordsCountBeforeInsert);
+        self::assertNotEmpty($recordRead);
+        self::assertSame(2, $recordRead->get('regn'));
+        self::assertSame('Ы', $recordRead->get('plan'));
+        $tableRead->close();
+    }
+
+    /**
+     * Issue #97
+     * Write data in realtime mode. No need to call `save` method.
+     */
+    public function testRealtimeMode(): void
+    {
+        $copyTo = $this->duplicateFile(self::FILEPATH);
+
+        $tableRead = new Table($copyTo, ['encoding' => 'cp866']);
+        $recordsCountBeforeInsert = $tableRead->getRecordCount();
+        $tableRead->close();
+
+        $tableWrite = new WritableTable($copyTo, [
+            'encoding' => 'cp866',
+            'editMode' => 'realtime',
+        ]);
+        $recordWrite = $tableWrite->appendRecord();
+        $recordWrite
+            ->set('regn', 2)
+            ->set('plan', 'Ы');
+        $tableWrite->writeRecord($recordWrite);
+
+        $tableRead = new Table($copyTo, ['encoding' => 'cp866']);
+        self::assertSame($recordsCountBeforeInsert + 1, $tableRead->getRecordCount());
+        $recordRead = $tableRead->pickRecord($recordsCountBeforeInsert);
+        self::assertNotEmpty($recordRead);
+        self::assertSame(2, $recordRead->get('regn'));
+        self::assertSame('Ы', $recordRead->get('plan'));
+
+        $tableWrite->close();
+        $tableRead->close();
+    }
 }

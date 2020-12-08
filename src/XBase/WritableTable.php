@@ -19,6 +19,16 @@ class WritableTable extends Table
     use CloneTrait;
 
     /**
+     * Perform any edits on clone file and replace original file after call `save` method.
+     */
+    public const EDIT_MODE_CLONE = 'clone';
+
+    /**
+     * Perform edits immediately on original file.
+     */
+    public const EDIT_MODE_REALTIME = 'realtime';
+
+    /**
      * @var bool
      *
      * @deprecated in 1.3
@@ -30,29 +40,48 @@ class WritableTable extends Table
      */
     private $insertion = false;
 
+    protected function resolveOptions($options, $convertFrom = null): array
+    {
+        return array_merge(
+            ['editMode' => self::EDIT_MODE_CLONE],
+            parent::resolveOptions($options, $convertFrom)
+        );
+    }
+
     protected function open(): void
     {
-        $this->clone();
-        $this->fp = Stream::createFromFile($this->cloneFilepath, 'rb+');
+        switch ($this->options['editMode']) {
+            case self::EDIT_MODE_CLONE:
+                $this->clone();
+                $this->fp = Stream::createFromFile($this->cloneFilepath, 'rb+');
+                break;
+
+            case self::EDIT_MODE_REALTIME:
+                $this->fp = Stream::createFromFile($this->filepath, 'rb+');
+                break;
+        }
     }
 
     protected function openMemo(): void
     {
         if (TableType::hasMemo($this->getVersion())) {
-            $this->memo = MemoFactory::create($this, true);
+            $memoOptions = array_merge($this->options, ['writable' => true]);
+            $this->memo = MemoFactory::create($this, $memoOptions);
         }
     }
 
     public function close(): void
     {
-        if ($this->autoSave) {
+        if (self::EDIT_MODE_CLONE === $this->options['editMode'] && $this->autoSave) {
             @trigger_error('You should call `save` method directly.');
             $this->save();
         }
 
         parent::close();
 
-        unlink($this->cloneFilepath);
+        if ($this->cloneFilepath && file_exists($this->cloneFilepath)) {
+            unlink($this->cloneFilepath);
+        }
     }
 
     /**
@@ -185,29 +214,6 @@ class WritableTable extends Table
 
         foreach ($this->columns as $column) {
             $column->toBinaryString($this->fp);
-//            $this->fp->write(str_pad(substr($column->getRawName(), 0, 11), 11, chr(0))); // 0-10
-//            $this->fp->write($column->getType());// 11
-//            $this->fp->writeUInt($column->getMemAddress());//12-15
-//            $this->fp->writeUChar($column->getLength());//16
-//            $this->fp->writeUChar($column->getDecimalCount());//17
-//            $this->fp->write(
-//                method_exists($column, 'getReserved1')
-//                    ? call_user_func([$column, 'getReserved1'])
-//                    : str_pad('', 2, chr(0))
-//            );//18-19
-//            $this->fp->writeUChar($column->getWorkAreaID());//20
-//            $this->fp->write(
-//                method_exists($column, 'getReserved2')
-//                    ? call_user_func([$column, 'getReserved2'])
-//                    : str_pad('', 2, chr(0))
-//            );//21-22
-//            $this->fp->write(chr($column->isSetFields() ? 1 : 0));//23
-//            $this->fp->write(
-//                method_exists($column, 'getReserved3')
-//                    ? call_user_func([$column, 'getReserved3'])
-//                    : str_pad('', 7, chr(0))
-//            );//24-30
-//            $this->fp->write(chr($column->isIndexed() ? 1 : 0));//31
         }
 
         $this->fp->writeUChar(0x0d);
@@ -246,6 +252,10 @@ class WritableTable extends Table
         }
 
         $this->fp->flush();
+
+        if (self::EDIT_MODE_REALTIME === $this->options['editMode'] && $this->insertion) {
+            $this->save();
+        }
 
         $this->insertion = false;
 
@@ -305,10 +315,13 @@ class WritableTable extends Table
         }
 
         $this->recordCount = $newRecordCount;
-        $this->writeHeader();
 
         $size = $this->headerLength + ($this->recordCount * $this->recordByteLength);
         $this->fp->truncate($size);
+
+        if (self::EDIT_MODE_REALTIME === $this->options['editMode']) {
+            $this->save();
+        }
 
         return $this;
     }
@@ -327,7 +340,9 @@ class WritableTable extends Table
             $this->fp->writeUChar(self::END_OF_FILE_MARKER);
         }
 
-        copy($this->cloneFilepath, $this->filepath);
+        if (self::EDIT_MODE_CLONE === $this->options['editMode']) {
+            copy($this->cloneFilepath, $this->filepath);
+        }
 
         return $this;
     }
@@ -335,7 +350,7 @@ class WritableTable extends Table
     /**
      * @internal
      *
-     * @todo Find better solution for notifying table from memo.
+     * @todo Find better solution to notify table from Memo.
      */
     public function onMemoBlocksDelete(array $blocks): void
     {

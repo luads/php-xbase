@@ -16,21 +16,36 @@ abstract class AbstractMemo implements MemoInterface
     /** @var string */
     protected $filepath;
 
-    /** @var string */
-    protected $convertFrom;
+    /** @var array */
+    protected $options = [];
 
     /**
-     * Memo constructor.
-     *
-     * @param string $convertFrom
+     * @param string $filepath Path to memo file
+     * @param array  $options  Array of options:<br>
+     *                         encoding - convert text data from<br>
+     *                         writable - edit mode<br>
      */
-    public function __construct(Table $table, string $filepath, ?string $convertFrom = null)
+    public function __construct(Table $table, string $filepath, $options = [])
     {
         $this->table = $table;
         $this->filepath = $filepath;
-        $this->convertFrom = $convertFrom; //todo autodetect from languageCode
+        $this->options = $this->resolveOptions($options);
         $this->open();
         $this->readHeader();
+    }
+
+    protected function resolveOptions($options = []): array
+    {
+        if (is_string($options)) {
+            @trigger_error('You should pass convertFrom as `encoding` option');
+            $options = ['encoding' => $options];
+        }
+
+        $options = array_merge([
+            'encoding' => null,
+        ], $options);
+
+        return $options;
     }
 
     public function __destruct()

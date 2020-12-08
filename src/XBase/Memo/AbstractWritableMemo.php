@@ -4,15 +4,11 @@ namespace XBase\Memo;
 
 use XBase\BlocksMerger;
 use XBase\Stream\Stream;
-use XBase\Table;
 use XBase\Traits\CloneTrait;
 
 abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemoInterface
 {
     use CloneTrait;
-
-    /** @var bool */
-    protected $writable = false;
 
     /**
      * @var BlocksMerger Garbage blocks. Delete blocks while saving.
@@ -26,15 +22,16 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
 
     abstract protected function calculateBlockCount(string $data): int;
 
-    public function __construct(Table $table, string $filepath, ?string $convertFrom = null, bool $writable = false)
+    protected function resolveOptions($options = []): array
     {
-        $this->writable = $writable;
-        parent::__construct($table, $filepath, $convertFrom);
+        return array_merge([
+            'writable' => false,
+        ], parent::resolveOptions($options));
     }
 
     public function open(): void
     {
-        if (!$this->writable) {
+        if (!$this->options['writable']) {
             parent::open();
 
             return;
@@ -54,7 +51,7 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
     public function close(): void
     {
         parent::close();
-        if ($this->writable && $this->cloneFilepath) {
+        if ($this->options['writable'] && $this->cloneFilepath) {
             unlink($this->cloneFilepath);
             $this->cloneFilepath = null;
         }

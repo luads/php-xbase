@@ -7,7 +7,7 @@ namespace XBase\Traits;
  */
 trait CloneTrait
 {
-    /** @var string */
+    /** @var string|null */
     private $cloneFilepath;
 
     /**
