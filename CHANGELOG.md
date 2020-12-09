@@ -1,5 +1,62 @@
 # CHANGELOG
 
+## 1.3.2
+
+- Table::__constructor accepts options array. Available options: `encoding`, `columns`.
+
+```php
+use XBase\Table;
+
+// before 1.3.2
+$table = new Table(
+    __DIR__.'/Resources/foxpro/1.dbf', 
+    ['column1', 'column2'], 
+    'cp852'
+);
+
+// since 1.3.2
+$table = new Table(
+    __DIR__.'/Resources/foxpro/1.dbf', 
+    [
+        'columns' => ['column1', 'column2'], 
+        'encoding' => 'cp852'
+    ]
+);
+```
+
+- WritableTable `editMode` options.
+    - `clone` Default. Creates a clone of original file and applies all changes to it. To save changes you need to call `save` method. 
+    - `realtime` Immediately apply changes for original table file. Changes cannot be undone.
+
+```php
+use XBase\WritableTable;
+
+// clone edit mode
+$tableWrite = new WritableTable(
+    'file.dbf', 
+    [
+        'encoding' => 'cp866',
+        'editMode' => WritableTable::EDIT_MODE_CLONE,
+    ]
+);
+// do edits
+$tableWrite
+    ->save()
+    ->close();
+
+// realtime edit mode
+$tableWrite = new WritableTable(
+    'file.dbf', 
+    [
+        'encoding' => 'cp866',
+        'editMode' => WritableTable::EDIT_MODE_REALTIME,
+    ]
+);
+// do edits
+$tableWrite->close();
+```
+
+
 ## 1.3
 
 - all setters return $this.
