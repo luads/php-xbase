@@ -34,10 +34,11 @@ class NumberConverter extends AbstractFieldDataConverter
             return str_repeat(chr(0x00), $this->column->getLength());
         }
 
-        if ($value % 1 > 0) {
-            $value = number_format($value, $this->column->getDecimalCount(), '.', '');
-        }
-
-        return str_pad((string) $value, $this->column->getLength(), ' ', STR_PAD_LEFT);
+        return str_pad(
+            number_format($value, $this->column->getDecimalCount(), '.', ''),
+            $this->column->getLength(),
+            ' ',
+            STR_PAD_LEFT
+        );
     }
 }
