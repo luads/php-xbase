@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Tests\Record\DataConverter;
+namespace XBase\Tests\DataConverter\Record;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Column\ColumnInterface;

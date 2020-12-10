@@ -1,28 +1,28 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Tests\Record\DataConverter;
+namespace XBase\Tests\DataConverter\Record;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Column\ColumnInterface;
-use XBase\DataConverter\Record\DBaseDataConverter;
+use XBase\DataConverter\Record\FoxproDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
-use XBase\Memo\MemoObject;
-use XBase\Record\DBaseRecord;
+use XBase\Record\FoxproRecord;
 use XBase\Table;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
  *
- * @coversDefaultClass \XBase\DataConverter\Record\DBaseDataConverter
+ * @coversDefaultClass \XBase\DataConverter\Record\FoxproDataConverter
  */
-class DBaseDataConverterTest extends TestCase
+class FoxproDataConverterTest extends TestCase
 {
-    public function testFromBinaryString(): void
+    /**
+     * @dataProvider dataProvider
+     */
+    public function test(string $rawData): void
     {
-        $base64RowData = 'IEdyb290ICAgICAgICAgICAgICAgMTk2MDExMDFGICAgICAgICAgMSAgICAgICAgICAgICAxMi4xMjM1ICAgICAgICAgNA==';
-
-        /** @var ColumnInterface[] $columns */
+        //<editor-fold desc="columns">
         $columns = [];
 
         $columns[] = $c = $this->createMock(ColumnInterface::class);
@@ -62,39 +62,44 @@ class DBaseDataConverterTest extends TestCase
         $c->method('getBytePos')->willReturn(60);
         $c->method('getLength')->willReturn(10);
 
+        $columns[] = $c = $this->createMock(ColumnInterface::class);
+        $c->method('getName')->willReturn('rate');
+        $c->method('getType')->willReturn(FieldType::FLOAT);
+        $c->method('getBytePos')->willReturn(70);
+        $c->method('getLength')->willReturn(10);
+        $c->method('getDecimalCount')->willReturn(2);
+
+        $columns[] = $c = $this->createMock(ColumnInterface::class);
+        $c->method('getName')->willReturn('general');
+        $c->method('getType')->willReturn(FieldType::GENERAL);
+        $c->method('getBytePos')->willReturn(80);
+        $c->method('getLength')->willReturn(10);
+        //</editor-fold>
+
         $table = $this->createMock(Table::class);
         $table
             ->expects(self::atLeastOnce())
             ->method('getVersion')
-            ->willReturn(TableType::DBASE_III_PLUS_MEMO);
+            ->willReturn(TableType::FOXPRO_MEMO);
         $table
             ->expects(self::atLeastOnce())
             ->method('getColumns')
             ->willReturn($columns);
         $table
             ->expects(self::atLeastOnce())
-            ->method('getConvertFrom')
-            ->willReturn('cp866');
-        $table
-            ->expects(self::atLeastOnce())
             ->method('getRecordByteLength')
-            ->willReturn(70);
+            ->willReturn(90);
 
-        $converter = new DBaseDataConverter($table);
-        $rawData = base64_decode($base64RowData);
+        $converter = new FoxproDataConverter($table);
         $array = $converter->fromBinaryString($rawData);
-        self::assertNotEmpty($array);
-        self::assertSame(false, $array['deleted']);
-        self::assertSame('Groot', $array['data']['name']);
-        self::assertSame('19601101', $array['data']['birthday']);
-        self::assertSame(false, $array['data']['is_man']);
-        self::assertSame(12.1235, $array['data']['money']);
-        /* @var MemoObject $memoBio */
-        self::assertSame(1, $array['data']['bio']);
-        /* @var MemoObject $memoImage */
-        self::assertSame(4, $array['data']['image']);
-        // opposite force
-        $binaryString = $converter->toBinaryString(new DBaseRecord($table, 1, $array));
+        $binaryString = $converter->toBinaryString(new FoxproRecord($table, 1, $array));
         self::assertSame($rawData, $binaryString);
+    }
+
+    public function dataProvider()
+    {
+        yield [
+            base64_decode('IEdyb290ICAgICAgICAgICAgICAgMTk2MDExMDFGICAgICAgICAgOCAgICAgICAgICAgICAxMi4xMjM1ICAgICAgICAzMiAgICAgIDEuMjAgICAgICAgNDU5'),
+        ];
     }
 }
