@@ -35,7 +35,12 @@ while ($record = $table->nextRecord()) {
 If the data in DB is not in UTF-8 you can specify a charset to convert the data from:
 
 ``` php
-$table = new Table('test.dbf', null, 'CP1251');
+$table = new Table(
+    'test.dbf',
+    [
+        'encoding' => 'cp1251'
+    ]
+);
 ```
 
 It is also possible to read Memos from dedicated files. Just make sure that *.fpt* file with the same name as main database exists.
@@ -96,7 +101,12 @@ Add new record
 ``` php
 use XBase\WritableTable;
 
-$table = new WritableTable('file.dbf');
+$table = new WritableTable(
+    'file.dbf',
+    [
+        'editMode' => WritableTable::EDIT_MODE_CLONE, //default
+    ]
+);
 $record = $table->appendRecord();
 $record->set('name', 'test name');
 $record->set('age', 20);
