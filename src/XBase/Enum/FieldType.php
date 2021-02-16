@@ -36,6 +36,7 @@ final class FieldType
     const AUTO_INCREMENT = '+';
 
     const DBASE4_BLOB = 'B';
+    const DBASE7_DOUBLE = 'O';
 
     public static function has($type): bool
     {
