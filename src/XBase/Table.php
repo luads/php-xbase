@@ -228,51 +228,11 @@ class Table
     }
 
     /**
-     * @param int $offset
+     * @param $name
+     *
+     * @return ColumnInterface
      */
-    private function setFilePos($offset)
-    {
-        $this->filePos = $offset;
-        $this->fp->seek($this->filePos);
-    }
-
-    /**
-     * @throws TableException
-     */
-    private function checkHeaderTerminator(int $terminatorLength): void
-    {
-        $terminator = $this->fp->read($terminatorLength);
-        switch ($terminatorLength) {
-            case 1:
-                if (chr(0x0D) !== $terminator) {
-                    throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
-                }
-                break;
-
-            case 2:
-                $unpack = unpack('n', $terminator);
-                if (0x0D00 !== $unpack[1]) {
-                    throw new TableException('Expected header terminator not present at position '.$this->fp->tell());
-                }
-                break;
-        }
-    }
-
-    public function addColumn(ColumnInterface $column): self
-    {
-        $name = $nameBase = $column->getName();
-        $index = 0;
-
-        while (isset($this->columns[$name])) {
-            $name = $nameBase.++$index;
-        }
-
-        $this->columns[$name] = $column;
-
-        return $this;
-    }
-
-    public function getColumn(string $name): ColumnInterface
+    public function getColumn($name)
     {
         foreach ($this->header->getColumns() as $column) {
             if ($column->getName() === $name) {
@@ -303,10 +263,21 @@ class Table
 
     public function getColumnCount(): int
     {
+        return $this->header->getColumns();
+    }
+
+    /**
+     * @return int
+     */
+    public function getColumnCount()
+    {
         return count($this->getColumns());
     }
 
-    public function getRecordCount(): int
+    /**
+     * @return int
+     */
+    public function getRecordCount()
     {
         return $this->header->getRecordCount();
     }
