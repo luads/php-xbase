@@ -2,8 +2,8 @@
 
 namespace XBase\Header\Reader;
 
-use XBase\Column\DBase7Column;
 use XBase\Header\DBase7Header;
+use XBase\Header\Reader\Column\DBase7ColumnReader;
 
 class DBase7HeaderReader extends AbstractHeaderReader
 {
@@ -28,7 +28,7 @@ class DBase7HeaderReader extends AbstractHeaderReader
     {
         $headerLength = self::HEADER_LENGTH + $terminatorLength; // [Terminator](1)
         $headerLength += 36; // [Language driver name](32) + [Reserved](4) +
-        $fieldLength = DBase7Column::getHeaderLength();
+        $fieldLength = DBase7ColumnReader::getHeaderLength();
         $extraSize = $this->header->getLength() - $headerLength;
 
         return $extraSize / $fieldLength;

@@ -2,39 +2,10 @@
 
 namespace XBase\Column;
 
-use XBase\Stream\Stream;
 use XBase\Stream\StreamWrapper;
 
 class DBase7Column extends AbstractColumn
 {
-    public static function getHeaderLength(): int
-    {
-        return 48;
-    }
-
-    public static function create(string $memoryChunk, int $colIndex, ?int $bytePos = null)
-    {
-        if (strlen($memoryChunk) !== self::getHeaderLength()) {
-            throw new \LogicException('Column data expected length: '.self::getHeaderLength());
-        }
-
-        $s = Stream::createFromString($memoryChunk);
-
-        return new self(
-            $s->read(32),
-            $s->read(1),//type
-            $s->readUChar(),//length
-            $s->readUChar(),//decimalCount
-            $s->readUShort(),//reserved1
-            $s->readUChar(),//mdxFlag
-            $s->readUShort(),//reserved2
-            $s->readUInt(),//nextAI
-            $s->read(4),//reserved3
-            $colIndex,
-            $bytePos
-        );
-    }
-
     /** @var int */
     protected $mdxFlag;
     /** @var int */

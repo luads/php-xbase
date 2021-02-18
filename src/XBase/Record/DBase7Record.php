@@ -34,7 +34,7 @@ class DBase7Record extends DBase4Record
     {
         return $this->get($columnName);
     }
-    
+
     /**
      * @deprecated since 1.3 and will be delete in 2.0. Use get()
      */

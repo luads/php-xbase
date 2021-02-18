@@ -2,11 +2,10 @@
 
 namespace XBase\Header\Reader;
 
-use XBase\Column\ColumnFactory;
-use XBase\Column\ColumnInterface;
 use XBase\Exception\TableException;
 use XBase\Header\DBaseHeader;
 use XBase\Header\HeaderInterface;
+use XBase\Header\Reader\Column\ColumnReaderFactory;
 use XBase\Stream\Stream;
 
 abstract class AbstractHeaderReader implements HeaderReaderInterface
@@ -70,11 +69,11 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
         }
 
         $bytePos = 1;
-        $class = ColumnFactory::getClass($this->header->getVersion());
+        $columnReader = ColumnReaderFactory::create($this->header->getVersion());
         $index = 0;
         for ($i = 0; $i < $columnsCount; $i++) {
-            /** @var ColumnInterface $column */
-            $column = $class::create($this->fp->read(call_user_func([$class, 'getHeaderLength'])), $index++, $bytePos);
+            $memoryChunk = $this->fp->read($columnReader::getHeaderLength());
+            $column = $columnReader->read($memoryChunk, $index++, $bytePos);
             $bytePos += $column->getLength();
             $this->header->addColumn($column);
         }
@@ -87,7 +86,7 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
     }
 
     /**
-     * @return array Named argument for certain implementation of HeaderInterface.
+     * @return array named argument for certain implementation of HeaderInterface
      */
     protected function extractArgs(): array
     {

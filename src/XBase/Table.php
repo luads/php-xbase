@@ -6,8 +6,8 @@ use XBase\Column\ColumnInterface;
 use XBase\Enum\Codepage;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
-use XBase\Header\Reader\HeaderReaderFactory;
 use XBase\Header\HeaderInterface;
+use XBase\Header\Reader\HeaderReaderFactory;
 use XBase\Memo\MemoFactory;
 use XBase\Memo\MemoInterface;
 use XBase\Record\RecordFactory;
@@ -127,65 +127,6 @@ class Table
         if ($this->memo) {
             $this->memo->close();
         }
-    }
-
-    /**
-     * @return array [$fieldCount, $terminatorLength]
-     */
-    protected function pickColumnsCount(): array
-    {
-        // some files has headers with 2byte-terminator 0xOD00
-        foreach ([1, 2] as $terminatorLength) {
-            $fieldCount = $this->getLogicalFieldCount($terminatorLength);
-            if (is_int($fieldCount)) {
-                return [$fieldCount, $terminatorLength];
-            }
-        }
-
-        throw new \LogicException('Wrong fieldCount calculation');
-    }
-
-    protected function readColumns(int $columnsCount): void
-    {
-        /* some checking */
-        clearstatcache();
-        if ($this->headerLength > filesize($this->filepath)) {
-            throw new TableException(sprintf('File %s is not DBF', $this->filepath));
-        }
-
-        if ($this->headerLength + ($this->recordCount * $this->recordByteLength) - 500 > filesize($this->filepath)) {
-            throw new TableException(sprintf('File %s is not DBF', $this->filepath));
-        }
-
-        /* columns */
-        $this->columns = [];
-        $bytePos = 1;
-
-        $class = ColumnFactory::getClass($this->getVersion());
-        $index = 0;
-        for ($i = 0; $i < $columnsCount; $i++) {
-            /** @var ColumnInterface $column */
-            $column = $class::create($this->fp->read(call_user_func([$class, 'getHeaderLength'])), $index++, $bytePos);
-            $bytePos += $column->getLength();
-            $this->addColumn($column);
-        }
-    }
-
-    /**
-     * @return float|int
-     */
-    protected function getLogicalFieldCount(int $terminatorLength = 1)
-    {
-        $headerLength = self::HEADER_LENGTH + $terminatorLength; // [Terminator](1)
-        $fieldLength = self::FIELD_LENGTH;
-        if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
-            $headerLength += 36; // [Language driver name](32) + [Reserved](4) +
-            $fieldLength = DBase7Column::getHeaderLength();
-        }
-        $backlist = TableType::isVisualFoxpro($this->version) ? self::VFP_BACKLIST_LENGTH : 0;
-        $extraSize = $this->headerLength - ($headerLength + $backlist);
-
-        return $extraSize / $fieldLength;
     }
 
     public function nextRecord(): ?RecordInterface

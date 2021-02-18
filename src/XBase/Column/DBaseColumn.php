@@ -3,7 +3,6 @@
 namespace XBase\Column;
 
 use XBase\Enum\FieldType;
-use XBase\Stream\Stream;
 use XBase\Stream\StreamWrapper;
 
 class DBaseColumn extends AbstractColumn
@@ -13,36 +12,6 @@ class DBaseColumn extends AbstractColumn
     protected $reserved2;
 
     protected $reserved3;
-
-    public static function getHeaderLength(): int
-    {
-        return 32;
-    }
-
-    public static function create(string $memoryChunk, int $colIndex, ?int $bytePos = null)
-    {
-        if (strlen($memoryChunk) !== self::getHeaderLength()) {
-            throw new \LogicException('Column data expected length: '.self::getHeaderLength());
-        }
-
-        $s = Stream::createFromString($memoryChunk);
-
-        return new static(
-            $s->read(11),//0-10
-            $s->read(),//11
-            $s->readUInt(),//12-15
-            $s->readUChar(),//16
-            $s->readUChar(),//17
-            $s->read(2),//18-19
-            $s->readUChar(),//20
-            $s->read(2),//21-22
-            0 !== $s->readUChar(),//23
-            $s->read(7),//24-30
-            0 !== $s->readUChar(),//31
-            $colIndex,
-            $bytePos
-        );
-    }
 
     public function __construct(
         string $rawName,
