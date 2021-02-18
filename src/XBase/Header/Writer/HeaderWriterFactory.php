@@ -12,10 +12,6 @@ class HeaderWriterFactory
         $fp->seek(0);
         $version = $fp->readUChar();
 
-        if (TableType::isVisualFoxpro($version)) {
-            //todo VisualFoxproWriter;
-        }
-
         switch ($version) {
             case TableType::DBASE_7_MEMO:
             case TableType::DBASE_7_NOMEMO:
