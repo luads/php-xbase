@@ -6,6 +6,7 @@ use XBase\Column\ColumnInterface;
 use XBase\Column\DBaseColumn;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
+use XBase\Header\Writer\HeaderWriterFactory;
 use XBase\Memo\MemoFactory;
 use XBase\Memo\MemoInterface;
 use XBase\Memo\WritableMemoInterface;
@@ -190,42 +191,7 @@ class WritableTable extends Table
 
     protected function writeHeader(): void
     {
-        $this->header
-//        $this->headerLength = ($this->isFoxpro() ? 296 : 33) + ($this->getColumnCount() * 32);
-
-        $this->fp->seek(0);
-
-        $this->fp->writeUChar($this->version); //0
-        $this->fp->write3ByteDate(time()); //1-3
-        $this->fp->writeUInt($this->recordCount); //4-7
-        $this->fp->writeUShort($this->headerLength); //8-9
-        $this->fp->writeUShort($this->recordByteLength); //10-11
-        $this->fp->write(str_pad('', 2, chr(0))); //12-13
-        $this->fp->write(chr($this->inTransaction ? 1 : 0)); //14
-        $this->fp->write(chr($this->encrypted ? 1 : 0)); //15
-        $this->fp->write(str_pad('', 4, chr(0))); //16-19 //todo-different-tabel
-        $this->fp->write(str_pad('', 8, chr(0))); //20-27 //todo-different-tabel
-        $this->fp->write($this->mdxFlag); //28
-        $this->fp->write($this->languageCode); //29
-        $this->fp->write(str_pad('', 2, chr(0))); //30-31 //todo-different-tabel
-
-        if (in_array($this->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
-            $this->fp->write(str_pad($this->languageName, 36, chr(0)));
-        }
-
-        foreach ($this->columns as $column) {
-            $column->toBinaryString($this->fp);
-        }
-
-        $this->fp->writeUChar(0x0d);
-
-        if (in_array($this->version, [
-            TableType::VISUAL_FOXPRO,
-            TableType::VISUAL_FOXPRO_AI,
-            TableType::VISUAL_FOXPRO_VAR,
-        ])) {
-            $this->fp->write(str_pad($this->backlist, 263, ' '));
-        }
+        HeaderWriterFactory::create($this->fp)->write($this->header);
     }
 
     public function appendRecord(): RecordInterface
@@ -315,9 +281,9 @@ class WritableTable extends Table
             $this->writeRecord($r);
         }
 
-        $this->recordCount = $newRecordCount;
+        $this->header->setRecordCount($newRecordCount);
 
-        $size = $this->header->getLength() + ($this->recordCount * $this->header->getRecordByteLength());
+        $size = $this->header->getLength() + ($newRecordCount * $this->header->getRecordByteLength());
         $this->fp->truncate($size);
 
         if (self::EDIT_MODE_REALTIME === $this->options['editMode']) {

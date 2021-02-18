@@ -37,10 +37,10 @@ class DoubleConverterTest extends TestCase
             base64_decode('gAAAAAAAAAA='),
             0.0,
         ];
-        
+
         yield [
             base64_decode('wCIAAAAAAAA='),
-            9.0
+            9.0,
         ];
 
         yield [

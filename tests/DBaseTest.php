@@ -383,14 +383,14 @@ JSON;
         self::assertSame(2147483647, $table->nextRecord()->getInt('int'));
         self::assertSame(-2147483647, $table->nextRecord()->getInt('int'));
     }
-    
+
     public function testDbase7double(): void
     {
         $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_double.dbf');
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(5, $table->getRecordCount());
         self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
-        
+
         self::assertSame(-199.99, $table->nextRecord()->getDouble('double'));
         self::assertSame(-74.62, $table->nextRecord()->getDouble('double'));
         self::assertSame(43.65, $table->nextRecord()->getDouble('double'));

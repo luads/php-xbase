@@ -41,7 +41,8 @@ abstract class AbstractHeader implements HeaderInterface
     protected $mdxFlag;
 
     /**
-     * @var int Language codepage.
+     * @var int language codepage
+     *
      * @see https://blog.codetitans.pl/post/dbf-and-language-code-page/
      */
     protected $languageCode;
@@ -112,9 +113,16 @@ abstract class AbstractHeader implements HeaderInterface
         return $this->recordCount;
     }
 
-    public function increaseRecordCount(): self
+    public function setRecordCount(int $recordCount): HeaderInterface
     {
-        $this->recordCount++;
+        $this->recordCount = $recordCount;
+
+        return $this;
+    }
+
+    public function increaseRecordCount(int $inc = 1): self
+    {
+        $this->recordCount += $inc;
 
         return $this;
     }

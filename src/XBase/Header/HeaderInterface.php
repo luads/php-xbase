@@ -13,13 +13,15 @@ interface HeaderInterface
     public function getModifyDate();
 
     /**
-     * @return int Header length.
+     * @return int header length
      */
     public function getLength(): int;
 
     public function getRecordCount(): int;
 
-    public function increaseRecordCount();
+    public function setRecordCount(int $recordCount): self;
+
+    public function increaseRecordCount(int $inc = 1);
 
 //    public function setRecordCount(int $count): self;
 

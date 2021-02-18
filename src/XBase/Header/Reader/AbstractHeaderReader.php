@@ -3,7 +3,6 @@
 namespace XBase\Header\Reader;
 
 use XBase\Exception\TableException;
-use XBase\Header\DBaseHeader;
 use XBase\Header\HeaderInterface;
 use XBase\Header\Reader\Column\ColumnReaderFactory;
 use XBase\Stream\Stream;
@@ -31,23 +30,21 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
         $this->fp = Stream::createFromFile($filepath);
     }
 
-    protected function getClass(): string
-    {
-        return DBaseHeader::class;
-    }
-
     public function read(): HeaderInterface
     {
+        $this->fp->seek(0);
+
         $this->readFirstBlock();
         $this->readColumns();
         $this->readRest();
+
+        $this->fp->close();
 
         return $this->header;
     }
 
     protected function readFirstBlock(): void
     {
-        $this->fp->seek(0);
         $refClass = new \ReflectionClass($this->getClass());
         $namedArguments = $this->extractArgs();
         //the values in the array are mapped to constructor arguments positionally

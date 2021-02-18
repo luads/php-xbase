@@ -36,16 +36,10 @@ class Table
     /** @var RecordInterface|null */
     protected $record;
 
-    /** @var string|null */
-    protected $convertFrom;
-
     /**
      * @var MemoInterface|null
      */
     protected $memo;
-
-    /** @var string|null DBase7 only */
-    protected $languageName;
 
     /** @var array */
     protected $options = [];

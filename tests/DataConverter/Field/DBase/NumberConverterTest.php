@@ -15,7 +15,8 @@ use XBase\Table;
 class NumberConverterTest extends TestCase
 {
     /**
-     * Issue #99
+     * Issue #99.
+     *
      * @covers ::toBinaryString
      * @dataProvider dataRightDecimalCount
      *
