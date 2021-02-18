@@ -19,6 +19,8 @@ interface HeaderInterface
 
     public function getRecordCount(): int;
 
+    public function increaseRecordCount();
+
 //    public function setRecordCount(int $count): self;
 
     public function getRecordByteLength(): int;

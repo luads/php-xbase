@@ -6,7 +6,7 @@ use XBase\Column\ColumnInterface;
 use XBase\Enum\Codepage;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
-use XBase\Header\Builder\HeaderBuilderFactory;
+use XBase\Header\Reader\HeaderReaderFactory;
 use XBase\Header\HeaderInterface;
 use XBase\Memo\MemoFactory;
 use XBase\Memo\MemoInterface;
@@ -107,9 +107,7 @@ class Table
 
     protected function readHeader(): void
     {
-        $this->header = HeaderBuilderFactory::create($this->filepath)
-            ->build()
-            ->getHeader();
+        $this->header = HeaderReaderFactory::create($this->filepath)->read();
         $this->fp->seek($this->header->getLength());
 
         $this->recordPos = -1;

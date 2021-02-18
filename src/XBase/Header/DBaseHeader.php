@@ -2,8 +2,6 @@
 
 namespace XBase\Header;
 
-use XBase\Stream\Stream;
-
 class DBaseHeader extends AbstractHeader
 {
 }

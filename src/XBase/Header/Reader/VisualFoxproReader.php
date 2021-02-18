@@ -1,12 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Header\Builder;
+namespace XBase\Header\Reader;
 
 use XBase\Column\DBase7Column;
 use XBase\Enum\TableType;
 use XBase\Header\VisualFoxproHeader;
 
-class VisualFoxproBuilder extends AbstractHeaderBuilder
+class VisualFoxproReader extends AbstractHeaderReader
 {
     /** @var int Visual FoxPro backlist length */
     const VFP_BACKLIST_LENGTH = 263;
@@ -33,7 +33,7 @@ class VisualFoxproBuilder extends AbstractHeaderBuilder
         return $extraSize / $fieldLength;
     }
 
-    private function readRest(): void
+    protected function readRest(): void
     {
         $this->header->setBacklist($this->fp->read(self::VFP_BACKLIST_LENGTH));
     }

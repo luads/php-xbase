@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Header\Builder;
+namespace XBase\Header\Reader;
 
 use XBase\Column\DBase7Column;
 use XBase\Header\DBase7Header;
 
-class DBase7HeaderBuilder extends AbstractHeaderBuilder
+class DBase7HeaderReader extends AbstractHeaderReader
 {
     protected function getClass(): string
     {

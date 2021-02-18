@@ -190,6 +190,7 @@ class WritableTable extends Table
 
     protected function writeHeader(): void
     {
+        $this->header
 //        $this->headerLength = ($this->isFoxpro() ? 296 : 33) + ($this->getColumnCount() * 32);
 
         $this->fp->seek(0);
@@ -229,7 +230,7 @@ class WritableTable extends Table
 
     public function appendRecord(): RecordInterface
     {
-        $this->recordPos = $this->recordCount;
+        $this->recordPos = $this->header->getRecordCount();
         $this->record = RecordFactory::create($this, $this->recordPos);
         $this->insertion = true;
 
@@ -243,12 +244,12 @@ class WritableTable extends Table
             return $this;
         }
 
-        $offset = $this->header->getLength() + ($record->getRecordIndex() * $this->recordByteLength);
+        $offset = $this->header->getLength() + ($record->getRecordIndex() * $this->header->getRecordByteLength());
         $this->fp->seek($offset);
         $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($record));
 
         if ($this->insertion) {
-            $this->recordCount++;
+            $this->header->increaseRecordCount();
         }
 
         $this->fp->flush();
@@ -286,7 +287,7 @@ class WritableTable extends Table
     {
         $this->record->setDeleted(false);
 
-        $this->fp->seek($this->headerLength + ($this->record->getRecordIndex() * $this->recordByteLength));
+        $this->fp->seek($this->header->getLength() + ($this->record->getRecordIndex() * $this->header->getRecordByteLength()));
         $this->fp->write(' ');
         $this->fp->flush();
     }
@@ -316,7 +317,7 @@ class WritableTable extends Table
 
         $this->recordCount = $newRecordCount;
 
-        $size = $this->headerLength + ($this->recordCount * $this->recordByteLength);
+        $size = $this->header->getLength() + ($this->recordCount * $this->header->getRecordByteLength());
         $this->fp->truncate($size);
 
         if (self::EDIT_MODE_REALTIME === $this->options['editMode']) {
@@ -356,7 +357,7 @@ class WritableTable extends Table
     {
         $columns = $this->getMemoColumns();
 
-        for ($i = 0; $i < $this->recordCount; $i++) {
+        for ($i = 0; $i < $this->header->getRecordCount(); $i++) {
             $record = $this->pickRecord($i);
             $save = false;
             foreach ($columns as $column) {
@@ -385,8 +386,8 @@ class WritableTable extends Table
     private function getMemoColumns(): array
     {
         $result = [];
-        foreach ($this->columns as $column) {
-            if (in_array($column->getType(), TableType::getMemoTypes($this->version))) {
+        foreach ($this->getColumns() as $column) {
+            if (in_array($column->getType(), TableType::getMemoTypes($this->header->getVersion()))) {
                 $result[] = $column;
             }
         }

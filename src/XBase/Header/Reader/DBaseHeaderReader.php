@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Header\Builder;
+namespace XBase\Header\Reader;
 
 use XBase\Header\DBaseHeader;
 
-class DBaseHeaderBuilder extends AbstractHeaderBuilder
+class DBaseHeaderReader extends AbstractHeaderReader
 {
     protected function getClass(): string
     {

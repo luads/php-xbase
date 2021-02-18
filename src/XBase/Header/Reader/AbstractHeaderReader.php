@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Header\Builder;
+namespace XBase\Header\Reader;
 
 use XBase\Column\ColumnFactory;
 use XBase\Column\ColumnInterface;
@@ -9,7 +9,7 @@ use XBase\Header\DBaseHeader;
 use XBase\Header\HeaderInterface;
 use XBase\Stream\Stream;
 
-abstract class AbstractHeaderBuilder implements HeaderBuilderInterface
+abstract class AbstractHeaderReader implements HeaderReaderInterface
 {
     /** @var int Table header length in bytes */
     const HEADER_LENGTH = 32;
@@ -17,7 +17,7 @@ abstract class AbstractHeaderBuilder implements HeaderBuilderInterface
     /** @var int Record field length in bytes */
     const FIELD_LENGTH = 32;
 
-    /** @var String */
+    /** @var static */
     protected $filepath;
 
     /** @var Stream */
@@ -37,28 +37,25 @@ abstract class AbstractHeaderBuilder implements HeaderBuilderInterface
         return DBaseHeader::class;
     }
 
-    public function build(): HeaderBuilderInterface
+    public function read(): HeaderInterface
     {
         $this->readFirstBlock();
         $this->readColumns();
         $this->readRest();
 
-        return $this;
-    }
-
-    public function getHeader(): HeaderInterface
-    {
         return $this->header;
     }
 
-    private function readFirstBlock(): void
+    protected function readFirstBlock(): void
     {
         $this->fp->seek(0);
         $refClass = new \ReflectionClass($this->getClass());
-        $this->header = $refClass->newInstanceArgs($this->extractArgs());
+        $namedArguments = $this->extractArgs();
+        //the values in the array are mapped to constructor arguments positionally
+        $this->header = $refClass->newInstanceArgs(array_values($namedArguments));
     }
 
-    private function readColumns(): void
+    protected function readColumns(): void
     {
         [$columnsCount, $terminatorLength] = $this->pickColumnsCount();
 
@@ -85,10 +82,13 @@ abstract class AbstractHeaderBuilder implements HeaderBuilderInterface
         $this->checkHeaderTerminator($terminatorLength);
     }
 
-    private function readRest(): void
+    protected function readRest(): void
     {
     }
 
+    /**
+     * @return array Named argument for certain implementation of HeaderInterface.
+     */
     protected function extractArgs(): array
     {
         $args = [

@@ -112,6 +112,13 @@ abstract class AbstractHeader implements HeaderInterface
         return $this->recordCount;
     }
 
+    public function increaseRecordCount(): self
+    {
+        $this->recordCount++;
+
+        return $this;
+    }
+
     public function getRecordByteLength(): int
     {
         return $this->recordByteLength;
