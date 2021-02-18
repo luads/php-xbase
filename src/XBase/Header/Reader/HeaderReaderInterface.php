@@ -6,6 +6,10 @@ use XBase\Header\HeaderInterface;
 
 interface HeaderReaderInterface
 {
+    public static function getHeaderLength(): int;
+
+    public static function getFieldLength(): int;
+
     /**
      * Reads data from file and build instance of HeaderInterface.
      */

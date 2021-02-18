@@ -26,7 +26,7 @@ class DBase7HeaderReader extends AbstractHeaderReader
      */
     protected function getLogicalFieldCount(int $terminatorLength = 1)
     {
-        $headerLength = self::HEADER_LENGTH + $terminatorLength; // [Terminator](1)
+        $headerLength = $this->getHeaderLength() + $terminatorLength; // [Terminator](1)
         $headerLength += 36; // [Language driver name](32) + [Reserved](4) +
         $fieldLength = DBase7ColumnReader::getHeaderLength();
         $extraSize = $this->header->getLength() - $headerLength;

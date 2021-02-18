@@ -263,15 +263,7 @@ class Table
 
     public function getColumnCount(): int
     {
-        return $this->header->getColumns();
-    }
-
-    /**
-     * @return int
-     */
-    public function getColumnCount()
-    {
-        return count($this->getColumns());
+        return count($this->header->getColumns());
     }
 
     /**

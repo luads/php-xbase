@@ -9,12 +9,6 @@ use XBase\Stream\Stream;
 
 abstract class AbstractHeaderReader implements HeaderReaderInterface
 {
-    /** @var int Table header length in bytes */
-    const HEADER_LENGTH = 32;
-
-    /** @var int Record field length in bytes */
-    const FIELD_LENGTH = 32;
-
     /** @var static */
     protected $filepath;
 
@@ -28,6 +22,16 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
     {
         $this->filepath = $filepath;
         $this->fp = Stream::createFromFile($filepath);
+    }
+
+    public static function getHeaderLength(): int
+    {
+        return 32;
+    }
+
+    public static function getFieldLength(): int
+    {
+        return 32;
     }
 
     public function read(): HeaderInterface
@@ -127,10 +131,10 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
      */
     protected function getLogicalFieldCount(int $terminatorLength = 1)
     {
-        $headerLength = self::HEADER_LENGTH + $terminatorLength; // [Terminator](1)
+        $headerLength = static::getHeaderLength() + $terminatorLength; // [Terminator](1)
         $extraSize = $this->header->getLength() - $headerLength;
 
-        return $extraSize / self::FIELD_LENGTH;
+        return $extraSize / static::getFieldLength();
     }
 
     /**

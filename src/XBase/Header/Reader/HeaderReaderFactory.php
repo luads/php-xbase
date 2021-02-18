@@ -19,7 +19,7 @@ class HeaderReaderFactory
         $stream->close();
 
         if (TableType::isVisualFoxpro($version)) {
-            return new VisualFoxproReader($filepath);
+            return new VisualFoxproHeaderReader($filepath);
         }
 
         switch ($version) {
