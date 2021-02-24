@@ -73,8 +73,7 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
         $columnReader = ColumnReaderFactory::create($this->header->getVersion());
         $index = 0;
         for ($i = 0; $i < $columnsCount; $i++) {
-            $memoryChunk = $this->fp->read($columnReader::getHeaderLength());
-            $column = $columnReader->read($memoryChunk, $index++, $bytePos);
+            $column = $columnReader->read($this->fp, $index++, $bytePos);
             $bytePos += $column->getLength();
             $this->header->addColumn($column);
         }

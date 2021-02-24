@@ -3,7 +3,6 @@
 namespace XBase\Column;
 
 use XBase\Enum\FieldType;
-use XBase\Stream\StreamWrapper;
 
 class DBaseColumn extends AbstractColumn
 {
@@ -18,14 +17,14 @@ class DBaseColumn extends AbstractColumn
         string $type,
         int $memAddress,
         int $length,
-        int $decimalCount,
-        $reserved1,
-        int $workAreaID,
-        $reserved2,
-        bool $setFields,
-        $reserved3,
-        bool $indexed,
-        int $colIndex,
+        int $decimalCount = 0,
+        $reserved1 = '',
+        int $workAreaID = 0,
+        $reserved2 = '',
+        bool $setFields = false,
+        $reserved3 = '',
+        bool $indexed = false,
+        ?int $colIndex = null,
         ?int $bytePos = null
     ) {
         $this->rawName = $rawName;
@@ -53,26 +52,26 @@ class DBaseColumn extends AbstractColumn
         $this->bytePos = $bytePos;
     }
 
+    public function getReserved1(): string
+    {
+        return $this->reserved1;
+    }
+
+    public function getReserved2(): string
+    {
+        return $this->reserved2;
+    }
+
+    public function getReserved3(): string
+    {
+        return $this->reserved3;
+    }
+
     /**
      * @return bool|string
      */
     public function toString()
     {
         return $this->name;
-    }
-
-    public function toBinaryString(StreamWrapper $fp): void
-    {
-        $fp->write($this->rawName); // 0-10
-        $fp->write($this->type); // 11
-        $fp->writeUInt($this->memAddress); //12-15
-        $fp->writeUChar($this->length); //16
-        $fp->writeUChar($this->decimalCount); //17
-        $fp->write($this->reserved1); //18-19
-        $fp->writeUChar($this->workAreaID); //20
-        $fp->write($this->reserved2); //21-22
-        $fp->write(chr($this->setFields ? 1 : 0)); //23
-        $fp->write($this->reserved3); //24-30
-        $fp->write(chr($this->indexed ? 1 : 0)); //31
     }
 }

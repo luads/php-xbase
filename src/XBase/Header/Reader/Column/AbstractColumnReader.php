@@ -3,6 +3,7 @@
 namespace XBase\Header\Reader\Column;
 
 use XBase\Stream\Stream;
+use XBase\Stream\StreamWrapper;
 
 abstract class AbstractColumnReader implements ColumnReaderInterface
 {
@@ -11,8 +12,9 @@ abstract class AbstractColumnReader implements ColumnReaderInterface
         return 32;
     }
 
-    public function read(string $memoryChunk, int $colIndex, ?int $bytePos = null)
+    public function read(StreamWrapper $fp, int $colIndex, ?int $bytePos = null)
     {
+        $memoryChunk = $fp->read(static::getHeaderLength());
         if (($len = strlen($memoryChunk)) !== static::getHeaderLength()) {
             throw new \LogicException('Column data expected length: '.static::getHeaderLength().' got: '.$len);
         }

@@ -2,12 +2,11 @@
 
 namespace XBase\Column;
 
-use XBase\Stream\StreamWrapper;
-
 class DBase7Column extends AbstractColumn
 {
     /** @var int */
     protected $mdxFlag;
+
     /** @var int */
     protected $nextAI;
 
@@ -36,16 +35,13 @@ class DBase7Column extends AbstractColumn
         $this->bytePos = $bytePos;
     }
 
-    public function toBinaryString(StreamWrapper $fp): void
+    public function getMdxFlag(): int
     {
-        $fp->write($this->rawName);
-        $fp->write($this->type);
-        $fp->writeUChar($this->length);
-        $fp->writeUChar($this->decimalCount);
-        $fp->write(str_pad('', 2, chr(0)));
-        $fp->writeUChar($this->mdxFlag);
-        $fp->write(str_pad('', 2, chr(0)));
-        $fp->writeInt($this->nextAI);
-        $fp->write(str_pad('', 4, chr(0)));
+        return $this->mdxFlag;
+    }
+
+    public function getNextAI(): int
+    {
+        return $this->nextAI;
     }
 }

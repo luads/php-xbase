@@ -3,6 +3,7 @@
 namespace XBase\Header\Writer;
 
 use XBase\Header\HeaderInterface;
+use XBase\Header\Writer\Column\ColumnWriterFactory;
 use XBase\Stream\StreamWrapper;
 
 abstract class AbstractHeaderWriter implements HeaderWriterInterface
@@ -43,8 +44,9 @@ abstract class AbstractHeaderWriter implements HeaderWriterInterface
 
     protected function writeColumns(HeaderInterface $header): void
     {
+        $columnWriter = ColumnWriterFactory::create($header->getVersion());
         foreach ($header->getColumns() as $column) {
-            $column->toBinaryString($this->fp);
+            $columnWriter->write($this->fp, $column);
         }
     }
 

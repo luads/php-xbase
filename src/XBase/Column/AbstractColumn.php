@@ -90,6 +90,16 @@ abstract class AbstractColumn implements ColumnInterface
         return $this->bytePos;
     }
 
+    public function getSetFields(): ?bool
+    {
+        return $this->setFields;
+    }
+
+    public function getIndexed(): ?bool
+    {
+        return $this->indexed;
+    }
+
     public function __toString()
     {
         return $this->name;

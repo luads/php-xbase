@@ -2,12 +2,8 @@
 
 namespace XBase\Column;
 
-use XBase\Stream\StreamWrapper;
-
 interface ColumnInterface
 {
-    public function toBinaryString(StreamWrapper $fp): void;
-
     public function getDecimalCount();
 
     /**
