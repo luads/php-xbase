@@ -80,7 +80,6 @@ class VisualFoxproTableTest extends TestCase
         $table = new WritableTable($copyTo);
         self::assertSame(TableType::VISUAL_FOXPRO_VAR, $table->getVersion());
         self::assertSame(3, $table->getRecordCount());
-        $table->openWrite();
         $table->appendRecord();
         $table->writeRecord();
         $table->deleteRecord();
@@ -101,7 +100,6 @@ class VisualFoxproTableTest extends TestCase
         self::assertEquals(3, $table->getRecordCount());
         self::assertEquals(TableType::VISUAL_FOXPRO_VAR, $table->getVersion());
 
-        $table->openWrite();
         /** @var VisualFoxproRecord $record */
         $record = $table->appendRecord();
         self::assertInstanceOf(VisualFoxproRecord::class, $record);
@@ -124,7 +122,9 @@ class VisualFoxproTableTest extends TestCase
         $record->set('varbinary', 'qwe');
         $record->set('varchar_bi', 'qwe');
         $table->writeRecord();
-        $table->close();
+        $table
+            ->save()
+            ->close();
 
         $table = new Table($copyTo);
         self::assertEquals(4, $table->getRecordCount());

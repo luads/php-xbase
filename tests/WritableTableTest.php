@@ -25,12 +25,13 @@ class WritableTableTest extends TestCase
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
         $table = new WritableTable($copyTo, null, 'cp866');
-        $table->openWrite();
         $record = $table->nextRecord();
         $record->setNum($record->getColumn('regn'), 2);
         $record->setString($record->getColumn('plan'), 'Ы');
-        $table->writeRecord();
-        $table->close();
+        $table
+            ->writeRecord()
+            ->save()
+            ->close();
 
         $table = new Table($copyTo, null, 'cp866');
         $record = $table->nextRecord();
@@ -55,7 +56,6 @@ class WritableTableTest extends TestCase
         self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->getVersion());
         self::assertEquals(10, $table->getRecordCount());
 
-        $table->openWrite();
         $record = $table->appendRecord();
         self::assertInstanceOf(DBaseRecord::class, $record);
 
@@ -68,9 +68,11 @@ class WritableTableTest extends TestCase
         $record->setNum($table->getColumn('vitg'), 300.0201);
         $record->setDate($table->getColumn('dt'), new \DateTime('1970-01-03'));
         $record->setNum($table->getColumn('priz'), 2);
-        $table->writeRecord();
-        $table->pack();
-        $table->close();
+        $table
+            ->writeRecord()
+            ->pack()
+            ->save()
+            ->close();
 
         clearstatcache();
         $expectedSize = $table->getHeaderLength() + ($table->getRecordCount() * $table->getRecordByteLength() + 1); // The last byte must be 0x1A
@@ -96,17 +98,19 @@ class WritableTableTest extends TestCase
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
         $table = new WritableTable($copyTo, null, 'cp866');
-        $table->openWrite();
         $table->nextRecord(); // set pointer to first row
-        $table->deleteRecord();
-        $table->writeRecord();
-        $table->close();
+        $table
+            ->deleteRecord()
+            ->writeRecord()
+            ->save()
+            ->close();
 
         $table = new Table($copyTo, null, 'cp866');
         self::assertEquals(10, $table->getRecordCount());
         $record = $table->pickRecord(0);
         self::assertTrue($record->isDeleted());
-        $table->close();
+        $table
+            ->close();
     }
 
     public function testDeletePackRecord(): void
@@ -115,15 +119,33 @@ class WritableTableTest extends TestCase
 
         $table = new WritableTable($copyTo, null, 'cp866');
         self::assertEquals(10, $table->getRecordCount());
-        $table->openWrite();
         $table->nextRecord(); // set pointer to first row
         $table
             ->deleteRecord()
             ->pack()
+            ->save()
             ->close();
 
         $table = new Table($copyTo, null, 'cp866');
         self::assertEquals(9, $table->getRecordCount());
+        $table->close();
+    }
+
+    public function testDeleteUndeleteRecord(): void
+    {
+        $copyTo = $this->duplicateFile(self::FILEPATH);
+
+        $table = new WritableTable($copyTo, null, 'cp866');
+        self::assertEquals(10, $table->getRecordCount());
+        $table->nextRecord(); // set pointer to first row
+        $table
+            ->deleteRecord()
+            ->undeleteRecord()
+            ->pack()
+            ->close();
+
+        $table = new Table($copyTo, null, 'cp866');
+        self::assertEquals(10, $table->getRecordCount());
         $table->close();
     }
 
@@ -136,7 +158,6 @@ class WritableTableTest extends TestCase
 
         $table = new WritableTable($copyTo);
         self::assertEquals(3, $table->getRecordCount());
-        $table->openWrite();
         // fill new newRecord
         $newRecord = $table->appendRecord();
         $newRecord->segsocial = '000000000000';
@@ -153,9 +174,11 @@ class WritableTableTest extends TestCase
         $newRecord->nriesgo = 'B';
         $newRecord->salario = 5000;
         //save
-        $table->writeRecord();
-        $table->pack();
-        $table->close();
+        $table
+            ->writeRecord()
+            ->pack()
+            ->save()
+            ->close();
         unset($newRecord);
 
         $table = new Table($copyTo);

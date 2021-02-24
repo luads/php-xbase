@@ -3,9 +3,7 @@
 namespace XBase;
 
 use XBase\Column\ColumnInterface;
-use XBase\Column\DBaseColumn;
 use XBase\Enum\TableType;
-use XBase\Exception\TableException;
 use XBase\Header\Writer\HeaderWriterFactory;
 use XBase\Memo\MemoFactory;
 use XBase\Memo\MemoInterface;
@@ -28,13 +26,6 @@ class WritableTable extends Table
      * Perform edits immediately on original file.
      */
     public const EDIT_MODE_REALTIME = 'realtime';
-
-    /**
-     * @var bool
-     *
-     * @deprecated in 1.3
-     */
-    private $autoSave = false;
 
     /**
      * @var bool record property is new
@@ -73,11 +64,6 @@ class WritableTable extends Table
 
     public function close(): void
     {
-        if (self::EDIT_MODE_CLONE === $this->options['editMode'] && $this->autoSave) {
-            @trigger_error('You should call `save` method directly.');
-            $this->save();
-        }
-
         parent::close();
 
         if ($this->cloneFilepath && file_exists($this->cloneFilepath)) {
@@ -93,100 +79,8 @@ class WritableTable extends Table
         return $this->memo;
     }
 
-    /**
-     * @param $table
-     *
-     * @return WritableTable
-     */
-    public function cloneFrom(Table $table)
-    {
-        $result = new WritableTable($table->filepath);
-        $result->version = $table->version;
-        $result->modifyDate = $table->modifyDate;
-        $result->recordCount = 0;
-        $result->recordByteLength = $table->recordByteLength;
-        $result->inTransaction = $table->inTransaction;
-        $result->encrypted = $table->encrypted;
-        $result->mdxFlag = $table->mdxFlag;
-        $result->languageCode = $table->languageCode;
-        $result->columns = $table->columns;
-//        $result->columnNames = $table->columnNames;
-        $result->headerLength = $table->headerLength;
-        $result->backlist = $table->backlist;
-        $result->foxpro = $table->isFoxpro();
-
-        return $result;
-    }
-
-    /**
-     * @param $filename
-     * @param $fields
-     *
-     * @return bool|WritableTable
-     */
     public function create($filename, $fields)
     {
-        if (!$fields || !is_array($fields)) {
-            throw new TableException('cannot create xbase with no fields', $this->filepath);
-        }
-
-        $recordByteLength = 1;
-        $columns = [];
-        $columnNames = [];
-        $i = 0;
-
-        foreach ($fields as $field) {
-            if (!$field || !is_array($field) || sizeof($field) < 2) {
-                throw new TableException('fields argument error, must be array of arrays', $this->filepath);
-            }
-            $column = new DBaseColumn($field[0], $field[1], 0, @$field[2], @$field[3], 0, 0, 0, 0, 0, 0, $i, $recordByteLength);
-            $recordByteLength += $column->getLength();
-            $columnNames[$i] = $field[0];
-            $columns[$i] = $column;
-            $i++;
-        }
-
-        $result = new WritableTable($filename);
-        $result->version = TableType::DBASE_III_PLUS_MEMO;
-        $result->modifyDate = time();
-        $result->recordCount = 0;
-        $result->recordByteLength = $recordByteLength;
-        $result->inTransaction = 0;
-        $result->encrypted = false;
-        $result->mdxFlag = chr(0);
-        $result->languageCode = chr(0);
-        $result->columns = $columns;
-//        $result->columnNames = $columnNames;
-        $result->backlist = '';
-        $result->foxpro = false;
-
-        if ($result->openWrite($filename, true)) {
-            return $result;
-        }
-
-        return false;
-    }
-
-    /**
-     * @deprecated since 1.3 and will be deleted in 2.0. Do not use this.
-     */
-    public function openWrite($filename = false, $overwrite = false)
-    {
-        @trigger_error('Method `openWrite` is deprecated. Do not use it!');
-        $this->autoSave = true;
-//        if (!$filename) {
-//            $filename = $this->filepath;
-//        }
-//
-//        if (file_exists($filename) && !$overwrite) {
-//            if ($this->fp = Stream::createFromFile($filename, 'r+')) {
-//                $this->readHeader();
-//            }
-//        } elseif ($this->fp = Stream::createFromFile($filename, 'w+')) {
-//            $this->writeHeader();
-//        }
-//
-//        return false != $this->fp;
     }
 
     protected function writeHeader(): void
@@ -249,13 +143,20 @@ class WritableTable extends Table
         return $this;
     }
 
-    public function undeleteRecord()
+    public function undeleteRecord(?RecordInterface $record = null): self
     {
-        $this->record->setDeleted(false);
+        $record = $record ?? $this->record;
+        if (!$record || false === $record->isDeleted()) {
+            return $this;
+        }
 
-        $this->fp->seek($this->header->getLength() + ($this->record->getRecordIndex() * $this->header->getRecordByteLength()));
+        $record->setDeleted(false);
+
+        $this->fp->seek($this->header->getLength() + ($record->getRecordIndex() * $this->header->getRecordByteLength()));
         $this->fp->write(' ');
         $this->fp->flush();
+
+        return $this;
     }
 
     /**
