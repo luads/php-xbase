@@ -22,7 +22,7 @@ class VisualFoxproHeaderReader extends AbstractHeaderReader
         $headerLength = static::getHeaderLength() + $terminatorLength; // [Terminator](1)
         $fieldLength = static::getFieldLength();
         //backlist
-        $extraSize = $this->header->getLength() - ($headerLength + self::VFP_BACKLIST_LENGTH);
+        $extraSize = $this->header->length - ($headerLength + self::VFP_BACKLIST_LENGTH);
 
         return $extraSize / $fieldLength;
     }
@@ -31,6 +31,6 @@ class VisualFoxproHeaderReader extends AbstractHeaderReader
     {
         assert($this->header instanceof VisualFoxproHeader);
 
-        $this->header->setBacklist($this->fp->read(self::VFP_BACKLIST_LENGTH));
+        $this->header->backlist = $this->fp->read(self::VFP_BACKLIST_LENGTH);
     }
 }

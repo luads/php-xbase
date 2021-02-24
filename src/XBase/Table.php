@@ -87,7 +87,7 @@ class Table
     protected function readHeader(): void
     {
         $this->header = HeaderReaderFactory::create($this->filepath)->read();
-        $this->fp->seek($this->header->getLength());
+        $this->fp->seek($this->header->length);
 
         $this->recordPos = -1;
         $this->deleteCount = 0;
@@ -122,12 +122,12 @@ class Table
         $valid = false;
 
         do {
-            if (($this->recordPos + 1) >= $this->header->getRecordCount()) {
+            if (($this->recordPos + 1) >= $this->header->recordCount) {
                 return null;
             }
 
             $this->recordPos++;
-            $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->header->getRecordByteLength()));
+            $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->header->recordByteLength));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -146,17 +146,17 @@ class Table
      */
     public function pickRecord(int $position): ?RecordInterface
     {
-        if ($position >= $this->header->getRecordCount()) {
+        if ($position >= $this->header->recordCount) {
             throw new TableException("Row with index {$position} does not exists");
         }
 
         $curPos = $this->fp->tell();
-        $seekPos = $this->header->getLength() + $position * $this->header->getRecordByteLength();
+        $seekPos = $this->header->length + $position * $this->header->recordByteLength;
         if (0 !== $this->fp->seek($seekPos)) {
             throw new TableException("Failed to pick row at position {$position}");
         }
 
-        $record = RecordFactory::create($this, $position, $this->fp->read($this->header->getRecordByteLength()));
+        $record = RecordFactory::create($this, $position, $this->fp->read($this->header->recordByteLength));
         // revert pointer
         $this->fp->seek($curPos);
 
@@ -183,7 +183,7 @@ class Table
 
             $this->recordPos--;
 
-            $this->fp->seek($this->header->getLength() + ($this->recordPos * $this->header->getRecordByteLength()));
+            $this->fp->seek($this->header->length + ($this->recordPos * $this->header->recordByteLength));
 
             $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->getRecordByteLength()));
 
@@ -205,9 +205,9 @@ class Table
             return null;
         }
 
-        $this->fp->seek($this->header->getLength() + ($index * $this->header->getRecordByteLength()));
+        $this->fp->seek($this->header->length + ($index * $this->header->recordByteLength));
 
-        $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->header->getRecordByteLength()));
+        $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->header->recordByteLength));
 
         return $this->record;
     }
@@ -219,7 +219,7 @@ class Table
      */
     public function getColumn($name)
     {
-        foreach ($this->header->getColumns() as $column) {
+        foreach ($this->header->columns as $column) {
             if ($column->getName() === $name) {
                 return $column;
             }
@@ -235,7 +235,7 @@ class Table
 
     public function getCodepage(): int
     {
-        return $this->header->getLanguageCode();
+        return $this->header->languageCode;
     }
 
     /**
@@ -243,12 +243,12 @@ class Table
      */
     public function getColumns(): array
     {
-        return $this->header->getColumns();
+        return $this->header->columns;
     }
 
     public function getColumnCount(): int
     {
-        return count($this->header->getColumns());
+        return count($this->header->columns);
     }
 
     /**
@@ -256,7 +256,7 @@ class Table
      */
     public function getRecordCount()
     {
-        return $this->header->getRecordCount();
+        return $this->header->recordCount;
     }
 
     /**
@@ -269,7 +269,7 @@ class Table
 
     public function getRecordByteLength()
     {
-        return $this->header->getRecordByteLength();
+        return $this->header->recordByteLength;
     }
 
     /**
@@ -290,7 +290,7 @@ class Table
      */
     public function getLanguageCode(): int
     {
-        return $this->header->getLanguageCode();
+        return $this->header->languageCode;
     }
 
     public function getMemo(): ?MemoInterface
@@ -321,31 +321,31 @@ class Table
 
     public function isFoxpro(): bool
     {
-        return $this->header->isFoxpro();
+        return TableType::isFoxpro($this->header->getVersion());
     }
 
     public function getModifyDate()
     {
-        return $this->header->getModifyDate();
+        return $this->header->modifyDate;
     }
 
     public function isInTransaction(): bool
     {
-        return $this->header->isInTransaction();
+        return $this->header->inTransaction;
     }
 
     public function isEncrypted(): bool
     {
-        return $this->header->isEncrypted();
+        return $this->header->encrypted;
     }
 
     public function getMdxFlag(): string
     {
-        return chr($this->header->getMdxFlag());
+        return chr($this->header->mdxFlag);
     }
 
     public function getHeaderLength(): int
     {
-        return $this->header->getLength();
+        return $this->header->length;
     }
 }

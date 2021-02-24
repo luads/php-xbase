@@ -3,83 +3,60 @@
 namespace XBase\Header;
 
 use XBase\Column\ColumnInterface;
-use XBase\Enum\TableType;
 
 abstract class AbstractHeader implements HeaderInterface
 {
     /**
      * @var int
      */
-    protected $version;
+    public $version;
 
     /**
      * @var int unixtime
      */
-    protected $modifyDate;
+    public $modifyDate;
 
     /**
      * @var int
      */
-    protected $recordCount;
+    public $recordCount = 0;
 
     /**
      * @var int
      */
-    protected $recordByteLength;
+    public $recordByteLength = 20;
 
     /**
      * @var bool
      */
-    protected $inTransaction;
+    public $inTransaction = false;
 
     /**
      * @var bool
      */
-    protected $encrypted;
+    public $encrypted = false;
 
     /** @var int */
-    protected $mdxFlag;
+    public $mdxFlag = 0;
 
     /**
      * @var int language codepage
      *
      * @see https://blog.codetitans.pl/post/dbf-and-language-code-page/
      */
-    protected $languageCode;
+    public $languageCode;
 
     /**
      * @var ColumnInterface[]
      */
-    protected $columns;
+    public $columns = [];
 
     /**
      * @var int
      */
-    protected $length;
+    public $length;
 
-    public function __construct(
-        int $version,
-        int $modifyDate,
-        int $recordCount,
-        int $headerLength,
-        int $recordByteLength,
-        bool $inTransaction,
-        bool $encrypted,
-        int $mdxFlag,
-        int $languageCode
-    ) {
-        $this->version = $version;
-        $this->modifyDate = $modifyDate;
-        $this->recordCount = $recordCount;
-        $this->length = $headerLength;
-        $this->recordByteLength = $recordByteLength;
-        $this->inTransaction = $inTransaction;
-        $this->encrypted = $encrypted;
-        $this->mdxFlag = $mdxFlag;
-        $this->languageCode = $languageCode;
-    }
-
-    public function addColumn(ColumnInterface $column): HeaderInterface
+    public function addColumn(ColumnInterface $column): self
     {
         $name = $nameBase = $column->getName();
         $index = 0;
@@ -93,75 +70,8 @@ abstract class AbstractHeader implements HeaderInterface
         return $this;
     }
 
-    public function isFoxpro(): bool
-    {
-        return TableType::isFoxpro($this->version);
-    }
-
     public function getVersion(): int
     {
         return $this->version;
-    }
-
-    public function getModifyDate(): int
-    {
-        return $this->modifyDate;
-    }
-
-    public function getRecordCount(): int
-    {
-        return $this->recordCount;
-    }
-
-    public function setRecordCount(int $recordCount): HeaderInterface
-    {
-        $this->recordCount = $recordCount;
-
-        return $this;
-    }
-
-    public function increaseRecordCount(int $inc = 1): self
-    {
-        $this->recordCount += $inc;
-
-        return $this;
-    }
-
-    public function getRecordByteLength(): int
-    {
-        return $this->recordByteLength;
-    }
-
-    public function isInTransaction(): bool
-    {
-        return $this->inTransaction;
-    }
-
-    public function isEncrypted(): bool
-    {
-        return $this->encrypted;
-    }
-
-    public function getMdxFlag(): int
-    {
-        return $this->mdxFlag;
-    }
-
-    public function getLanguageCode(): int
-    {
-        return $this->languageCode;
-    }
-
-    /**
-     * @return ColumnInterface[]
-     */
-    public function getColumns(): array
-    {
-        return $this->columns;
-    }
-
-    public function getLength(): int
-    {
-        return $this->length;
     }
 }

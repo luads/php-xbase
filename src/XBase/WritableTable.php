@@ -90,7 +90,7 @@ class WritableTable extends Table
 
     public function appendRecord(): RecordInterface
     {
-        $this->recordPos = $this->header->getRecordCount();
+        $this->recordPos = $this->header->recordCount;
         $this->record = RecordFactory::create($this, $this->recordPos);
         $this->insertion = true;
 
@@ -104,12 +104,12 @@ class WritableTable extends Table
             return $this;
         }
 
-        $offset = $this->header->getLength() + ($record->getRecordIndex() * $this->header->getRecordByteLength());
+        $offset = $this->header->length + ($record->getRecordIndex() * $this->header->recordByteLength);
         $this->fp->seek($offset);
         $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($record));
 
         if ($this->insertion) {
-            $this->header->increaseRecordCount();
+            $this->header->recordCount++;
         }
 
         $this->fp->flush();
@@ -152,7 +152,7 @@ class WritableTable extends Table
 
         $record->setDeleted(false);
 
-        $this->fp->seek($this->header->getLength() + ($record->getRecordIndex() * $this->header->getRecordByteLength()));
+        $this->fp->seek($this->header->length + ($record->getRecordIndex() * $this->header->recordByteLength));
         $this->fp->write(' ');
         $this->fp->flush();
 
@@ -182,9 +182,9 @@ class WritableTable extends Table
             $this->writeRecord($r);
         }
 
-        $this->header->setRecordCount($newRecordCount);
+        $this->header->recordCount = $newRecordCount;
 
-        $size = $this->header->getLength() + ($newRecordCount * $this->header->getRecordByteLength());
+        $size = $this->header->length + ($newRecordCount * $this->header->recordByteLength);
         $this->fp->truncate($size);
 
         if (self::EDIT_MODE_REALTIME === $this->options['editMode']) {
@@ -224,7 +224,7 @@ class WritableTable extends Table
     {
         $columns = $this->getMemoColumns();
 
-        for ($i = 0; $i < $this->header->getRecordCount(); $i++) {
+        for ($i = 0; $i < $this->header->recordCount; $i++) {
             $record = $this->pickRecord($i);
             $save = false;
             foreach ($columns as $column) {

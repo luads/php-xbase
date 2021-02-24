@@ -52,7 +52,11 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
         $refClass = new \ReflectionClass($this->getClass());
         $namedArguments = $this->extractArgs();
         //the values in the array are mapped to constructor arguments positionally
-        $this->header = $refClass->newInstanceArgs(array_values($namedArguments));
+        $this->header = $refClass->newInstance();
+        foreach ($namedArguments as $propertyName => $value) {
+            assert(property_exists($this->header, $propertyName));
+            $this->header->{$propertyName} = $value;
+        }
     }
 
     protected function readColumns(): void
@@ -61,11 +65,11 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
 
         /* some checking */
         clearstatcache();
-        if ($this->header->getLength() > filesize($this->filepath)) {
+        if ($this->header->length > filesize($this->filepath)) {
             throw new TableException(sprintf('File %s is not DBF', $this->filepath));
         }
 
-        if ($this->header->getLength() + ($this->header->getRecordCount() * $this->header->getRecordByteLength()) - 500 > filesize($this->filepath)) {
+        if ($this->header->length + ($this->header->recordCount * $this->header->recordByteLength) - 500 > filesize($this->filepath)) {
             throw new TableException(sprintf('File %s is not DBF', $this->filepath));
         }
 
@@ -94,7 +98,7 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
             'version'          => $this->fp->readUChar(),
             'modifyDate'       => $this->fp->read3ByteDate(),
             'recordCount'      => $this->fp->readUInt(),
-            'headerLength'     => $this->fp->readUShort(),
+            'length'           => $this->fp->readUShort(),
             'recordByteLength' => $this->fp->readUShort(),
         ];
         $this->fp->read(2); //reserved
@@ -131,7 +135,7 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
     protected function getLogicalFieldCount(int $terminatorLength = 1)
     {
         $headerLength = static::getHeaderLength() + $terminatorLength; // [Terminator](1)
-        $extraSize = $this->header->getLength() - $headerLength;
+        $extraSize = $this->header->length - $headerLength;
 
         return $extraSize / static::getFieldLength();
     }

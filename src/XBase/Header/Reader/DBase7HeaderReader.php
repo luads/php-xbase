@@ -29,7 +29,7 @@ class DBase7HeaderReader extends AbstractHeaderReader
         $headerLength = $this->getHeaderLength() + $terminatorLength; // [Terminator](1)
         $headerLength += 36; // [Language driver name](32) + [Reserved](4) +
         $fieldLength = DBase7ColumnReader::getHeaderLength();
-        $extraSize = $this->header->getLength() - $headerLength;
+        $extraSize = $this->header->length - $headerLength;
 
         return $extraSize / $fieldLength;
     }
