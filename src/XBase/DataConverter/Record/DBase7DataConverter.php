@@ -10,7 +10,7 @@ use XBase\DataConverter\Field\DBase7\TimestampConverter;
 
 class DBase7DataConverter extends DBase4DataConverter
 {
-    protected static function getFiledConverters(): array
+    public static function getFieldConverters(): array
     {
         return array_merge([
             AiConverter::class,
@@ -18,6 +18,6 @@ class DBase7DataConverter extends DBase4DataConverter
             IntegerConverter::class,
             TimestampConverter::class,
             MemoConverter::class,
-        ], parent::getFiledConverters());
+        ], parent::getFieldConverters());
     }
 }

@@ -15,7 +15,7 @@ use XBase\Record\AbstractRecord;
 use XBase\Record\RecordInterface;
 use XBase\Table;
 
-class DBaseDataConverter implements RecordDataConverterInterface
+class DBaseDataConverter implements RecordDataConverterInterface, HasFieldConvertersInterface
 {
     /** @var Table */
     protected $table;
@@ -28,7 +28,7 @@ class DBaseDataConverter implements RecordDataConverterInterface
     /**
      * @return FieldDataConverterInterface[]
      */
-    protected static function getFiledConverters(): array
+    public static function getFieldConverters(): array
     {
         return [
             DateConverter::class,
@@ -81,7 +81,7 @@ class DBaseDataConverter implements RecordDataConverterInterface
 
     private function findFieldConverter(ColumnInterface $column): FieldDataConverterInterface
     {
-        foreach (static::getFiledConverters() as $class) {
+        foreach (static::getFieldConverters() as $class) {
             if ($column->getType() === $class::getType()) {
                 return new $class($this->table, $column);
             }

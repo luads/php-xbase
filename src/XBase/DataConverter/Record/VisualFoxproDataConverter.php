@@ -15,7 +15,7 @@ use XBase\DataConverter\Field\VisualFoxpro\VarFieldConverter;
 
 class VisualFoxproDataConverter extends FoxproDataConverter
 {
-    protected static function getFiledConverters(): array
+    public static function getFieldConverters(): array
     {
         return array_merge([
             BlobConverter::class,
@@ -28,6 +28,6 @@ class VisualFoxproDataConverter extends FoxproDataConverter
             MemoConverter::class,
             VarFieldConverter::class,
             VarBinaryConverter::class,
-        ], parent::getFiledConverters());
+        ], parent::getFieldConverters());
     }
 }
