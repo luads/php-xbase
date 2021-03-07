@@ -24,7 +24,7 @@ class WritableTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo, null, 'cp866');
+        $table = new WritableTable($copyTo, ['encoding' => 'cp866']);
         $record = $table->nextRecord();
         $record->setNum($record->getColumn('regn'), 2);
         $record->setString($record->getColumn('plan'), 'Ы');
@@ -33,7 +33,7 @@ class WritableTableTest extends TestCase
             ->save()
             ->close();
 
-        $table = new Table($copyTo, null, 'cp866');
+        $table = new Table($copyTo, ['encoding' => 'cp866']);
         $record = $table->nextRecord();
         self::assertSame(2, $record->getNum('regn'));
         self::assertSame('Ы', $record->getString('plan'));
@@ -47,7 +47,7 @@ class WritableTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo, null, 'cp866');
+        $table = new WritableTable($copyTo, ['encoding' => 'cp866']);
 
         self::assertSame(
             $table->getHeaderLength() + ($table->getRecordCount() * $table->getRecordByteLength()) + 1, // Last byte must be 0x1A
@@ -78,7 +78,7 @@ class WritableTableTest extends TestCase
         $expectedSize = $table->getHeaderLength() + ($table->getRecordCount() * $table->getRecordByteLength() + 1); // The last byte must be 0x1A
         self::assertSame($expectedSize, filesize($copyTo));
 
-        $table = new Table($copyTo, null, 'cp866');
+        $table = new Table($copyTo, ['encoding' => 'cp866']);
         self::assertEquals(11, $table->getRecordCount());
         $record = $table->pickRecord(10);
         self::assertSame(3, $record->getNum('regn'));
@@ -97,7 +97,7 @@ class WritableTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo, null, 'cp866');
+        $table = new WritableTable($copyTo, ['encoding' => 'cp866']);
         $table->nextRecord(); // set pointer to first row
         $table
             ->deleteRecord()
@@ -105,7 +105,7 @@ class WritableTableTest extends TestCase
             ->save()
             ->close();
 
-        $table = new Table($copyTo, null, 'cp866');
+        $table = new Table($copyTo, ['encoding' => 'cp866']);
         self::assertEquals(10, $table->getRecordCount());
         $record = $table->pickRecord(0);
         self::assertTrue($record->isDeleted());
@@ -117,7 +117,7 @@ class WritableTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo, null, 'cp866');
+        $table = new WritableTable($copyTo, ['encoding' => 'cp866']);
         self::assertEquals(10, $table->getRecordCount());
         $table->nextRecord(); // set pointer to first row
         $table
@@ -126,7 +126,7 @@ class WritableTableTest extends TestCase
             ->save()
             ->close();
 
-        $table = new Table($copyTo, null, 'cp866');
+        $table = new Table($copyTo, ['encoding' => 'cp866']);
         self::assertEquals(9, $table->getRecordCount());
         $table->close();
     }
@@ -135,7 +135,7 @@ class WritableTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo, null, 'cp866');
+        $table = new WritableTable($copyTo, ['encoding' => 'cp866']);
         self::assertEquals(10, $table->getRecordCount());
         $table->nextRecord(); // set pointer to first row
         $table
@@ -144,7 +144,7 @@ class WritableTableTest extends TestCase
             ->pack()
             ->close();
 
-        $table = new Table($copyTo, null, 'cp866');
+        $table = new Table($copyTo, ['encoding' => 'cp866']);
         self::assertEquals(10, $table->getRecordCount());
         $table->close();
     }

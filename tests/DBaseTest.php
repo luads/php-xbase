@@ -17,7 +17,7 @@ class DBaseTest extends AbstractTestCase
 {
     public function testRead(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
 
         self::assertSame(18, $table->getColumnCount());
         self::assertSame(10, $table->getRecordCount());
@@ -151,14 +151,14 @@ JSON;
         self::expectException(\Exception::class);
         self::expectExceptionMessage('Column none_column_value not found');
 
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
         $record = $table->nextRecord();
         $record->none_column_value;
     }
 
     public function testReadColumns(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', null, 'cp866');
+        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
         $processerResords = 0;
         while ($record = $table->nextRecord()) {
             $data = $record->getData();

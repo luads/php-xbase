@@ -12,7 +12,7 @@ class FoxproTest extends AbstractTestCase
 {
     public function testRead(): void
     {
-        $table = new Table(__DIR__.'/Resources/foxpro/1.dbf', null, 'cp852'); //todo file to big need to reduce
+        $table = new Table(__DIR__.'/Resources/foxpro/1.dbf', ['encoding' => 'cp852']); //todo file to big need to reduce
 
         self::assertSame(TableType::FOXPRO_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP852, $table->getCodepage());

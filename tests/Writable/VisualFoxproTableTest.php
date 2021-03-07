@@ -291,7 +291,7 @@ class VisualFoxproTableTest extends TestCase
     public function testIssue91(): void
     {
         $copyTo = $this->duplicateFile(__DIR__.'/../Resources/foxpro/91.dbf');
-        $table = new WritableTable($copyTo, null, 'CP1250');
+        $table = new WritableTable($copyTo, ['encoding' => 'cp1250']);
         self::assertSame(0, $table->getRecordCount());
         $data = ['str1', 'str2', 'str3', 'str4'];
 
@@ -305,7 +305,7 @@ class VisualFoxproTableTest extends TestCase
             ->save()
             ->close();
 
-        $table = new Table($copyTo, null, 'CP1250');
+        $table = new Table($copyTo, ['encoding' => 'cp1250']);
         self::assertSame(4, $table->getRecordCount());
 
         $actual = [];

@@ -53,37 +53,22 @@ class Table
      *
      * @throws \Exception
      */
-    public function __construct(string $filepath, $options = [], $convertFrom = null)
+    public function __construct(string $filepath, array $options = [])
     {
         $this->filepath = $filepath;
-        $this->options = $this->resolveOptions($options, $convertFrom);
+        $this->options = $this->resolveOptions($options);
 
         $this->open();
         $this->readHeader();
         $this->openMemo();
     }
 
-    protected function resolveOptions($options, $convertFrom = null): array
+    protected function resolveOptions(array $options): array
     {
-        // right options
-        if (!empty($options) && array_intersect(['encoding', 'columns'], array_keys($options))) {
-            return array_merge([
-                'columns'  => [],
-                'encoding' => null,
-            ], $options);
-        }
-
-        if (!empty($options)) {
-            @trigger_error('You should pass availableColumns as `columns` option');
-        }
-        if (!empty($convertFrom)) {
-            @trigger_error('You should pass convertFrom as `encoding` option');
-        }
-
-        return [
-            'columns'  => $options ?? [],
-            'encoding' => $convertFrom,
-        ];
+        return array_merge([
+            'columns'  => [],
+            'encoding' => null,
+        ], $options);
     }
 
     protected function open(): void

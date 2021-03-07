@@ -53,7 +53,12 @@ You can pass an array of the columns that you need to the constructor, then if y
 ``` php
 use XBase\Table;
 
-$table = new Table('test.dbf', ['my_column', 'another_column']);
+$table = new Table(
+    'test.dbf', 
+    [
+        'columns' => ['my_column', 'another_column']
+    ]
+);
 
 while ($record = $table->nextRecord()) {
     echo $record->my_column;

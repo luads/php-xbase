@@ -10,7 +10,7 @@ class DbfTest extends AbstractTestCase
 {
     public function test2ByteHeaderTerminator(): void
     {
-        $table = new Table(__DIR__.'/Resources/dbf/cbrf_122019N1.dbf', null, 'cp866');
+        $table = new Table(__DIR__.'/Resources/dbf/cbrf_122019N1.dbf', ['encoding' => 'cp866']);
 
         self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->getVersion());
         self::assertSame(442, $table->getRecordCount());
@@ -22,7 +22,7 @@ class DbfTest extends AbstractTestCase
 
     public function testIssue88(): void
     {
-        $table = new Table(__DIR__.'/Resources/dbf/cbrf_122019N1.dbf', null, 'cp866');
+        $table = new Table(__DIR__.'/Resources/dbf/cbrf_122019N1.dbf', ['encoding' => 'cp866']);
         /** @var DBaseRecord $record */
         $record = $table->nextRecord();
         self::assertSame(
