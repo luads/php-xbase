@@ -6,8 +6,6 @@ use XBase\Column\ColumnInterface;
 use XBase\Enum\TableType;
 use XBase\Header\Writer\HeaderWriterFactory;
 use XBase\Memo\MemoFactory;
-use XBase\Memo\MemoInterface;
-use XBase\Memo\WritableMemoInterface;
 use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
@@ -32,33 +30,60 @@ class WritableTable extends Table
      */
     private $insertion = false;
 
-    protected function resolveOptions($options, $convertFrom = null): array
+    protected function resolveOptions(array $options): array
     {
+        $options = array_merge(['editMode' => self::EDIT_MODE_CLONE], $options);
+
         return array_merge(
-            ['editMode' => self::EDIT_MODE_CLONE],
-            parent::resolveOptions($options, $convertFrom)
+            parent::resolveOptions($options),
+            $options
         );
     }
 
     protected function open(): void
     {
-        switch ($this->options['editMode']) {
+        switch ($this->table->options['editMode']) {
             case self::EDIT_MODE_CLONE:
                 $this->clone();
                 $this->fp = Stream::createFromFile($this->cloneFilepath, 'rb+');
                 break;
 
             case self::EDIT_MODE_REALTIME:
-                $this->fp = Stream::createFromFile($this->filepath, 'rb+');
+                $this->fp = Stream::createFromFile($this->getFilepath(), 'rb+');
                 break;
         }
+
+        $this->table->handlers['onMemoBlocksDelete'] = function (array $blocks): void {
+            $columns = $this->getMemoColumns();
+
+            for ($i = 0; $i < $this->getHeader()->recordCount; $i++) {
+                $record = $this->pickRecord($i);
+                $save = false;
+                foreach ($columns as $column) {
+                    if (!$pointer = $record->getGenuine($column->getName())) {
+                        continue;
+                    }
+
+                    $sub = 0;
+                    foreach ($blocks as $deletedPointer => $length) {
+                        if ($pointer && $pointer > $deletedPointer) {
+                            $sub += $length;
+                        }
+                    }
+                    $save = $sub > 0;
+                    $record->setGenuine($column->getName(), $pointer - $sub);
+                }
+                if ($save) {
+                    $this->writeRecord($record);
+                }
+            }
+        };
     }
 
     protected function openMemo(): void
     {
         if (TableType::hasMemo($this->getVersion())) {
-            $memoOptions = array_merge($this->options, ['writable' => true]);
-            $this->memo = MemoFactory::create($this, $memoOptions);
+            $this->table->memo = MemoFactory::create($this->table);
         }
     }
 
@@ -71,27 +96,19 @@ class WritableTable extends Table
         }
     }
 
-    /**
-     * @return WritableMemoInterface|null
-     */
-    public function getMemo(): ?MemoInterface
-    {
-        return $this->memo;
-    }
-
     public function create($filename, $fields)
     {
     }
 
     protected function writeHeader(): void
     {
-        HeaderWriterFactory::create($this->fp)->write($this->header);
+        HeaderWriterFactory::create($this->fp)->write($this->getHeader());
     }
 
     public function appendRecord(): RecordInterface
     {
-        $this->recordPos = $this->header->recordCount;
-        $this->record = RecordFactory::create($this, $this->recordPos);
+        $this->recordPos = $this->getHeader()->recordCount;
+        $this->record = RecordFactory::create($this->table, $this->recordPos);
         $this->insertion = true;
 
         return $this->record;
@@ -104,17 +121,17 @@ class WritableTable extends Table
             return $this;
         }
 
-        $offset = $this->header->length + ($record->getRecordIndex() * $this->header->recordByteLength);
+        $offset = $this->getHeader()->length + ($record->getRecordIndex() * $this->getHeader()->recordByteLength);
         $this->fp->seek($offset);
-        $this->fp->write(RecordFactory::createDataConverter($this)->toBinaryString($record));
+        $this->fp->write(RecordFactory::createDataConverter($this->table)->toBinaryString($record));
 
         if ($this->insertion) {
-            $this->header->recordCount++;
+            $this->table->header->recordCount++;
         }
 
         $this->fp->flush();
 
-        if (self::EDIT_MODE_REALTIME === $this->options['editMode'] && $this->insertion) {
+        if (self::EDIT_MODE_REALTIME === $this->table->options['editMode'] && $this->insertion) {
             $this->save();
         }
 
@@ -152,7 +169,7 @@ class WritableTable extends Table
 
         $record->setDeleted(false);
 
-        $this->fp->seek($this->header->length + ($record->getRecordIndex() * $this->header->recordByteLength));
+        $this->fp->seek($this->getHeader()->length + ($record->getRecordIndex() * $this->getHeader()->recordByteLength));
         $this->fp->write(' ');
         $this->fp->flush();
 
@@ -182,12 +199,12 @@ class WritableTable extends Table
             $this->writeRecord($r);
         }
 
-        $this->header->recordCount = $newRecordCount;
+        $this->getHeader()->recordCount = $newRecordCount;
 
-        $size = $this->header->length + ($newRecordCount * $this->header->recordByteLength);
+        $size = $this->getHeader()->length + ($newRecordCount * $this->getHeader()->recordByteLength);
         $this->fp->truncate($size);
 
-        if (self::EDIT_MODE_REALTIME === $this->options['editMode']) {
+        if (self::EDIT_MODE_REALTIME === $this->table->options['editMode']) {
             $this->save();
         }
 
@@ -196,8 +213,8 @@ class WritableTable extends Table
 
     public function save(): self
     {
-        if ($this->memo) {
-            $this->memo->save();
+        if ($memo = $this->getMemo()) {
+            $memo->save();
         }
 
         $this->writeHeader();
@@ -208,43 +225,11 @@ class WritableTable extends Table
             $this->fp->writeUChar(self::END_OF_FILE_MARKER);
         }
 
-        if (self::EDIT_MODE_CLONE === $this->options['editMode']) {
-            copy($this->cloneFilepath, $this->filepath);
+        if (self::EDIT_MODE_CLONE === $this->table->options['editMode']) {
+            copy($this->cloneFilepath, $this->getFilepath());
         }
 
         return $this;
-    }
-
-    /**
-     * @internal
-     *
-     * @todo Find better solution to notify table from Memo.
-     */
-    public function onMemoBlocksDelete(array $blocks): void
-    {
-        $columns = $this->getMemoColumns();
-
-        for ($i = 0; $i < $this->header->recordCount; $i++) {
-            $record = $this->pickRecord($i);
-            $save = false;
-            foreach ($columns as $column) {
-                if (!$pointer = $record->getGenuine($column->getName())) {
-                    continue;
-                }
-
-                $sub = 0;
-                foreach ($blocks as $deletedPointer => $length) {
-                    if ($pointer && $pointer > $deletedPointer) {
-                        $sub += $length;
-                    }
-                }
-                $save = $sub > 0;
-                $record->setGenuine($column->getName(), $pointer - $sub);
-            }
-            if ($save) {
-                $this->writeRecord($record);
-            }
-        }
     }
 
     /**
@@ -254,7 +239,7 @@ class WritableTable extends Table
     {
         $result = [];
         foreach ($this->getColumns() as $column) {
-            if (in_array($column->getType(), TableType::getMemoTypes($this->header->getVersion()))) {
+            if (in_array($column->getType(), TableType::getMemoTypes($this->getHeader()->version))) {
                 $result[] = $column;
             }
         }

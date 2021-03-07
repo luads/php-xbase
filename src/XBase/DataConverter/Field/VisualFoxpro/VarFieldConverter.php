@@ -18,7 +18,7 @@ class VarFieldConverter extends AbstractFieldDataConverter
             $value = substr($value, 0, $pos);
         }
 
-        if ($inCharset = $this->table->getConvertFrom()) {
+        if ($inCharset = $this->table->options['encoding']) {
             $value = iconv($inCharset, 'utf-8', $value);
         }
 
@@ -31,10 +31,10 @@ class VarFieldConverter extends AbstractFieldDataConverter
     public function toBinaryString($value): string
     {
         $value = $value ?? '';
-        if ($outCharset = $this->table->getConvertFrom()) {
+        if ($outCharset = $this->table->options['encoding']) {
             $value = iconv('utf-8', $outCharset, $value);
         }
 
-        return str_pad($value, $this->column->getLength() - 1, chr(0x00)).chr(0x03);
+        return str_pad($value, $this->column->length - 1, chr(0x00)).chr(0x03);
     }
 }

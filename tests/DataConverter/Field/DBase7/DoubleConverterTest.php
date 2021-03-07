@@ -3,9 +3,9 @@
 namespace XBase\Tests\Record\DataConverter\Field\DBase7;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Field\DBase7\DoubleConverter;
-use XBase\Table;
+use XBase\Header\Column;
+use XBase\Table\Table;
 
 class DoubleConverterTest extends TestCase
 {
@@ -14,8 +14,8 @@ class DoubleConverterTest extends TestCase
      */
     public function test(string $binaryString, float $float): void
     {
-        $table = $this->createMock(Table::class);
-        $column = $this->createMock(ColumnInterface::class);
+        $table = new Table();
+        $column = new Column();
         $converter = new DoubleConverter($table, $column);
         self::assertSame($float, $converter->fromBinaryString($binaryString));
         self::assertEquals($float, unpack('E', $converter->toBinaryString($float))[1]);

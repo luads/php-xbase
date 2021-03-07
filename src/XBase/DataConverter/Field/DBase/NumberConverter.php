@@ -21,7 +21,7 @@ class NumberConverter extends AbstractFieldDataConverter
 
         $s = str_replace(',', '.', $s);
 
-        if ($this->column->getDecimalCount() > 0 || $this->column->getLength() > 9) {
+        if ($this->column->decimalCount > 0 || $this->column->length > 9) {
             return (float) $s;
         }
 
@@ -31,12 +31,12 @@ class NumberConverter extends AbstractFieldDataConverter
     public function toBinaryString($value): string
     {
         if (null === $value) {
-            return str_repeat(chr(0x00), $this->column->getLength());
+            return str_repeat(chr(0x00), $this->column->length);
         }
 
         return str_pad(
-            number_format($value, $this->column->getDecimalCount(), '.', ''),
-            $this->column->getLength(),
+            number_format($value, $this->column->decimalCount, '.', ''),
+            $this->column->length,
             ' ',
             STR_PAD_LEFT
         );

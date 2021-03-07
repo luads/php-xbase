@@ -37,9 +37,9 @@ class MemoConverter extends AbstractFieldDataConverter
     public function toBinaryString($value): string
     {
         if (null === $value) {
-            return str_repeat(chr(0x00), $this->column->getLength());
+            return str_repeat(chr(0x00), $this->column->length);
         }
 
-        return str_pad((string) $value, $this->column->getLength(), $this->getFillerChar(), STR_PAD_LEFT);
+        return str_pad((string) $value, $this->column->length, $this->getFillerChar(), STR_PAD_LEFT);
     }
 }

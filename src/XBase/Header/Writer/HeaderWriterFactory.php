@@ -7,10 +7,9 @@ use XBase\Stream\StreamWrapper;
 
 class HeaderWriterFactory
 {
-    public static function create(StreamWrapper $fp): HeaderWriterInterface
+    public static function create(int $version, StreamWrapper $fp): HeaderWriterInterface
     {
         $fp->seek(0);
-        $version = $fp->readUChar();
 
         switch ($version) {
             case TableType::DBASE_7_MEMO:

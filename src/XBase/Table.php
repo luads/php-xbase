@@ -3,26 +3,25 @@
 namespace XBase;
 
 use XBase\Column\ColumnInterface;
+use XBase\Column\XBaseColumn;
 use XBase\Enum\Codepage;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
-use XBase\Header\HeaderInterface;
+use XBase\Header\Header;
 use XBase\Header\Reader\HeaderReaderFactory;
 use XBase\Memo\MemoFactory;
 use XBase\Memo\MemoInterface;
 use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
+use XBase\Table\Table as TableStruct;
 
+/**
+ * @author Alexander Strizhak <gam6itko@gmail.com>
+ */
 class Table
 {
-    /** @var HeaderInterface */
-    protected $header;
-
     const END_OF_FILE_MARKER = 0x1a;
-
-    /** @var string Table filepath. */
-    protected $filepath;
 
     /** @var Stream */
     protected $fp;
@@ -37,12 +36,9 @@ class Table
     protected $record;
 
     /**
-     * @var MemoInterface|null
+     * @var TableStruct
      */
-    protected $memo;
-
-    /** @var array */
-    protected $options = [];
+    protected $table;
 
     /**
      * Table constructor.
@@ -55,8 +51,10 @@ class Table
      */
     public function __construct(string $filepath, array $options = [])
     {
-        $this->filepath = $filepath;
-        $this->options = $this->resolveOptions($options);
+        $this->table = new TableStruct();
+        $this->table->filepath = $filepath;
+
+        $this->table->options = $this->resolveOptions($options);
 
         $this->open();
         $this->readHeader();
@@ -68,26 +66,27 @@ class Table
         return array_merge([
             'columns'  => [],
             'encoding' => null,
+            'editMode' => null,
         ], $options);
     }
 
     protected function open(): void
     {
-        if (!file_exists($this->filepath)) {
-            throw new \Exception(sprintf('File %s cannot be found', $this->filepath));
+        if (!file_exists($this->getFilepath())) {
+            throw new \Exception(sprintf('File %s cannot be found', $this->getFilepath()));
         }
 
         if ($this->fp) {
             $this->fp->close();
         }
 
-        $this->fp = Stream::createFromFile($this->filepath);
+        $this->fp = Stream::createFromFile($this->getFilepath());
     }
 
     protected function readHeader(): void
     {
-        $this->header = HeaderReaderFactory::create($this->filepath)->read();
-        $this->fp->seek($this->header->length);
+        $this->table->header = HeaderReaderFactory::create($this->getFilepath())->read();
+        $this->fp->seek($this->table->header->length);
 
         $this->recordPos = -1;
         $this->deleteCount = 0;
@@ -96,15 +95,25 @@ class Table
     protected function openMemo(): void
     {
         if (TableType::hasMemo($this->getVersion())) {
-            $this->memo = MemoFactory::create($this, $this->options);
+            $this->table->memo = MemoFactory::create($this->table);
         }
+    }
+
+    protected function getHeader(): Header
+    {
+        return $this->table->header;
+    }
+
+    protected function getMemo(): ?MemoInterface
+    {
+        return $this->table->memo;
     }
 
     public function close(): void
     {
         $this->fp->close();
-        if ($this->memo) {
-            $this->memo->close();
+        if ($memo = $this->getMemo()) {
+            $memo->close();
         }
     }
 
@@ -122,12 +131,12 @@ class Table
         $valid = false;
 
         do {
-            if (($this->recordPos + 1) >= $this->header->recordCount) {
+            if (($this->recordPos + 1) >= $this->getHeader()->recordCount) {
                 return null;
             }
 
             $this->recordPos++;
-            $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->header->recordByteLength));
+            $this->record = RecordFactory::create($this->table, $this->recordPos, $this->fp->read($this->getHeader()->recordByteLength));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -146,17 +155,17 @@ class Table
      */
     public function pickRecord(int $position): ?RecordInterface
     {
-        if ($position >= $this->header->recordCount) {
+        if ($position >= $this->getHeader()->recordCount) {
             throw new TableException("Row with index {$position} does not exists");
         }
 
         $curPos = $this->fp->tell();
-        $seekPos = $this->header->length + $position * $this->header->recordByteLength;
+        $seekPos = $this->getHeader()->length + $position * $this->getHeader()->recordByteLength;
         if (0 !== $this->fp->seek($seekPos)) {
             throw new TableException("Failed to pick row at position {$position}");
         }
 
-        $record = RecordFactory::create($this, $position, $this->fp->read($this->header->recordByteLength));
+        $record = RecordFactory::create($this->table, $position, $this->fp->read($this->getHeader()->recordByteLength));
         // revert pointer
         $this->fp->seek($curPos);
 
@@ -183,9 +192,9 @@ class Table
 
             $this->recordPos--;
 
-            $this->fp->seek($this->header->length + ($this->recordPos * $this->header->recordByteLength));
+            $this->fp->seek($this->getHeader()->length + ($this->recordPos * $this->getHeader()->recordByteLength));
 
-            $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->getRecordByteLength()));
+            $this->record = RecordFactory::create($this->table, $this->recordPos, $this->fp->read($this->getRecordByteLength()));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -205,23 +214,23 @@ class Table
             return null;
         }
 
-        $this->fp->seek($this->header->length + ($index * $this->header->recordByteLength));
+        $this->fp->seek($this->getHeader()->length + ($index * $this->getHeader()->recordByteLength));
 
-        $this->record = RecordFactory::create($this, $this->recordPos, $this->fp->read($this->header->recordByteLength));
+        $this->record = RecordFactory::create($this->table, $this->recordPos, $this->fp->read($this->getHeader()->recordByteLength));
 
         return $this->record;
     }
 
     /**
-     * @param $name
+     * @param string $name
      *
      * @return ColumnInterface
      */
     public function getColumn($name)
     {
-        foreach ($this->header->columns as $column) {
-            if ($column->getName() === $name) {
-                return $column;
+        foreach ($this->getHeader()->columns as $column) {
+            if ($column->name === $name) {
+                return new XBaseColumn($column);
             }
         }
 
@@ -235,7 +244,7 @@ class Table
 
     public function getCodepage(): int
     {
-        return $this->header->languageCode;
+        return $this->getHeader()->languageCode;
     }
 
     /**
@@ -243,12 +252,18 @@ class Table
      */
     public function getColumns(): array
     {
-        return $this->header->columns;
+        $columns = [];
+        foreach ($this->getHeader()->columns as $column) {
+            assert(!empty($column->name));
+            $columns[$column->name] = new XBaseColumn($column);
+        }
+
+        return $columns;
     }
 
     public function getColumnCount(): int
     {
-        return count($this->header->columns);
+        return count($this->getHeader()->columns);
     }
 
     /**
@@ -256,7 +271,7 @@ class Table
      */
     public function getRecordCount()
     {
-        return $this->header->recordCount;
+        return $this->getHeader()->recordCount;
     }
 
     /**
@@ -269,7 +284,7 @@ class Table
 
     public function getRecordByteLength()
     {
-        return $this->header->recordByteLength;
+        return $this->getHeader()->recordByteLength;
     }
 
     /**
@@ -277,12 +292,12 @@ class Table
      */
     public function getFilepath()
     {
-        return $this->filepath;
+        return $this->table->filepath;
     }
 
     public function getVersion(): int
     {
-        return $this->header->getVersion();
+        return $this->getHeader()->version;
     }
 
     /**
@@ -290,12 +305,7 @@ class Table
      */
     public function getLanguageCode(): int
     {
-        return $this->header->languageCode;
-    }
-
-    public function getMemo(): ?MemoInterface
-    {
-        return $this->memo;
+        return $this->getHeader()->languageCode;
     }
 
     /**
@@ -308,7 +318,7 @@ class Table
 
     public function getConvertFrom(): ?string
     {
-        return $this->options['encoding'];
+        return $this->table->options['encoding'];
     }
 
     /**
@@ -321,31 +331,31 @@ class Table
 
     public function isFoxpro(): bool
     {
-        return TableType::isFoxpro($this->header->getVersion());
+        return TableType::isFoxpro($this->getHeader()->version);
     }
 
     public function getModifyDate()
     {
-        return $this->header->modifyDate;
+        return $this->getHeader()->modifyDate;
     }
 
     public function isInTransaction(): bool
     {
-        return $this->header->inTransaction;
+        return $this->getHeader()->inTransaction;
     }
 
     public function isEncrypted(): bool
     {
-        return $this->header->encrypted;
+        return $this->getHeader()->encrypted;
     }
 
     public function getMdxFlag(): string
     {
-        return chr($this->header->mdxFlag);
+        return chr($this->getHeader()->mdxFlag);
     }
 
     public function getHeaderLength(): int
     {
-        return $this->header->length;
+        return $this->getHeader()->length;
     }
 }

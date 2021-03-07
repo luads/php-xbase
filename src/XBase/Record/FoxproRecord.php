@@ -3,29 +3,26 @@
 namespace XBase\Record;
 
 use XBase\Enum\FieldType;
+use XBase\Header\Column;
 
 class FoxproRecord extends AbstractRecord
 {
-    public function get($columnName)
+    public function get(string $columnName)
     {
-        $column = $this->toColumn($columnName);
+        $column = $this->table->getColumn($columnName);
 
-        switch ($column->getType()) {
+        switch ($column->type) {
             case FieldType::GENERAL:
-                return $this->getGeneral($column->getName());
+                return $this->getGeneral($column);
             default:
                 return parent::get($columnName);
         }
     }
 
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use get()
-     */
-    public function getGeneral(string $columnName)
+    protected function getGeneral(Column $column)
     {
-        $column = $this->toColumn($columnName);
         $this->checkType($column, FieldType::GENERAL);
 
-        return $this->getMemoObject($columnName)->getData();
+        return $this->getMemoObject($column->name)->getData();
     }
 }

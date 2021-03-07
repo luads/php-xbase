@@ -3,7 +3,7 @@
 namespace XBase\Memo;
 
 use XBase\Stream\Stream;
-use XBase\Table;
+use XBase\Table\Table;
 
 abstract class AbstractMemo implements MemoInterface
 {
@@ -16,36 +16,21 @@ abstract class AbstractMemo implements MemoInterface
     /** @var string */
     protected $filepath;
 
-    /** @var array */
-    protected $options = [];
-
     /**
      * @param string $filepath Path to memo file
-     * @param array  $options  Array of options:<br>
-     *                         encoding - convert text data from<br>
-     *                         writable - edit mode<br>
      */
-    public function __construct(Table $table, string $filepath, $options = [])
+    public function __construct(Table $table, string $filepath)
     {
         $this->table = $table;
+
         $this->filepath = $filepath;
-        $this->options = $this->resolveOptions($options);
         $this->open();
         $this->readHeader();
     }
 
-    protected function resolveOptions($options = []): array
+    public function getFilepath(): string
     {
-        if (is_string($options)) {
-            @trigger_error('You should pass convertFrom as `encoding` option');
-            $options = ['encoding' => $options];
-        }
-
-        $options = array_merge([
-            'encoding' => null,
-        ], $options);
-
-        return $options;
+        return $this->filepath;
     }
 
     public function __destruct()

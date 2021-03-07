@@ -2,9 +2,9 @@
 
 namespace XBase\Header\Writer;
 
-use XBase\Header\HeaderInterface;
+use XBase\Header\Header;
 
 interface HeaderWriterInterface
 {
-    public function write(HeaderInterface $header): void;
+    public function write(Header $header): void;
 }

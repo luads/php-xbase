@@ -3,11 +3,11 @@
 namespace XBase\Memo;
 
 use XBase\Enum\TableType;
-use XBase\Table;
+use XBase\Table\Table;
 
 class MemoFactory
 {
-    public static function create(Table $table, array $options = []): ?MemoInterface
+    public static function create(Table $table): ?MemoInterface
     {
         $class = self::getClass($table->getVersion());
         $refClass = new \ReflectionClass($class);
@@ -16,7 +16,7 @@ class MemoFactory
         }
 
         $memoExt = $refClass->getMethod('getExtension')->invoke(null);
-        $fileInfo = pathinfo($table->getFilepath());
+        $fileInfo = pathinfo($table->filepath);
         $memoExt = 'DBF' === $fileInfo['extension'] ? strtoupper($memoExt) : $memoExt;
         if ('.' !== substr($memoExt, 0, 1)) {
             $memoExt = '.'.$memoExt;
@@ -26,7 +26,7 @@ class MemoFactory
             return null; //todo create file?
         }
 
-        return $refClass->newInstance($table, $memoFilepath, $options);
+        return $refClass->newInstance($table, $memoFilepath);
     }
 
     private static function getClass(int $version): string

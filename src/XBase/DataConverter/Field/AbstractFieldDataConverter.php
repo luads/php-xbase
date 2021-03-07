@@ -2,18 +2,18 @@
 
 namespace XBase\DataConverter\Field;
 
-use XBase\Column\ColumnInterface;
-use XBase\Table;
+use XBase\Header\Column;
+use XBase\Table\Table;
 
 abstract class AbstractFieldDataConverter implements FieldDataConverterInterface
 {
     /** @var Table */
     protected $table;
 
-    /** @var ColumnInterface */
+    /** @var Column */
     protected $column;
 
-    public function __construct(Table $table, ColumnInterface $column)
+    public function __construct(Table $table, Column $column)
     {
         $this->table = $table;
         $this->column = $column;

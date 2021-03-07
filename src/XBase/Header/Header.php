@@ -2,9 +2,19 @@
 
 namespace XBase\Header;
 
-use XBase\Column\ColumnInterface;
-
-abstract class AbstractHeader implements HeaderInterface
+/**
+ * @internal
+ *
+ * @author Alexander Strizhak <gam6itko@gmail.com>
+ *
+ * DBase7
+ *
+ * @property string|null $languageName
+ *
+ * VisualFoxpro
+ * @property string|null $backlist
+ */
+class Header
 {
     /**
      * @var int
@@ -12,7 +22,7 @@ abstract class AbstractHeader implements HeaderInterface
     public $version;
 
     /**
-     * @var int unixtime
+     * @var int Unix time
      */
     public $modifyDate;
 
@@ -44,10 +54,10 @@ abstract class AbstractHeader implements HeaderInterface
      *
      * @see https://blog.codetitans.pl/post/dbf-and-language-code-page/
      */
-    public $languageCode;
+    public $languageCode = 0;
 
     /**
-     * @var ColumnInterface[]
+     * @var Column[]
      */
     public $columns = [];
 
@@ -56,22 +66,10 @@ abstract class AbstractHeader implements HeaderInterface
      */
     public $length;
 
-    public function addColumn(ColumnInterface $column): self
+    public function __construct(array $properties = [])
     {
-        $name = $nameBase = $column->getName();
-        $index = 0;
-
-        while (isset($this->columns[$name])) {
-            $name = $nameBase.++$index;
+        foreach ($properties as $property => $value) {
+            $this->{$property} = $value;
         }
-
-        $this->columns[$name] = $column;
-
-        return $this;
-    }
-
-    public function getVersion(): int
-    {
-        return $this->version;
     }
 }

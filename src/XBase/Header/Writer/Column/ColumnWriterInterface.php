@@ -2,10 +2,10 @@
 
 namespace XBase\Header\Writer\Column;
 
-use XBase\Column\ColumnInterface;
+use XBase\Header\Column;
 use XBase\Stream\StreamWrapper;
 
 interface ColumnWriterInterface
 {
-    public function write(StreamWrapper $fp, ColumnInterface $column): void;
+    public function write(StreamWrapper $fp, Column $column): void;
 }

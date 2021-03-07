@@ -26,7 +26,7 @@ $i = 0;
 while ($record = $table->nextRecord()) {
     $s = [];
     foreach ($columns as $column) {
-        $s[] = $record->forceGetString($column->getName());
+        $s[] = $record->get($column->getName());
     }
     $str = implode(',', $s);
     if (++$i % 1000 == 0) {

@@ -3,18 +3,15 @@
 namespace XBase\Header\Writer;
 
 use XBase\Enum\TableType;
-use XBase\Header\DBase7Header;
-use XBase\Header\HeaderInterface;
+use XBase\Header\Header;
 
 class DBase7HeaderWriter extends AbstractHeaderWriter
 {
-    protected function writeFirstBlock(HeaderInterface $header): void
+    protected function writeFirstBlock(Header $header): void
     {
-        assert($header instanceof DBase7Header);
-
         parent::writeFirstBlock($header);
 
-        if (in_array($header->getVersion(), [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
+        if (in_array($header->version, [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
             $this->fp->write(str_pad($header->languageName, 36, chr(0)));
         }
     }

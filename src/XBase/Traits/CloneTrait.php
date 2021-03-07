@@ -15,9 +15,9 @@ trait CloneTrait
      */
     private function clone(): void
     {
-        $info = pathinfo($this->filepath);
+        $info = pathinfo($this->getFilepath());
         $this->cloneFilepath = "{$info['dirname']}/~{$info['basename']}";
-        if (!copy($this->filepath, $this->cloneFilepath)) {
+        if (!copy($this->getFilepath(), $this->cloneFilepath)) {
             throw new \RuntimeException('Failed to clone original file: '.$this->filepath);
         }
     }

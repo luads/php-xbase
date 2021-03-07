@@ -42,11 +42,11 @@ class FoxproTest extends AbstractTestCase
 
         //<editor-fold desc="record">
         $record = $table->nextRecord();
-        self::assertSame(40777, $record->getNum('idc'));
-        self::assertSame(1, $record->getNum('clv'));
-        self::assertSame(57310050.0, $record->getNum('idn'));
-        self::assertSame(51014, $record->getNum('pvz'));
-        self::assertSame('Rozhodnutie 1/2014/ROEP Modra o schválení registra zo dňa 31.3.2014 právoplatné dňa 24.4.2014', $record->getMemo('poz'));
+        self::assertSame(40777, $record->get('idc'));
+        self::assertSame(1, $record->get('clv'));
+        self::assertSame(57310050.0, $record->get('idn'));
+        self::assertSame(51014, $record->get('pvz'));
+        self::assertSame('Rozhodnutie 1/2014/ROEP Modra o schválení registra zo dňa 31.3.2014 právoplatné dňa 24.4.2014', $record->get('poz'));
         //</editor-fold>
 
         $table->close();
@@ -113,16 +113,16 @@ class FoxproTest extends AbstractTestCase
         //</editor-fold>
 
         $record = $table->moveTo(0);
-        self::assertSame(1.2, $record->getFloat('rate'));
+        self::assertSame(1.2, $record->get('rate'));
         self::assertSame('1', $record->get('general'));
 
         $record = $table->nextRecord();
-        self::assertSame(1.23, $record->getFloat('rate'));
-        self::assertEquals('2', $record->getString('general'));
+        self::assertSame(1.23, $record->get('rate'));
+        self::assertEquals('2', $record->get('general'));
 
         $record = $table->nextRecord();
-        self::assertSame(15.16, $record->getFloat('rate'));
-        self::assertEquals('3', $record->getString('general'));
+        self::assertSame(15.16, $record->get('rate'));
+        self::assertEquals('3', $record->get('general'));
     }
 
     protected function assertMemoImg(Table $table): void

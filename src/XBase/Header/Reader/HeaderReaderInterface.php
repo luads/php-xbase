@@ -2,7 +2,7 @@
 
 namespace XBase\Header\Reader;
 
-use XBase\Header\HeaderInterface;
+use XBase\Header\Header;
 
 interface HeaderReaderInterface
 {
@@ -11,7 +11,7 @@ interface HeaderReaderInterface
     public static function getFieldLength(): int;
 
     /**
-     * Reads data from file and build instance of HeaderInterface.
+     * Reads data from file and build instance of Header.
      */
-    public function read(): HeaderInterface;
+    public function read(): Header;
 }

@@ -2,8 +2,7 @@
 
 namespace XBase\Header\Writer;
 
-use XBase\Header\DBaseHeader;
-use XBase\Header\HeaderInterface;
+use XBase\Header\Header;
 use XBase\Header\Writer\Column\ColumnWriterFactory;
 use XBase\Stream\StreamWrapper;
 
@@ -17,7 +16,7 @@ abstract class AbstractHeaderWriter implements HeaderWriterInterface
         $this->fp = $fp;
     }
 
-    public function write(HeaderInterface $header): void
+    public function write(Header $header): void
     {
         $this->fp->seek(0);
 
@@ -26,9 +25,9 @@ abstract class AbstractHeaderWriter implements HeaderWriterInterface
         $this->writeRest($header);
     }
 
-    protected function writeFirstBlock(HeaderInterface $header): void
+    protected function writeFirstBlock(Header $header): void
     {
-        $this->fp->writeUChar($header->getVersion()); //0
+        $this->fp->writeUChar($header->version); //0
         $this->fp->write3ByteDate(time()); //1-3
         $this->fp->writeUInt($header->recordCount); //4-7
         $this->fp->writeUShort($header->length); //8-9
@@ -43,15 +42,15 @@ abstract class AbstractHeaderWriter implements HeaderWriterInterface
         $this->fp->write(str_pad('', 2, chr(0))); //30-31 //todo-different-table
     }
 
-    protected function writeColumns(HeaderInterface $header): void
+    protected function writeColumns(Header $header): void
     {
-        $columnWriter = ColumnWriterFactory::create($header->getVersion());
+        $columnWriter = ColumnWriterFactory::create($header->version);
         foreach ($header->columns as $column) {
             $columnWriter->write($this->fp, $column);
         }
     }
 
-    protected function writeRest(HeaderInterface $header): void
+    protected function writeRest(Header $header): void
     {
         $this->fp->writeUChar(0x0d);
     }

@@ -2,17 +2,12 @@
 
 namespace XBase\Header\Reader;
 
-use XBase\Header\VisualFoxproHeader;
+use XBase\Enum\TableType;
 
 class VisualFoxproHeaderReader extends AbstractHeaderReader
 {
     /** @var int Visual FoxPro backlist length */
     const VFP_BACKLIST_LENGTH = 263;
-
-    protected function getClass(): string
-    {
-        return VisualFoxproHeader::class;
-    }
 
     /**
      * @return float|int
@@ -29,7 +24,11 @@ class VisualFoxproHeaderReader extends AbstractHeaderReader
 
     protected function readRest(): void
     {
-        assert($this->header instanceof VisualFoxproHeader);
+        assert(in_array($this->header->version, [
+            TableType::VISUAL_FOXPRO,
+            TableType::VISUAL_FOXPRO_AI,
+            TableType::VISUAL_FOXPRO_VAR,
+        ]));
 
         $this->header->backlist = $this->fp->read(self::VFP_BACKLIST_LENGTH);
     }

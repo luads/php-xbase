@@ -25,6 +25,6 @@ class BlobConverter extends AbstractFieldDataConverter
     {
         $value = null === $value ? '' : (string) $value;
 
-        return str_pad($value, $this->column->getLength(), '0', STR_PAD_LEFT);
+        return str_pad($value, $this->column->length, '0', STR_PAD_LEFT);
     }
 }

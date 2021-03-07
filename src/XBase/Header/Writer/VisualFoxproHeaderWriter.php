@@ -3,15 +3,13 @@
 namespace XBase\Header\Writer;
 
 use XBase\Enum\TableType;
-use XBase\Header\HeaderInterface;
-use XBase\Header\VisualFoxproHeader;
+use XBase\Header\Header;
 
 class VisualFoxproHeaderWriter extends AbstractHeaderWriter
 {
-    protected function writeRest(HeaderInterface $header): void
+    protected function writeRest(Header $header): void
     {
-        assert($header instanceof VisualFoxproHeader);
-        assert(in_array($header->getVersion(), [
+        assert(in_array($header->version, [
             TableType::VISUAL_FOXPRO,
             TableType::VISUAL_FOXPRO_AI,
             TableType::VISUAL_FOXPRO_VAR,

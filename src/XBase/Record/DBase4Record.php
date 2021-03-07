@@ -6,13 +6,13 @@ use XBase\Enum\FieldType;
 
 class DBase4Record extends AbstractRecord
 {
-    public function get($columnName)
+    public function get(string $columnName)
     {
-        $column = $this->toColumn($columnName);
+        $column = $this->table->getColumn($columnName);
 
-        switch ($column->getType()) {
+        switch ($column->type) {
             case FieldType::DBASE4_BLOB: //todo dbase7 or 5 or 4? need to find documentation
-                return $this->getMemo($column->getName());
+                return $this->getMemo($column);
             default:
                 return parent::get($columnName);
         }

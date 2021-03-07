@@ -19,6 +19,6 @@ class DateConverter extends AbstractFieldDataConverter
 
     public function toBinaryString($value): string
     {
-        return null === $value ? str_pad('', $this->column->getLength()) : $value;
+        return null === $value ? str_pad('', $this->column->length) : $value;
     }
 }

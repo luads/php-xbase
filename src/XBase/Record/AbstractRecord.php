@@ -2,11 +2,11 @@
 
 namespace XBase\Record;
 
-use XBase\Column\ColumnInterface;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
+use XBase\Header\Column;
 use XBase\Memo\MemoObject;
-use XBase\Table;
+use XBase\Table\Table;
 
 abstract class AbstractRecord implements RecordInterface
 {
@@ -50,44 +50,18 @@ abstract class AbstractRecord implements RecordInterface
 
     public function __set(string $columnName, $value)
     {
-        $column = $this->toColumn($columnName);
+        $column = $this->table->getColumn($columnName);
 
-        if ((FieldType::DATETIME == $column->getType() || FieldType::DATE == $column->getType()) && is_string($value)) {
+        if ((FieldType::DATETIME == $column->type || FieldType::DATE == $column->type) && is_string($value)) {
             $value = strtotime($value);
         }
 
-        $this->setObject($column->getName(), $value);
+        $this->set($column->name, $value);
     }
 
     public function isDeleted(): bool
     {
         return $this->deleted;
-    }
-
-    /**
-     * @return ColumnInterface[]
-     *
-     * @deprecated since 1.3.5 and will be deleted in 1.4.
-     */
-    public function getColumns()
-    {
-        @trigger_error('Record::getColumns is deprecated and will be deleted in 1.4. Use should Table::getColumn instead');
-
-        return $this->table->getColumns();
-    }
-
-    /**
-     * @param $name
-     *
-     * @return ColumnInterface
-     *
-     * @deprecated since 1.3.5 and will be deleted in 1.4.
-     */
-    public function getColumn(string $name)
-    {
-        @trigger_error('Record::getColumn is deprecated and will be deleted in 1.4. Use should Table::getColumn instead');
-
-        return $this->table->getColumn($name);
     }
 
     public function getRecordIndex(): int
@@ -108,15 +82,15 @@ abstract class AbstractRecord implements RecordInterface
     }
 
     //<editor-fold desc="getters">
-    public function get($columnName)
+    public function get(string $columnName)
     {
-        $column = $this->toColumn($columnName);
+        $column = $this->table->getColumn($columnName);
 
-        switch ($column->getType()) {
+        switch ($column->type) {
             case FieldType::MEMO:
-                return $this->getMemo($column->getName());
+                return $this->getMemo($column);
             default:
-                return $this->data[$column->getName()] ?? null;
+                return $this->data[$column->name] ?? null;
         }
     }
 
@@ -126,81 +100,30 @@ abstract class AbstractRecord implements RecordInterface
     }
 
     /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use get()
-     */
-    public function getObject(ColumnInterface $column)
-    {
-        return $this->get($column->getName());
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use get()
-     */
-    public function getChar(string $columnName)
-    {
-        return $this->get($columnName);
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use get()
-     */
-    public function getString(string $columnName): string
-    {
-        return (string) $this->get($columnName);
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use get()
-     */
-    public function getNum(string $columnName)
-    {
-        return $this->get($columnName);
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use set()
-     */
-    public function getDate(string $columnName)
-    {
-        return $this->get($columnName);
-    }
-
-    /**
      * Get DATE(D) or DATETIME(T) data as object of \DateTime class.
      */
-    public function getDateTimeObject($columnName): ?\DateTimeInterface
+    public function getDateTimeObject(string $columnName): ?\DateTimeInterface
     {
         $column = $this->table->getColumn($columnName);
         $this->checkType($column, FieldType::DATE);
 
-        $data = $this->get($column->getName());
+        $data = $this->get($column->name);
 
         return \DateTime::createFromFormat('Ymd', $data);
     }
 
-    public function getTimeStamp($columnName): int
+    public function getTimeStamp(string $columnName): int
     {
-        return strtotime($this->getDate($columnName));
+        return strtotime($this->get($columnName));
     }
 
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use set()
-     */
-    public function getBoolean(string $columnName)
-    {
-        return $this->get($columnName);
-    }
-
-    /**
-     * @return false|string|null
-     */
-    public function getMemo(string $columnName)
+    protected function getMemo(Column $column)
     {
         if (!TableType::hasMemo($this->table->getVersion())) {
             throw new \LogicException('Table not supports Memo');
         }
 
-        if (null === $memoObject = $this->getMemoObject($columnName)) {
+        if (null === $memoObject = $this->getMemoObject($column->name)) {
             return null;
         }
 
@@ -217,43 +140,35 @@ abstract class AbstractRecord implements RecordInterface
             return null;
         }
 
-        return $this->table->getMemo()->get($pointer);
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use get()
-     */
-    public function getFloat(string $columnName)
-    {
-        return $this->data[$columnName];
+        return $this->table->memo->get($pointer);
     }
 
     //</editor-fold>
 
     //<editor-fold desc="setters">
-    public function set($columnName, $value): RecordInterface
+    public function set(string $columnName, $value): RecordInterface
     {
-        $column = $this->toColumn($columnName);
-        switch ($column->getType()) {
+        $column = $this->table->getColumn($columnName);
+        switch ($column->type) {
             case FieldType::CHAR:
-                return $this->setString($column->getName(), $value);
+                return $this->setString($column, $value);
             case FieldType::DOUBLE:
             case FieldType::FLOAT:
-                return $this->setFloat($column->getName(), $value);
+                return $this->setFloat($column, $value);
             case FieldType::DATE:
-                return $this->setDate($column->getName(), $value);
+                return $this->setDate($column, $value);
             case FieldType::DATETIME:
 //                $this->setDateTime($column, $value);
             case FieldType::LOGICAL:
-                return $this->setBoolean($column->getName(), $value);
+                return $this->setBoolean($column, $value);
             case FieldType::MEMO:
-                return $this->setMemo($column->getName(), $value);
+                return $this->setMemo($column, $value);
             case FieldType::NUMERIC:
-                return $this->setNum($column->getName(), $value);
+                return $this->setNum($column, $value);
             case FieldType::IGNORE:
                 return $this;
             default:
-                $this->setGenuine($column->getName(), $value);
+                $this->setGenuine($column->name, $value);
         }
 
         return $this;
@@ -274,61 +189,45 @@ abstract class AbstractRecord implements RecordInterface
         return $this->set($column, $value);
     }
 
-    /**
-     * @param string|ColumnInterface $columnName
-     */
-    public function setString($columnName, $value): self
+    protected function setString(Column $column, $value): self
     {
-        $column = $this->toColumn($columnName);
-        $this->setGenuine($column->getName(), $value);
+        $this->setGenuine($column->name, $value);
 
         return $this;
     }
 
-    /**
-     * @param string|ColumnInterface $columnName
-     */
-    public function setNum($columnName, $value): self
+    protected function setNum(Column $column, $value): self
     {
-        $column = $this->toColumn($columnName);
         $this->checkType($column, FieldType::NUMERIC);
 
         if (is_string($value)) {
             $value = (float) str_replace(',', '.', $value);
         }
 
-        $this->setGenuine($column->getName(), $value);
+        $this->setGenuine($column->name, $value);
 
         return $this;
     }
 
-    public function setFloat($columnName, $value): self
+    protected function setFloat(Column $column, $value): self
     {
-        $column = $this->toColumn($columnName);
         $this->checkType($column, [FieldType::DOUBLE, FieldType::FLOAT]);
 
         if (is_numeric($value)) {
-            $this->data[$column->getName()] = (float) $value;
+            $this->data[$column->name] = (float) $value;
         } elseif (is_string($value)) {
             $value = str_replace(',', '.', trim($value));
         }
 
         if (null === $value || '' === $value) {
-            $this->data[$column->getName()] = null;
+            $this->data[$column->name] = null;
         }
 
         return $this;
     }
 
-    /**
-     * @param string|ColumnInterface    $columnName
-     * @param string|\DateTimeInterface $value
-     *
-     * @return bool
-     */
-    public function setDate($columnName, $value): self
+    protected function setDate(Column $column, $value): self
     {
-        $column = $this->toColumn($columnName);
         $this->checkType($column, FieldType::DATE);
 
         if ($value instanceof \DateTimeInterface) {
@@ -337,36 +236,32 @@ abstract class AbstractRecord implements RecordInterface
             $value = date('Ymd', $value);
         }
 
-        $this->setGenuine($column->getName(), $value);
+        $this->setGenuine($column->name, $value);
 
         return $this;
     }
 
-    /**
-     * @param ColumnInterface|string $columnName
-     */
-    public function setBoolean($columnName, bool $value): self
+    protected function setBoolean(Column $column, bool $value): self
     {
-        $column = $this->toColumn($columnName);
         $this->checkType($column, FieldType::LOGICAL);
 
         if (is_bool($value)) {
-            $this->setGenuine($column->getName(), $value);
+            $this->setGenuine($column->name, $value);
         } elseif (is_string($value)) {
             switch (strtoupper($value)) {
                 case 'T':
                 case 'Y':
                 case 'J':
                 case '1':
-                    $this->data[$column->getName()] = true;
+                    $this->data[$column->name] = true;
                     break;
                 case 'F':
                 case 'N':
                 case '0':
-                    $this->data[$column->getName()] = false;
+                    $this->data[$column->name] = false;
                     break;
                 default:
-                    $this->data[$column->getName()] = null;
+                    $this->data[$column->name] = null;
             }
         }
 
@@ -376,16 +271,15 @@ abstract class AbstractRecord implements RecordInterface
     /**
      * @param $value
      */
-    public function setMemo($columnName, $value): RecordInterface
+    protected function setMemo(Column $column, $value): RecordInterface
     {
-        $column = $this->toColumn($columnName);
         $this->checkType($column, FieldType::MEMO);
 
-        if (empty($this->data[$column->getName()]) && $value) {
-            $this->data[$column->getName()] = $this->table->getMemo()->create($value); //todo
-        } elseif (!empty($this->data[$column->getName()])) {
-            $pointer = $this->data[$column->getName()];
-            $this->table->getMemo()->update($pointer, $value); //todo
+        if (empty($this->data[$column->name]) && $value) {
+            $this->data[$column->name] = $this->table->memo->create($value); //todo
+        } elseif (!empty($this->data[$column->name])) {
+            $pointer = $this->data[$column->name];
+            $this->table->memo->update($pointer, $value); //todo
         }
 
         return $this;
@@ -395,71 +289,9 @@ abstract class AbstractRecord implements RecordInterface
 
     public function copyFrom(RecordInterface $record): void
     {
-        foreach ($this->table->getColumns() as $column) {
-            $this->set($column->getName(), $record->get($column->getName()));
+        foreach ($this->table->header->columns as $column) {
+            $this->set($column->name, $record->get($column->name));
         }
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use set()
-     */
-    public function setStringByName(string $columnName, $value): void
-    {
-        $this->setString($this->table->getColumn($columnName), $value);
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use set()
-     */
-    public function setStringByIndex($columnIndex, $value): void
-    {
-        $this->setString($this->table->getColumn($columnIndex), $value);
-    }
-
-    /**
-     * @deprecated since 1.3 and will be deleted in 2.0. Use get()
-     */
-    public function forceGetString(string $columnName)
-    {
-        $data = trim($this->choppedData[$columnName]);
-
-        if ($this->table->getConvertFrom()) {
-            $data = iconv($this->table->getConvertFrom(), 'utf-8', $data);
-        }
-
-        if (!isset($data[0]) || 0 === ord($data[0])) {
-            return null;
-        }
-
-        return $data;
-    }
-
-    /**
-     * @deprecated since 1.3 and will be deleted in 2.0. Use set()
-     */
-    public function forceSetString(ColumnInterface $column, $value): void
-    {
-        if ($this->table->getConvertFrom()) {
-            $value = iconv('utf-8', $this->table->getConvertFrom(), $value);
-        }
-
-        $this->choppedData[$column->getName()] = substr($value, 0, $column->getLength());
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use set()
-     */
-    public function setObjectByName(string $columnName, $value)
-    {
-        return $this->setObject($this->table->getColumn($columnName), $value);
-    }
-
-    /**
-     * @deprecated since 1.3 and will be delete in 2.0. Use set()
-     */
-    public function setObjectByIndex($columnIndex, $value)
-    {
-        return $this->setObject($this->table->getColumn($columnIndex), $value);
     }
 
     /**
@@ -471,48 +303,17 @@ abstract class AbstractRecord implements RecordInterface
     }
 
     /**
-     * Returns raw values trimmed and converted according to encoding.
-     *
-     * @return array|string[]
-     *
-     * @deprecated since 1.3 and will be deleted in 2.0. Use getData()
-     */
-    public function getChoppedData()
-    {
-        $fields = [];
-
-        foreach ($this->choppedData as $columnName => $columnValue) {
-            $fields[$columnName] = $this->forceGetString($columnName);
-        }
-
-        return $fields;
-    }
-
-    protected function toColumn($columnName): ColumnInterface
-    {
-        if (is_string($columnName)) {
-            return $this->table->getColumn($columnName);
-        }
-
-        if ($columnName instanceof ColumnInterface) {
-            return $columnName;
-        }
-
-        throw new \LogicException('Incorrect first argument');
-    }
-
-    /**
      * @param string|array $types
      */
-    protected function checkType(ColumnInterface $column, $types): void
+    protected function checkType(Column $column, $types): void
     {
         if (!is_array($types)) {
             $types = [$types];
         }
 
-        if (!in_array($column->getType(), $types)) {
+        if (!in_array($column->type, $types)) {
             trigger_error(
-                sprintf("Column '%s' is not one of types [%s]", $column->getName(), implode(', ', $types)),
+                sprintf("Column '%s' is not one of types [%s]", $column->name, implode(', ', $types)),
                 E_USER_ERROR
             );
         }

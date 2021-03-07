@@ -3,7 +3,6 @@
 namespace XBase\Tests;
 
 use XBase\Column\ColumnInterface;
-use XBase\Column\DBase7Column;
 use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
@@ -75,9 +74,9 @@ class DBaseTest extends AbstractTestCase
         /** @var DBaseRecord $record */
         $record = $table->nextRecord();
         self::assertInstanceOf(RecordInterface::class, $record);
-        $columns = $record->getColumns();
+        $columns = $table->getColumns();
         self::assertCount(18, $columns);
-        self::assertInstanceOf(ColumnInterface::class, $record->getColumn('regn'));
+        self::assertInstanceOf(ColumnInterface::class, $table->getColumn('regn'));
 
         $json = <<<JSON
 {
@@ -103,43 +102,19 @@ class DBaseTest extends AbstractTestCase
 JSON;
         self::assertJsonStringEqualsJsonString($json, json_encode($record->getData()));
 
-        $json = <<<JSON
-{
-    "regn": "1",
-    "plan": "\u0410",
-    "num_sc": "10605",
-    "a_p": "1",
-    "vr": "223717",
-    "vv": "0",
-    "vitg": "223717.0000",
-    "ora": "478743",
-    "ova": "0",
-    "oitga": "478743.0000",
-    "orp": "636389",
-    "ovp": "0",
-    "oitgp": "636389.0000",
-    "ir": "66071",
-    "iv": "0",
-    "iitg": "66071.0000",
-    "dt": "20190801",
-    "priz": "1"
-}
-JSON;
-        self::assertJsonStringEqualsJsonString($json, json_encode($record->getChoppedData()));
-
         // num
-        self::assertSame('10605', $record->getNum('num_sc'));
-        self::assertSame(0.0, $record->getNum('vv'));
+        self::assertSame('10605', $record->get('num_sc'));
+        self::assertSame(0.0, $record->get('vv'));
         self::assertSame(0.0, $record->vv);
         // char
-        self::assertSame('А', $record->getString('plan')); //cyrilic
+        self::assertSame('А', $record->get('plan')); //cyrilic
         self::assertSame('А', $record->plan); //cyrilic
         // date
-        self::assertSame('20190801', $record->getDate('dt'));
-        self::assertSame('20190801', $record->getObject($record->getColumn('dt')));
+        self::assertSame('20190801', $record->get('dt'));
+        self::assertSame('20190801', $record->get('dt'));
         self::assertSame('2019-08-01', $record->getDateTimeObject('dt')->format('Y-m-d'));
 //        self::assertSame('Thu, 01 Aug 2019 00:00:00 +0000', $record->dt);
-        $dt = new \DateTime($record->forceGetString('dt'));
+        $dt = new \DateTime($record->get('dt'));
         self::assertEquals('2019-08-01T00:00:00+00:00', $dt->format(DATE_W3C));
         //</editor-fold>
 
@@ -240,11 +215,11 @@ JSON;
         $this->assertMemoImg($table);
 
         $record = $table->moveTo(0);
-        self::assertSame(1.2, $record->getFloat('rate'));
+        self::assertSame(1.2, $record->get('rate'));
         $record = $table->nextRecord();
-        self::assertSame(1.23, $record->getFloat('rate'));
+        self::assertSame(1.23, $record->get('rate'));
         $record = $table->nextRecord();
-        self::assertSame(15.16, $record->getFloat('rate'));
+        self::assertSame(15.16, $record->get('rate'));
     }
 
     public function testDbase7(): void
@@ -320,17 +295,17 @@ JSON;
 
         $record = $table->moveTo(0);
         self::assertSame(0, $record->get('auto_inc'));
-        self::assertSame(1, $record->getInt('integer'));
-        self::assertSame(4.0, $record->getNum('large_int'));
+        self::assertSame(1, $record->get('integer'));
+        self::assertSame(4.0, $record->get('large_int'));
         self::assertNotEmpty($record->getTimestamp('datetime'));
         self::assertSame('1800-01-01 01:01:01', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         self::assertSame('qwe', trim($record->get('blob')));
-        self::assertSame(null, $record->getObject($table->getColumn('dbase_ole')));
+        self::assertSame(null, $record->get('dbase_ole'));
 
         $record = $table->nextRecord();
-        self::assertSame(1, $record->getInt('auto_inc'));
-        self::assertSame(2, $record->getInt('integer'));
-        self::assertSame(5.0, $record->getNum('large_int'));
+        self::assertSame(1, $record->get('auto_inc'));
+        self::assertSame(2, $record->get('integer'));
+        self::assertSame(5.0, $record->get('large_int'));
         self::assertSame('1970-01-01 00:00:00', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         /** @var MemoObject $memoImg */
         $memoImg = $record->getMemoObject('image');
@@ -341,9 +316,9 @@ JSON;
         self::assertSame($memoImg->getLength(), strlen($memoImg->getData())); //png
 
         $record = $table->nextRecord();
-        self::assertSame(2, $record->getInt('auto_inc'));
-        self::assertSame(3, $record->getInt('integer'));
-        self::assertSame(6.0, $record->getNum('large_int'));
+        self::assertSame(2, $record->get('auto_inc'));
+        self::assertSame(3, $record->get('integer'));
+        self::assertSame(6.0, $record->get('large_int'));
         self::assertNotEmpty($record->getTimestamp('datetime'));
         self::assertSame('2020-02-20 20:20:20', $record->getDateTimeObject('datetime')->format('Y-m-d H:i:s'));
         $memoImg = $record->getMemoObject('image');
@@ -357,7 +332,6 @@ JSON;
         self::assertSame(15, $table->getRecordCount()); //has deleted
         self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
 
-        /* @var DBase7Column $record */
         self::assertSame('1900-01-01 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
         self::assertSame('1900-01-02 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));
         self::assertSame('1900-01-03 00:00:00', $table->nextRecord()->getDateTimeObject('ts')->format('Y-m-d H:i:s'));

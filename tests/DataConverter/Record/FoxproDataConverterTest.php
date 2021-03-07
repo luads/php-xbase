@@ -3,12 +3,13 @@
 namespace XBase\Tests\DataConverter\Record;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Record\FoxproDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
+use XBase\Header\Column;
+use XBase\Header\Header;
 use XBase\Record\FoxproRecord;
-use XBase\Table;
+use XBase\Table\Table;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
@@ -25,70 +26,62 @@ class FoxproDataConverterTest extends TestCase
         //<editor-fold desc="columns">
         $columns = [];
 
-        $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('name');
-        $c->method('getType')->willReturn(FieldType::CHAR);
-        $c->method('getBytePos')->willReturn(1);
-        $c->method('getLength')->willReturn(20);
+        $columns[] = $c = new Column();
+        $c->name = 'name';
+        $c->type = FieldType::CHAR;
+        $c->bytePosition = 1;
+        $c->length = 20;
 
-        $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('birthday');
-        $c->method('getType')->willReturn(FieldType::DATE);
-        $c->method('getBytePos')->willReturn(21);
-        $c->method('getLength')->willReturn(8);
+        $columns[] = $c = new Column();
+        $c->name = 'birthday';
+        $c->type = FieldType::DATE;
+        $c->bytePosition = 21;
+        $c->length = 8;
 
-        $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('is_man');
-        $c->method('getType')->willReturn(FieldType::LOGICAL);
-        $c->method('getBytePos')->willReturn(29);
-        $c->method('getLength')->willReturn(1);
+        $columns[] = $c = new Column();
+        $c->name = 'is_man';
+        $c->type = FieldType::LOGICAL;
+        $c->bytePosition = 29;
+        $c->length = 1;
 
-        $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('bio');
-        $c->method('getType')->willReturn(FieldType::MEMO);
-        $c->method('getBytePos')->willReturn(30);
-        $c->method('getLength')->willReturn(10);
+        $columns[] = $c = new Column();
+        $c->name = 'bio';
+        $c->type = FieldType::MEMO;
+        $c->bytePosition = 30;
+        $c->length = 10;
 
-        $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('money');
-        $c->method('getType')->willReturn(FieldType::NUMERIC);
-        $c->method('getBytePos')->willReturn(40);
-        $c->method('getLength')->willReturn(20);
-        $c->method('getDecimalCount')->willReturn(4);
+        $columns[] = $c = new Column();
+        $c->name = 'money';
+        $c->type = FieldType::NUMERIC;
+        $c->bytePosition = 40;
+        $c->length = 20;
+        $c->decimalCount = 4;
 
-        $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('image');
-        $c->method('getType')->willReturn(FieldType::MEMO);
-        $c->method('getBytePos')->willReturn(60);
-        $c->method('getLength')->willReturn(10);
+        $columns[] = $c = new Column();
+        $c->name = 'image';
+        $c->type = FieldType::MEMO;
+        $c->bytePosition = 60;
+        $c->length = 10;
 
-        $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('rate');
-        $c->method('getType')->willReturn(FieldType::FLOAT);
-        $c->method('getBytePos')->willReturn(70);
-        $c->method('getLength')->willReturn(10);
-        $c->method('getDecimalCount')->willReturn(2);
+        $columns[] = $c = new Column();
+        $c->name = 'rate';
+        $c->type = FieldType::FLOAT;
+        $c->bytePosition = 70;
+        $c->length = 10;
+        $c->decimalCount = 2;
 
-        $columns[] = $c = $this->createMock(ColumnInterface::class);
-        $c->method('getName')->willReturn('general');
-        $c->method('getType')->willReturn(FieldType::GENERAL);
-        $c->method('getBytePos')->willReturn(80);
-        $c->method('getLength')->willReturn(10);
+        $columns[] = $c = new Column();
+        $c->name = 'general';
+        $c->type = FieldType::GENERAL;
+        $c->bytePosition = 80;
+        $c->length = 10;
         //</editor-fold>
 
-        $table = $this->createMock(Table::class);
-        $table
-            ->expects(self::atLeastOnce())
-            ->method('getVersion')
-            ->willReturn(TableType::FOXPRO_MEMO);
-        $table
-            ->expects(self::atLeastOnce())
-            ->method('getColumns')
-            ->willReturn($columns);
-        $table
-            ->expects(self::atLeastOnce())
-            ->method('getRecordByteLength')
-            ->willReturn(90);
+        $table = new Table();
+        $table->header = new Header();
+        $table->header->version = TableType::FOXPRO_MEMO;
+        $table->header->columns = $columns;
+        $table->header->recordByteLength = 90;
 
         $converter = new FoxproDataConverter($table);
         $array = $converter->fromBinaryString($rawData);

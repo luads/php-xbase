@@ -22,16 +22,9 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
 
     abstract protected function calculateBlockCount(string $data): int;
 
-    protected function resolveOptions($options = []): array
-    {
-        return array_merge([
-            'writable' => false,
-        ], parent::resolveOptions($options));
-    }
-
     public function open(): void
     {
-        if (!$this->options['writable']) {
+        if (empty($this->table->options['editMode'])) {
             parent::open();
 
             return;
@@ -51,7 +44,7 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
     public function close(): void
     {
         parent::close();
-        if ($this->options['writable'] && $this->cloneFilepath) {
+        if ($this->table->options['editMode'] && $this->cloneFilepath) {
             unlink($this->cloneFilepath);
             $this->cloneFilepath = null;
         }
@@ -117,8 +110,8 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
             $shift += $length;
         }
 
-        if (method_exists($this->table, 'onMemoBlocksDelete')) {
-            $this->table->onMemoBlocksDelete($blocks);
+        if (isset($this->table->handlers['onMemoBlocksDelete'])) {
+            $this->table->handlers['onMemoBlocksDelete']($blocks);
         }
     }
 

@@ -2,7 +2,7 @@
 
 namespace XBase\Header\Reader\Column;
 
-use XBase\Stream\Stream;
+use XBase\Header\Column;
 use XBase\Stream\StreamWrapper;
 
 abstract class AbstractColumnReader implements ColumnReaderInterface
@@ -12,38 +12,27 @@ abstract class AbstractColumnReader implements ColumnReaderInterface
         return 32;
     }
 
-    public function read(StreamWrapper $fp, int $colIndex, ?int $bytePos = null)
+    public function read(StreamWrapper $fp): Column
     {
         $memoryChunk = $fp->read(static::getHeaderLength());
         if (($len = strlen($memoryChunk)) !== static::getHeaderLength()) {
             throw new \LogicException('Column data expected length: '.static::getHeaderLength().' got: '.$len);
         }
 
-        $args = $this->extractArgs($memoryChunk);
-        array_push($args, $colIndex, $bytePos);
-        array_push($args, $bytePos);
-
-        $refClass = new \ReflectionClass(static::getColumnClass());
-
-        return $refClass->newInstanceArgs($args);
+        return $this->createColumn($memoryChunk);
     }
 
-    protected function extractArgs(string $memoryChunk): array
+    protected function createColumn(string $memoryChunk): Column
     {
-        $s = Stream::createFromString($memoryChunk);
+        $properties = $this->extractArgs($memoryChunk);
 
-        return [
-            $s->read(11), //0-10
-            $s->read(), //11
-            $s->readUInt(), //12-15
-            $s->readUChar(), //16
-            $s->readUChar(), //17
-            $s->read(2), //18-19
-            $s->readUChar(), //20
-            $s->read(2), //21-22
-            0 !== $s->readUChar(), //23
-            $s->read(7), //24-30
-            0 !== $s->readUChar(), //31
-        ];
+        $column = new Column();
+        foreach ($properties as $property => $value) {
+            $column->{$property} = $value;
+        }
+
+        return $column;
     }
+
+    abstract protected function extractArgs(string $memoryChunk): array;
 }

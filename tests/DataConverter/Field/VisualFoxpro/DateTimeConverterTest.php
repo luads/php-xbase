@@ -3,9 +3,9 @@
 namespace XBase\Tests\Record\DataConverter\Field\VisualFoxpro;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Field\VisualFoxpro\DateTimeConverter;
-use XBase\Table;
+use XBase\Header\Column;
+use XBase\Table\Table;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
@@ -21,8 +21,8 @@ class DateTimeConverterTest extends TestCase
      */
     public function test(string $dtSting): void
     {
-        $table = $this->createMock(Table::class);
-        $column = $this->createMock(ColumnInterface::class);
+        $table = new Table();
+        $column = new Column();
 
         $converter = new DateTimeConverter($table, $column);
         $binaryString = $converter->toBinaryString(\DateTime::createFromFormat('Y-m-d\TH:i:s.uP', $dtSting));
@@ -48,9 +48,8 @@ class DateTimeConverterTest extends TestCase
      */
     public function testFromBinaryStringNull(string $base64Value): void
     {
-        $table = $this->createMock(Table::class);
-        $column = $this->createMock(ColumnInterface::class);
-
+        $table = new Table();
+        $column = new Column();
         $converter = new DateTimeConverter($table, $column);
         self::assertNull($converter->fromBinaryString(base64_decode($base64Value)));
     }

@@ -12,10 +12,4 @@ class DBase7Memo extends DBase4Memo
         $this->fp->seek(20);
         $this->blockLengthInBytes = unpack('S', $this->fp->read(2))[1];
     }
-
-//    protected function toBinaryString(string $data, int $lengthInBlocks): string
-//    {
-//        $value = pack('N', self::BLOCK_SIGN). pack('L', strlen($data));
-//        return str_pad().$data, $lengthInBlocks * $this->getBlockLengthInBytes(), ' ');
-//    }
 }

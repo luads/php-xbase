@@ -2,16 +2,10 @@
 
 namespace XBase\Header\Reader;
 
-use XBase\Header\DBase7Header;
 use XBase\Header\Reader\Column\DBase7ColumnReader;
 
 class DBase7HeaderReader extends AbstractHeaderReader
 {
-    protected function getClass(): string
-    {
-        return DBase7Header::class;
-    }
-
     protected function extractArgs(): array
     {
         $args = parent::extractArgs();

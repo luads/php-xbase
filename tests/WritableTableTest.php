@@ -26,8 +26,8 @@ class WritableTableTest extends TestCase
 
         $table = new WritableTable($copyTo, ['encoding' => 'cp866']);
         $record = $table->nextRecord();
-        $record->setNum($record->getColumn('regn'), 2);
-        $record->setString($record->getColumn('plan'), 'Ы');
+        $record->set('regn', 2);
+        $record->set('plan', 'Ы');
         $table
             ->writeRecord()
             ->save()
@@ -35,8 +35,8 @@ class WritableTableTest extends TestCase
 
         $table = new Table($copyTo, ['encoding' => 'cp866']);
         $record = $table->nextRecord();
-        self::assertSame(2, $record->getNum('regn'));
-        self::assertSame('Ы', $record->getString('plan'));
+        self::assertSame(2, $record->get('regn'));
+        self::assertSame('Ы', $record->get('plan'));
         $table->close();
     }
 
@@ -59,15 +59,15 @@ class WritableTableTest extends TestCase
         $record = $table->appendRecord();
         self::assertInstanceOf(DBaseRecord::class, $record);
 
-        $record->setNum($table->getColumn('regn'), 3);
-        $record->setString($table->getColumn('plan'), 'Д');
-        $record->setString($table->getColumn('num_sc'), '10101');
-        $record->setString($table->getColumn('a_p'), '3');
-        $record->setNum($table->getColumn('vr'), 100);
-        $record->setNum($table->getColumn('vv'), 200);
-        $record->setNum($table->getColumn('vitg'), 300.0201);
-        $record->setDate($table->getColumn('dt'), new \DateTime('1970-01-03'));
-        $record->setNum($table->getColumn('priz'), 2);
+        $record->set('regn', 3);
+        $record->set('plan', 'Д');
+        $record->set('num_sc', '10101');
+        $record->set('a_p', '3');
+        $record->set('vr', 100);
+        $record->set('vv', 200);
+        $record->set('vitg', 300.0201);
+        $record->set('dt', new \DateTime('1970-01-03'));
+        $record->set('priz', 2);
         $table
             ->writeRecord()
             ->pack()
@@ -81,15 +81,15 @@ class WritableTableTest extends TestCase
         $table = new Table($copyTo, ['encoding' => 'cp866']);
         self::assertEquals(11, $table->getRecordCount());
         $record = $table->pickRecord(10);
-        self::assertSame(3, $record->getNum('regn'));
-        self::assertSame('Д', $record->getString('plan'));
-        self::assertSame('10101', $record->getString('num_sc'));
-        self::assertSame('3', $record->getString('a_p'));
-        self::assertSame(100.0, $record->getNum('vr'));
-        self::assertSame(200.0, $record->getNum('vv'));
-        self::assertSame(300.0201, $record->getNum('vitg'));
-        self::assertSame('19700103', $record->getDate('dt'));
-        self::assertSame(2, $record->getNum('priz'));
+        self::assertSame(3, $record->get('regn'));
+        self::assertSame('Д', $record->get('plan'));
+        self::assertSame('10101', $record->get('num_sc'));
+        self::assertSame('3', $record->get('a_p'));
+        self::assertSame(100.0, $record->get('vr'));
+        self::assertSame(200.0, $record->get('vv'));
+        self::assertSame(300.0201, $record->get('vitg'));
+        self::assertSame('19700103', $record->get('dt'));
+        self::assertSame(2, $record->get('priz'));
         $table->close();
     }
 
@@ -189,7 +189,7 @@ class WritableTableTest extends TestCase
         self::assertSame('socio', $record->socio);
         self::assertSame('apellido', $record->apellido);
         self::assertSame('nombre', $record->nombre);
-        self::assertSame('19700102', $record->getDate('fecnacim'));
+        self::assertSame('19700102', $record->get('fecnacim'));
         self::assertSame(86400, $record->getTimeStamp('fecnacim'));
         self::assertSame($fecnacim, $record->getDateTimeObject('fecnacim')->format('m/d/Y'));
         self::assertSame($fecingreso, $record->getDateTimeObject('fecingreso')->format('m/d/Y'));
@@ -199,7 +199,7 @@ class WritableTableTest extends TestCase
         self::assertSame('someone@email.com', $record->email);
         self::assertSame('1945-05-09', $record->getDateTimeObject('venciced')->format('Y-m-d'));
         self::assertSame('B', $record->nriesgo);
-        self::assertSame(5000.0, $record->getNum('salario'));
+        self::assertSame(5000.0, $record->get('salario'));
         $table->close();
     }
 

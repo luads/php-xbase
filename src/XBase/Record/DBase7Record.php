@@ -9,13 +9,13 @@ class DBase7Record extends DBase4Record
     /**
      * Get DATE(D) or DATETIME(T) data as object of \DateTime class.
      */
-    public function getDateTimeObject($columnName): ?\DateTimeInterface
+    public function getDateTimeObject(string $columnName): ?\DateTimeInterface
     {
         $column = $this->table->getColumn($columnName);
         $this->checkType($column, [FieldType::DATE, FieldType::TIMESTAMP]);
 
         $data = $this->get($columnName);
-        if (in_array($column->getType(), [FieldType::TIMESTAMP])) {
+        if (in_array($column->type, [FieldType::TIMESTAMP])) {
             return \DateTime::createFromFormat('U', (string) $this->getTimestamp($columnName));
         }
 

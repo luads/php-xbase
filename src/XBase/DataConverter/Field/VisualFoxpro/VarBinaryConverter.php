@@ -26,6 +26,6 @@ class VarBinaryConverter extends AbstractFieldDataConverter
      */
     public function toBinaryString($value): string
     {
-        return str_pad($value ?? '', $this->column->getLength() - 1, chr(0x00)).chr(0x03);
+        return str_pad($value ?? '', $this->column->length - 1, chr(0x00)).chr(0x03);
     }
 }

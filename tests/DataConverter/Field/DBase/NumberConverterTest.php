@@ -3,9 +3,9 @@
 namespace XBase\Tests\DataConverter\Field\DBase;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Field\DBase\NumberConverter;
-use XBase\Table;
+use XBase\Header\Column;
+use XBase\Table\Table;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
@@ -24,14 +24,10 @@ class NumberConverterTest extends TestCase
      */
     public function testRightDecimalCount(int $length, int $decimalCount, $in, string $out)
     {
-        $table = $this->createMock(Table::class);
-        $column = $this->createMock(ColumnInterface::class);
-        $column
-            ->method('getLength')
-            ->willReturn($length);
-        $column
-            ->method('getDecimalCount')
-            ->willReturn($decimalCount);
+        $table = new Table();
+        $column = new Column();
+        $column->length = $length;
+        $column->decimalCount = $decimalCount;
 
         $fieldConverter = new NumberConverter($table, $column);
         self::assertSame($out, $fieldConverter->toBinaryString($in));

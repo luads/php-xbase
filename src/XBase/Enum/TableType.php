@@ -88,4 +88,31 @@ final class TableType
                 return [FieldType::BLOB, FieldType::MEMO];
         }
     }
+
+    public static function all(): array
+    {
+        return [
+            self::DBASE_II,
+            self::DBASE_III_PLUS_NOMEMO,
+            self::DBASE_7_NOMEMO,
+            self::VISUAL_FOXPRO,
+            self::VISUAL_FOXPRO_AI,
+            self::VISUAL_FOXPRO_VAR,
+            self::DBASE_IV_SQL_TABLE_NOMEMO,
+            self::DBASE_IV_SQL_SYSTEM_NOMEMO,
+            self::DBASE_III_PLUS_MEMO,
+            self::DBASE_IV_MEMO,
+            self::DBASE_7_MEMO,
+            self::DBASE_IV_SQL_TABLE_MEMO,
+            self::SMT,
+            self::DBASE_IV_SQL_SYSTEM_MEMO,
+            self::FOXPRO_MEMO,
+            self::FOXBASE,
+        ];
+    }
+
+    public static function has(int $type): bool
+    {
+        return in_array($type, self::all());
+    }
 }

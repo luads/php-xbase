@@ -29,7 +29,7 @@ class IntegerConverter extends AbstractFieldDataConverter
     public function toBinaryString($value): string
     {
         if (null === $value) {
-            return str_pad('', $this->column->getLength(), chr(0x00));
+            return str_pad('', $this->column->length, chr(0x00));
         }
 
         return pack('i', $value);

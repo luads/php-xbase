@@ -3,7 +3,7 @@
 namespace XBase\Header\Reader;
 
 use XBase\Exception\TableException;
-use XBase\Header\HeaderInterface;
+use XBase\Header\Header;
 use XBase\Header\Reader\Column\ColumnReaderFactory;
 use XBase\Stream\Stream;
 
@@ -15,7 +15,7 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
     /** @var Stream */
     protected $fp;
 
-    /** @var HeaderInterface|null */
+    /** @var Header|null */
     protected $header;
 
     public function __construct(string $filepath)
@@ -34,7 +34,7 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
         return 32;
     }
 
-    public function read(): HeaderInterface
+    public function read(): Header
     {
         $this->fp->seek(0);
 
@@ -49,14 +49,7 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
 
     protected function readFirstBlock(): void
     {
-        $refClass = new \ReflectionClass($this->getClass());
-        $namedArguments = $this->extractArgs();
-        //the values in the array are mapped to constructor arguments positionally
-        $this->header = $refClass->newInstance();
-        foreach ($namedArguments as $propertyName => $value) {
-            assert(property_exists($this->header, $propertyName));
-            $this->header->{$propertyName} = $value;
-        }
+        $this->header = new Header($this->extractArgs());
     }
 
     protected function readColumns(): void
@@ -74,12 +67,15 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
         }
 
         $bytePos = 1;
-        $columnReader = ColumnReaderFactory::create($this->header->getVersion());
-        $index = 0;
+        $columnReader = ColumnReaderFactory::create($this->header->version);
         for ($i = 0; $i < $columnsCount; $i++) {
-            $column = $columnReader->read($this->fp, $index++, $bytePos);
-            $bytePos += $column->getLength();
-            $this->header->addColumn($column);
+            $column = $columnReader->read($this->fp);
+            $column->columnIndex = $i;
+            $column->bytePosition = $bytePos;
+
+            $this->header->columns[] = $column;
+
+            $bytePos += $column->length;
         }
 
         $this->checkHeaderTerminator($terminatorLength);
@@ -90,7 +86,7 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
     }
 
     /**
-     * @return array named argument for certain implementation of HeaderInterface
+     * @return array named argument for certain implementation of Header
      */
     protected function extractArgs(): array
     {

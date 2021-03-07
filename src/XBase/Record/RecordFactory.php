@@ -9,7 +9,7 @@ use XBase\DataConverter\Record\FoxproDataConverter;
 use XBase\DataConverter\Record\RecordDataConverterInterface;
 use XBase\DataConverter\Record\VisualFoxproDataConverter;
 use XBase\Enum\TableType;
-use XBase\Table;
+use XBase\Table\Table;
 
 class RecordFactory
 {
