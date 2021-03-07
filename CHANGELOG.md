@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.3.5
+
+### deprecations
+- AbstractRecord::getColumns() use should Table::getColumn() instead.
+- AbstractRecord::getColumn(name $name) use should Table::getColumn() instead.
+
+
 ## 1.3.2
 
 - Table::__constructor accepts options array. Available options: `encoding`, `columns`.

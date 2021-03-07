@@ -66,9 +66,13 @@ abstract class AbstractRecord implements RecordInterface
 
     /**
      * @return ColumnInterface[]
+     *
+     * @deprecated since 1.3.5 and will be deleted in 1.4.
      */
     public function getColumns()
     {
+        @trigger_error('Record::getColumns is deprecated and will be deleted in 1.4. Use should Table::getColumn instead');
+
         return $this->table->getColumns();
     }
 
@@ -76,9 +80,13 @@ abstract class AbstractRecord implements RecordInterface
      * @param $name
      *
      * @return ColumnInterface
+     *
+     * @deprecated since 1.3.5 and will be deleted in 1.4.
      */
     public function getColumn(string $name)
     {
+        @trigger_error('Record::getColumn is deprecated and will be deleted in 1.4. Use should Table::getColumn instead');
+
         return $this->table->getColumn($name);
     }
 
@@ -162,7 +170,7 @@ abstract class AbstractRecord implements RecordInterface
      */
     public function getDateTimeObject($columnName): ?\DateTimeInterface
     {
-        $column = $this->getColumn($columnName);
+        $column = $this->table->getColumn($columnName);
         $this->checkType($column, FieldType::DATE);
 
         $data = $this->get($column->getName());
@@ -483,7 +491,7 @@ abstract class AbstractRecord implements RecordInterface
     protected function toColumn($columnName): ColumnInterface
     {
         if (is_string($columnName)) {
-            return $this->getColumn($columnName);
+            return $this->table->getColumn($columnName);
         }
 
         if ($columnName instanceof ColumnInterface) {
