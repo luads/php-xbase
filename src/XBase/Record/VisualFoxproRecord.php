@@ -159,7 +159,7 @@ class VisualFoxproRecord extends FoxproRecord
      */
     public function getDateTimeObject($columnName): ?\DateTimeInterface
     {
-        $column = $this->getColumn($columnName);
+        $column = $this->table->getColumn($columnName);
         $this->checkType($column, [FieldType::DATE, FieldType::DATETIME]);
         if (in_array($column->getType(), [FieldType::DATETIME])) {
             return $this->getDateTime($column->getName());

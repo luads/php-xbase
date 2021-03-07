@@ -11,7 +11,7 @@ class DBase7Record extends DBase4Record
      */
     public function getDateTimeObject($columnName): ?\DateTimeInterface
     {
-        $column = $this->getColumn($columnName);
+        $column = $this->table->getColumn($columnName);
         $this->checkType($column, [FieldType::DATE, FieldType::TIMESTAMP]);
 
         $data = $this->get($columnName);
