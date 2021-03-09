@@ -48,17 +48,18 @@ class FoxproMemo extends AbstractWritableMemo
         }
 
         $this->fp->seek($pointer * $this->blockLengthInBytes);
-        $type = unpack('N', $this->fp->read(self::BLOCK_TYPE_LENGTH)); //todo figure out type-enums
+        $info = unpack('N', $this->fp->read(self::BLOCK_TYPE_LENGTH)); //todo figure out type-enums
 
         $memoLength = unpack('N', $this->fp->read(self::BLOCK_LENGTH_LENGTH));
         $result = $this->fp->read($memoLength[1]);
 
-        $type = $this->guessDataType($result);
+        $info = $this->guessDataType($result);
+        assert(isset($info['type']));
         if ($this->table->options['encoding']) {
             $result = iconv($this->table->options['encoding'], 'utf-8', $result);
         }
 
-        return new MemoObject($result, $type, $pointer, $memoLength[1]);
+        return new MemoObject($result, $info['type'], $pointer, $memoLength[1], $info);
     }
 
     protected function calculateBlockCount(string $data): int

@@ -1,21 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Tests\Writable;
+namespace XBase\Tests\TableEditor;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
 use XBase\Record\VisualFoxproRecord;
 use XBase\Stream\Stream;
-use XBase\Table;
-use XBase\WritableTable;
+use XBase\TableReader;
+use XBase\TableEditor;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
  *
- * @coversDefaultClass \XBase\WritableTable
+ * @coversDefaultClass \XBase\TableEditor
  */
-class VisualFoxproTableTest extends TestCase
+class VisualFoxproTest extends TestCase
 {
     use CloneTableTrait;
 
@@ -24,7 +24,7 @@ class VisualFoxproTableTest extends TestCase
     public function testReSave(): void
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
         $table->nextRecord();
         $table
             ->writeRecord()
@@ -49,7 +49,7 @@ class VisualFoxproTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
         $table->writeRecord();
         $table->close();
         self::assertFileEquals(self::FILEPATH, $copyTo);
@@ -62,7 +62,7 @@ class VisualFoxproTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
         $table->appendRecord();
         $table->deleteRecord();
         $table->writeRecord();
@@ -77,7 +77,7 @@ class VisualFoxproTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
         self::assertSame(TableType::VISUAL_FOXPRO_VAR, $table->getVersion());
         self::assertSame(3, $table->getRecordCount());
         $table->appendRecord();
@@ -96,7 +96,7 @@ class VisualFoxproTableTest extends TestCase
 
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
         self::assertEquals(3, $table->getRecordCount());
         self::assertEquals(TableType::VISUAL_FOXPRO_VAR, $table->getVersion());
 
@@ -126,7 +126,7 @@ class VisualFoxproTableTest extends TestCase
             ->save()
             ->close();
 
-        $table = new Table($copyTo);
+        $table = new TableReader($copyTo);
         self::assertEquals(4, $table->getRecordCount());
 
         $record = $table->pickRecord(3);
@@ -158,7 +158,7 @@ class VisualFoxproTableTest extends TestCase
     public function testMemoUpdate(): void
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
 
         $record = $table->pickRecord(0);
         self::assertNotEmpty($record->get('bio'));
@@ -187,7 +187,7 @@ class VisualFoxproTableTest extends TestCase
             ->save()
             ->close();
 
-        $table = new Table($copyTo);
+        $table = new TableReader($copyTo);
         $record = $table->pickRecord(0);
         self::assertSame($bio0, $record->get('bio'));
         self::assertSame(5140, $record->getGenuine('bio'));
@@ -207,7 +207,7 @@ class VisualFoxproTableTest extends TestCase
     public function testDeleteMemo(): void
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
         self::assertSame(3, $table->getRecordCount());
         $info = pathinfo($copyTo);
         $memoFile = "{$info['dirname']}/{$info['filename']}.fpt";
@@ -230,7 +230,7 @@ class VisualFoxproTableTest extends TestCase
             ->close();
 
         $deletedBlocks = 427 + 160;
-        $table = new Table($copyTo);
+        $table = new TableReader($copyTo);
         self::assertSame(2, $table->getRecordCount());
         $record = $table->pickRecord(0);
         self::assertSame($bio1, $record->get('bio'));
@@ -246,7 +246,7 @@ class VisualFoxproTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
         self::assertSame(3, $table->getRecordCount());
         $record = $table->appendRecord();
         $record->set('name', 'end marker');
@@ -267,7 +267,7 @@ class VisualFoxproTableTest extends TestCase
     {
         $copyTo = $this->duplicateFile(self::FILEPATH);
 
-        $table = new WritableTable($copyTo);
+        $table = new TableEditor($copyTo);
         self::assertSame(3, $table->getRecordCount());
         $table->nextRecord();
         $table
@@ -276,7 +276,7 @@ class VisualFoxproTableTest extends TestCase
             ->save()
             ->close();
 
-        $table = new Table($copyTo);
+        $table = new TableReader($copyTo);
         self::assertSame(2, $table->getRecordCount());
         $table->close();
 
@@ -291,7 +291,7 @@ class VisualFoxproTableTest extends TestCase
     public function testIssue91(): void
     {
         $copyTo = $this->duplicateFile(__DIR__.'/../Resources/foxpro/91.dbf');
-        $table = new WritableTable($copyTo, ['encoding' => 'cp1250']);
+        $table = new TableEditor($copyTo, ['encoding' => 'cp1250']);
         self::assertSame(0, $table->getRecordCount());
         $data = ['str1', 'str2', 'str3', 'str4'];
 
@@ -305,7 +305,7 @@ class VisualFoxproTableTest extends TestCase
             ->save()
             ->close();
 
-        $table = new Table($copyTo, ['encoding' => 'cp1250']);
+        $table = new TableReader($copyTo, ['encoding' => 'cp1250']);
         self::assertSame(4, $table->getRecordCount());
 
         $actual = [];

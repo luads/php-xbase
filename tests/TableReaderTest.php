@@ -10,13 +10,13 @@ use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
 use XBase\Record\DBaseRecord;
 use XBase\Record\RecordInterface;
-use XBase\Table;
+use XBase\TableReader;
 
-class DBaseTest extends AbstractTestCase
+class TableReaderTest extends AbstractTestCase
 {
     public function testRead(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
 
         self::assertSame(18, $table->getColumnCount());
         self::assertSame(10, $table->getRecordCount());
@@ -126,14 +126,14 @@ JSON;
         self::expectException(\Exception::class);
         self::expectExceptionMessage('Column none_column_value not found');
 
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
         $record = $table->nextRecord();
         $record->none_column_value;
     }
 
     public function testReadColumns(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
         $processerResords = 0;
         while ($record = $table->nextRecord()) {
             $data = $record->getData();
@@ -144,7 +144,7 @@ JSON;
 
     public function testDbase3(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseIII.dbf');
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseIII.dbf');
 
         self::assertSame(6, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
@@ -195,7 +195,7 @@ JSON;
 
     public function testDbase4(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseIV.dbf');
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseIV.dbf');
 
         self::assertSame(7, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
@@ -224,7 +224,7 @@ JSON;
 
     public function testDbase7(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseVII.dbf');
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseVII.dbf');
 
         self::assertSame(12, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
@@ -327,7 +327,7 @@ JSON;
 
     public function testDbase7ts(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_ts.dbf');
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseVII_ts.dbf');
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(15, $table->getRecordCount()); //has deleted
         self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
@@ -345,7 +345,7 @@ JSON;
 
     public function testDbase7int(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_int.dbf');
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseVII_int.dbf');
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(6, $table->getRecordCount());
         self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
@@ -360,7 +360,7 @@ JSON;
 
     public function testDbase7double(): void
     {
-        $table = new Table(__DIR__.'/Resources/dBase/dBaseVII_double.dbf');
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseVII_double.dbf');
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(5, $table->getRecordCount());
         self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
@@ -372,7 +372,7 @@ JSON;
         self::assertSame(0.0, $table->nextRecord()->getDouble('double'));
     }
 
-    protected function assertMemoImg(Table $table)
+    protected function assertMemoImg(TableReader $table)
     {
         $record = $table->moveTo(1);
         /** @var MemoObject $memoImg */

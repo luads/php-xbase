@@ -1,16 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Tests;
+namespace XBase\Tests\TableReader;
 
 use XBase\Enum\TableType;
 use XBase\Record\DBaseRecord;
-use XBase\Table;
+use XBase\TableReader;
+use XBase\Tests\AbstractTestCase;
 
 class DbfTest extends AbstractTestCase
 {
     public function test2ByteHeaderTerminator(): void
     {
-        $table = new Table(__DIR__.'/Resources/dbf/cbrf_122019N1.dbf', ['encoding' => 'cp866']);
+        $table = new TableReader(__DIR__.'/../Resources/dbf/cbrf_122019N1.dbf', ['encoding' => 'cp866']);
 
         self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->getVersion());
         self::assertSame(442, $table->getRecordCount());
@@ -22,7 +23,7 @@ class DbfTest extends AbstractTestCase
 
     public function testIssue88(): void
     {
-        $table = new Table(__DIR__.'/Resources/dbf/cbrf_122019N1.dbf', ['encoding' => 'cp866']);
+        $table = new TableReader(__DIR__.'/../Resources/dbf/cbrf_122019N1.dbf', ['encoding' => 'cp866']);
         /** @var DBaseRecord $record */
         $record = $table->nextRecord();
         self::assertSame(

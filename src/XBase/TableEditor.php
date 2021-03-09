@@ -4,14 +4,13 @@ namespace XBase;
 
 use XBase\Column\ColumnInterface;
 use XBase\Enum\TableType;
-use XBase\Header\Writer\HeaderWriterFactory;
-use XBase\Memo\MemoFactory;
 use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
+use XBase\Table\Saver as TableSaver;
 use XBase\Traits\CloneTrait;
 
-class WritableTable extends Table
+class TableEditor extends TableReader
 {
     use CloneTrait;
 
@@ -45,14 +44,15 @@ class WritableTable extends Table
         switch ($this->table->options['editMode']) {
             case self::EDIT_MODE_CLONE:
                 $this->clone();
-                $this->fp = Stream::createFromFile($this->cloneFilepath, 'rb+');
+                $this->table->stream = Stream::createFromFile($this->cloneFilepath, 'rb+');
                 break;
 
             case self::EDIT_MODE_REALTIME:
-                $this->fp = Stream::createFromFile($this->getFilepath(), 'rb+');
+                $this->table->stream = Stream::createFromFile($this->getFilepath(), 'rb+');
                 break;
         }
 
+        //todo find better place for this
         $this->table->handlers['onMemoBlocksDelete'] = function (array $blocks): void {
             $columns = $this->getMemoColumns();
 
@@ -80,13 +80,6 @@ class WritableTable extends Table
         };
     }
 
-    protected function openMemo(): void
-    {
-        if (TableType::hasMemo($this->getVersion())) {
-            $this->table->memo = MemoFactory::create($this->table);
-        }
-    }
-
     public function close(): void
     {
         parent::close();
@@ -94,15 +87,6 @@ class WritableTable extends Table
         if ($this->cloneFilepath && file_exists($this->cloneFilepath)) {
             unlink($this->cloneFilepath);
         }
-    }
-
-    public function create($filename, $fields)
-    {
-    }
-
-    protected function writeHeader(): void
-    {
-        HeaderWriterFactory::create($this->fp)->write($this->getHeader());
     }
 
     public function appendRecord(): RecordInterface
@@ -122,14 +106,14 @@ class WritableTable extends Table
         }
 
         $offset = $this->getHeader()->length + ($record->getRecordIndex() * $this->getHeader()->recordByteLength);
-        $this->fp->seek($offset);
-        $this->fp->write(RecordFactory::createDataConverter($this->table)->toBinaryString($record));
+        $this->getStream()->seek($offset);
+        $this->getStream()->write(RecordFactory::createDataConverter($this->table)->toBinaryString($record));
 
         if ($this->insertion) {
             $this->table->header->recordCount++;
         }
 
-        $this->fp->flush();
+        $this->getStream()->flush();
 
         if (self::EDIT_MODE_REALTIME === $this->table->options['editMode'] && $this->insertion) {
             $this->save();
@@ -169,9 +153,9 @@ class WritableTable extends Table
 
         $record->setDeleted(false);
 
-        $this->fp->seek($this->getHeader()->length + ($record->getRecordIndex() * $this->getHeader()->recordByteLength));
-        $this->fp->write(' ');
-        $this->fp->flush();
+        $this->getStream()->seek($this->getHeader()->length + ($record->getRecordIndex() * $this->getHeader()->recordByteLength));
+        $this->getStream()->write(' ');
+        $this->getStream()->flush();
 
         return $this;
     }
@@ -202,7 +186,7 @@ class WritableTable extends Table
         $this->getHeader()->recordCount = $newRecordCount;
 
         $size = $this->getHeader()->length + ($newRecordCount * $this->getHeader()->recordByteLength);
-        $this->fp->truncate($size);
+        $this->getStream()->truncate($size);
 
         if (self::EDIT_MODE_REALTIME === $this->table->options['editMode']) {
             $this->save();
@@ -217,13 +201,8 @@ class WritableTable extends Table
             $memo->save();
         }
 
-        $this->writeHeader();
-        //check end-of-file marker
-        $stat = $this->fp->stat();
-        $this->fp->seek($stat['size'] - 1);
-        if (self::END_OF_FILE_MARKER !== ($lastByte = $this->fp->readUChar())) {
-            $this->fp->writeUChar(self::END_OF_FILE_MARKER);
-        }
+        $saver = new TableSaver($this->table);
+        $saver->save();
 
         if (self::EDIT_MODE_CLONE === $this->table->options['editMode']) {
             copy($this->cloneFilepath, $this->getFilepath());

@@ -12,7 +12,7 @@ class DBase3Memo extends AbstractWritableMemo
     protected function readHeader(): void
     {
         $this->fp->seek(0);
-        $bytes = unpack('N', $this->fp->read(4));
+        $bytes = unpack('V', $this->fp->read(4));
         $this->nextFreeBlock = $bytes[1];
 
         $this->fp->seek(16);
@@ -42,8 +42,9 @@ class DBase3Memo extends AbstractWritableMemo
             }
         }
 
-        $type = $this->guessDataType($result);
-        if (MemoObject::TYPE_TEXT === $type) {
+        $info = $this->guessDataType($result);
+        assert(isset($info['type']));
+        if (MemoObject::TYPE_TEXT === $info['type']) {
             if (chr(0x00) === substr($result, -1)) {
                 $result = substr($result, 0, -1); // remove endline symbol (0x00)
             }
@@ -52,12 +53,17 @@ class DBase3Memo extends AbstractWritableMemo
             }
         }
 
-        return new MemoObject($result, $type, $pointer, $memoLength);
+        return new MemoObject($result, $info['type'], $pointer, $memoLength, $info);
+    }
+
+    protected function toBinaryString(string $data, int $lengthInBlocks): string
+    {
+        return str_pad($data.$this->getBlockEndMarker(), $lengthInBlocks * $this->getBlockLengthInBytes(), chr(0x00));
     }
 
     protected function calculateBlockCount(string $data): int
     {
-        return (int) ceil(strlen($data) + strlen($this->getBlockEndMarker()) / self::BLOCK_LENGTH_IN_BYTES);
+        return (int) ceil((strlen($data) + strlen($this->getBlockEndMarker())) / self::BLOCK_LENGTH_IN_BYTES);
     }
 
     private function getBlockEndMarker(): string

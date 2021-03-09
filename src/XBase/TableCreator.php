@@ -1,0 +1,86 @@
+<?php declare(strict_types=1);
+
+namespace XBase;
+
+use XBase\Enum\TableType;
+use XBase\Header\Column;
+use XBase\Header\Header;
+use XBase\Memo\Creator\MemoCreatorFactory;
+use XBase\Memo\MemoFactory;
+use XBase\Stream\Stream;
+use XBase\Table\Saver;
+use XBase\Table\Table;
+use XBase\Table\TableAwareTrait;
+
+class TableCreator
+{
+    use TableAwareTrait;
+
+    public function __construct(string $filepath, Header $header)
+    {
+        $this->checkFilepath($filepath);
+        $this->checkHeader($header);
+
+        $this->table = new Table();
+        $this->table->filepath = $filepath;
+        $this->table->header = $header;
+        $this->table->options['create'] = true;
+    }
+
+    private function checkFilepath(string $filepath): void
+    {
+        if (file_exists($filepath)) {
+            throw new \LogicException('File already exists: '.$filepath);
+        }
+    }
+
+    private function checkHeader(Header $header)
+    {
+        if (empty($header->version)) {
+            throw new \LogicException('Header version not specified');
+        }
+    }
+
+    public function addColumn(Column $column): self
+    {
+        $this->getHeader()->columns[] = $column;
+
+        return $this;
+    }
+
+    public function save(): self
+    {
+        $this->table->stream = Stream::createFromFile($this->table->filepath, 'wb');
+
+        $this->prepareHeader();
+
+        $saver = new Saver($this->table);
+        $saver->save();
+
+        if (TableType::hasMemo($version = $this->getHeader()->version)) {
+            MemoCreatorFactory::create($this->table)->createFile();
+            $this->table->memo = MemoFactory::create($this->table);
+        }
+
+        $this->table->stream->close();
+        $this->table->stream = null;
+
+        return $this;
+    }
+
+    private function prepareHeader(): void
+    {
+        $headerTopLength = 32; //todo HeaderSpecification
+        $fieldLength = 32; //todo HeaderSpecification
+
+        $header = $this->getHeader();
+        $header->length = $headerTopLength + count($header->columns) * $fieldLength + 1;
+
+        $header->recordByteLength = 1; //deleted mark
+        foreach ($header->columns as $column) {
+            assert($column->length);
+            $header->recordByteLength += $column->length;
+            $column->memAddress = $header->recordByteLength;
+        }
+    }
+}
