@@ -1,7 +1,7 @@
 <?php
 // php test-memo.php ../tests/Resources/foxpro/1.dbf memo_field_name
 
-use XBase\Table;
+use XBase\TableReader;
 
 require_once '../vendor/autoload.php';
 
@@ -20,7 +20,7 @@ if (false === $filepath || !is_file($filepath)) {
     die('Bad path to file realpath '.$argv[1]);
 }
 
-$table = new Table($filepath, ['encoding' => 'cp1252']);
+$table = new TableReader($filepath, ['encoding' => 'cp1252']);
 echo 'Record count: '.$table->getRecordCount() . PHP_EOL;
 
 $columns = $table->getColumns();

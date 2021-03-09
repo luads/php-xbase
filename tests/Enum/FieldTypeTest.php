@@ -16,12 +16,12 @@ class FieldTypeTest extends TestCase
      * @covers ::has
      * @dataProvider dataAll
      */
-    public function testAll(string $type, bool $isExists = true)
+    public function testAll(string $type, bool $isExists = true): void
     {
         self::assertSame($isExists, FieldType::has($type));
     }
 
-    public function dataAll()
+    public function dataAll(): iterable
     {
         yield ['M'];
         yield ['C'];

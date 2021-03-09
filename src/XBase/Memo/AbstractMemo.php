@@ -68,22 +68,34 @@ abstract class AbstractMemo implements MemoInterface
         $this->fp = null;
     }
 
-    protected function guessDataType(string $result): int
+    protected function guessDataType(string $string): array
     {
-        if (strlen($result) > 4) {
-            $bytes = unpack('n*', substr($result, 0, 4));
+        if (strlen($string) > 4) {
+            $bytes = unpack('n*', substr($string, 0, 4));
             switch ($bytes[1]) {
                 case 0x4D42: //BMP
+                    return [
+                        'type' => MemoObject::TYPE_IMAGE,
+                        'ext'  => 'bmp',
+                    ];
                 case 0xFFD8: //JPEG
-                    return MemoObject::TYPE_IMAGE;
+                    return [
+                        'type' => MemoObject::TYPE_IMAGE,
+                        'ext'  => 'jpeg',
+                    ];
                 case 0x8950: //PNG
                     if (0x4E47 === $bytes[2]) {
-                        return MemoObject::TYPE_IMAGE;
+                        return [
+                            'type' => MemoObject::TYPE_IMAGE,
+                            'ext'  => 'png',
+                        ];
                     }
                     break;
             }
         }
 
-        return MemoObject::TYPE_TEXT;
+        return [
+            'type' => MemoObject::TYPE_TEXT,
+        ];
     }
 }

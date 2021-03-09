@@ -5,11 +5,11 @@ namespace XBase\Tests;
 use PHPUnit\Framework\TestCase;
 use XBase\Enum\FieldType;
 use XBase\Memo\MemoObject;
-use XBase\Table;
+use XBase\TableReader;
 
 abstract class AbstractTestCase extends TestCase
 {
-    protected function assertRecords(Table $table)
+    protected function assertRecords(TableReader $table)
     {
         $columns = $table->getColumns();
 

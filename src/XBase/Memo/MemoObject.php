@@ -4,7 +4,7 @@ namespace XBase\Memo;
 
 class MemoObject
 {
-    const TYPE_TEXT = 1;
+    const TYPE_TEXT  = 1;
     const TYPE_IMAGE = 2;
 
     /** @var string */
@@ -15,13 +15,16 @@ class MemoObject
     private $pointer;
     /** @var int|null In bytes */
     private $length;
+    /** @var array|null */
+    private $info;
 
-    public function __construct(string $data, ?int $type = null, ?int $pointer = null, ?int $length = null)
+    public function __construct(string $data, ?int $type = null, ?int $pointer = null, ?int $length = null, ?array $info = [])
     {
+        $this->data = $data;
         $this->pointer = $pointer;
         $this->length = $length;
         $this->type = $type;
-        $this->data = $data;
+        $this->info = $info;
     }
 
     public function getPointer(): ?int
@@ -45,6 +48,11 @@ class MemoObject
     public function getData(): string
     {
         return $this->data;
+    }
+
+    public function getInfo(): ?array
+    {
+        return $this->info;
     }
 
     public function __toString()

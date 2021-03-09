@@ -22,7 +22,7 @@ class DBase7Record extends DBase4Record
         return new \DateTime($data);
     }
 
-    public function getTimestamp($columnName): int
+    public function getTimestamp(string $columnName): int
     {
         return $this->get($columnName);
     }

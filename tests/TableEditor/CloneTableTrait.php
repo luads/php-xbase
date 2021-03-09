@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Tests\Writable;
+namespace XBase\Tests\TableEditor;
 
 trait CloneTableTrait
 {
@@ -20,14 +20,14 @@ trait CloneTableTrait
     {
         $info = pathinfo($file);
         $newName = uniqid($info['filename'].'_');
-        $this->cloneFiles[] = $copyTo = "{$info['dirname']}/$newName.{$info['extension']}";
+        $this->cloneFiles[] = $copyTo = "{$info['dirname']}/_$newName.{$info['extension']}";
         self::assertTrue(copy($file, $copyTo));
 
         $memoExt = ['fpt', 'dbt'];
         foreach ($memoExt as $ext) {
             $memoFile = "{$info['dirname']}/{$info['filename']}.$ext";
             if (file_exists($memoFile)) {
-                $this->cloneFiles[] = $memoFileCopy = "{$info['dirname']}/$newName.$ext";
+                $this->cloneFiles[] = $memoFileCopy = "{$info['dirname']}/_$newName.$ext";
                 self::assertTrue(copy($memoFile, $memoFileCopy));
             }
         }

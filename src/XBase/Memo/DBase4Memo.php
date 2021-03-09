@@ -45,12 +45,13 @@ class DBase4Memo extends AbstractWritableMemo
         $result = $this->fp->read($memoLength[1]);
 //        $result = $this->fp->read($memoLength[1] - self::BLOCK_SIGN_LENGTH - self::BLOCK_LENGTH_LENGTH);
 
-        $type = $this->guessDataType($result);
-        if (MemoObject::TYPE_TEXT === $type && $this->table->options['encoding']) {
+        $info = $this->guessDataType($result);
+        assert(isset($info['type']));
+        if (MemoObject::TYPE_TEXT === $info['type'] && $this->table->options['encoding']) {
             $result = iconv($this->table->options['encoding'], 'utf-8', $result);
         }
 
-        return new MemoObject($result, $type, $pointer, $memoLength[1]);
+        return new MemoObject($result, $info['type'], $pointer, $memoLength[1]);
     }
 
     protected function getBlockLengthInBytes(): int

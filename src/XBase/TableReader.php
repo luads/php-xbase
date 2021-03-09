@@ -14,14 +14,15 @@ use XBase\Memo\MemoInterface;
 use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
-use XBase\Table\Table as TableStruct;
+use XBase\Table\Table;
+use XBase\Table\TableAwareTrait;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
  */
-class Table
+class TableReader
 {
-    const END_OF_FILE_MARKER = 0x1a;
+    use TableAwareTrait;
 
     /** @var Stream */
     protected $fp;
@@ -36,7 +37,7 @@ class Table
     protected $record;
 
     /**
-     * @var TableStruct
+     * @var Table
      */
     protected $table;
 
@@ -51,7 +52,7 @@ class Table
      */
     public function __construct(string $filepath, array $options = [])
     {
-        $this->table = new TableStruct();
+        $this->table = new Table();
         $this->table->filepath = $filepath;
 
         $this->table->options = $this->resolveOptions($options);
@@ -76,17 +77,17 @@ class Table
             throw new \Exception(sprintf('File %s cannot be found', $this->getFilepath()));
         }
 
-        if ($this->fp) {
-            $this->fp->close();
+        if ($this->table->stream) {
+            $this->table->stream->close();
         }
 
-        $this->fp = Stream::createFromFile($this->getFilepath());
+        $this->table->stream = Stream::createFromFile($this->getFilepath());
     }
 
     protected function readHeader(): void
     {
         $this->table->header = HeaderReaderFactory::create($this->getFilepath())->read();
-        $this->fp->seek($this->table->header->length);
+        $this->getStream()->seek($this->table->header->length);
 
         $this->recordPos = -1;
         $this->deleteCount = 0;
@@ -111,7 +112,7 @@ class Table
 
     public function close(): void
     {
-        $this->fp->close();
+        $this->getStream()->close();
         if ($memo = $this->getMemo()) {
             $memo->close();
         }
@@ -136,7 +137,8 @@ class Table
             }
 
             $this->recordPos++;
-            $this->record = RecordFactory::create($this->table, $this->recordPos, $this->fp->read($this->getHeader()->recordByteLength));
+            $this->record = RecordFactory::create($this->table, $this->recordPos, $this->getStream()
+                ->read($this->getHeader()->recordByteLength));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -159,15 +161,16 @@ class Table
             throw new TableException("Row with index {$position} does not exists");
         }
 
-        $curPos = $this->fp->tell();
+        $curPos = $this->getStream()->tell();
         $seekPos = $this->getHeader()->length + $position * $this->getHeader()->recordByteLength;
-        if (0 !== $this->fp->seek($seekPos)) {
+        if (0 !== $this->getStream()->seek($seekPos)) {
             throw new TableException("Failed to pick row at position {$position}");
         }
 
-        $record = RecordFactory::create($this->table, $position, $this->fp->read($this->getHeader()->recordByteLength));
+        $record = RecordFactory::create($this->table, $position, $this->getStream()
+            ->read($this->getHeader()->recordByteLength));
         // revert pointer
-        $this->fp->seek($curPos);
+        $this->getStream()->seek($curPos);
 
         return $record;
     }
@@ -192,9 +195,9 @@ class Table
 
             $this->recordPos--;
 
-            $this->fp->seek($this->getHeader()->length + ($this->recordPos * $this->getHeader()->recordByteLength));
+            $this->getStream()->seek($this->getHeader()->length + ($this->recordPos * $this->getHeader()->recordByteLength));
 
-            $this->record = RecordFactory::create($this->table, $this->recordPos, $this->fp->read($this->getRecordByteLength()));
+            $this->record = RecordFactory::create($this->table, $this->recordPos, $this->getStream()->read($this->getRecordByteLength()));
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -214,9 +217,10 @@ class Table
             return null;
         }
 
-        $this->fp->seek($this->getHeader()->length + ($index * $this->getHeader()->recordByteLength));
+        $this->getStream()->seek($this->getHeader()->length + ($index * $this->getHeader()->recordByteLength));
 
-        $this->record = RecordFactory::create($this->table, $this->recordPos, $this->fp->read($this->getHeader()->recordByteLength));
+        $this->record = RecordFactory::create($this->table, $this->recordPos, $this->getStream()
+            ->read($this->getHeader()->recordByteLength));
 
         return $this->record;
     }
@@ -326,7 +330,7 @@ class Table
      */
     protected function isOpen()
     {
-        return $this->fp ? true : false;
+        return $this->getStream() ? true : false;
     }
 
     public function isFoxpro(): bool

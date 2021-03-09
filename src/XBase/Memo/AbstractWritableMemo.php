@@ -85,6 +85,7 @@ abstract class AbstractWritableMemo extends AbstractMemo implements WritableMemo
     {
         $this->doDelete();
         $this->writeHeader();
+        unlink($this->filepath);
         copy($this->cloneFilepath, $this->filepath);
     }
 

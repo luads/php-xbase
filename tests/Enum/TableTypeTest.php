@@ -1,10 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Tests;
+namespace XBase\Tests\Enum;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Enum\TableType;
 
+/**
+ * @author Alexander Strizhak <gam6itko@gmail.com>
+ *
+ * @coversDefaultClass \XBase\Enum\TableType
+ */
 class TableTypeTest extends TestCase
 {
     public function testUnique(): void
@@ -68,5 +73,17 @@ class TableTypeTest extends TestCase
         self::assertSame(TableType::hasMemo(TableType::DBASE_IV_SQL_SYSTEM_MEMO), true);
         self::assertSame(TableType::hasMemo(TableType::FOXPRO_MEMO), true);
         self::assertSame(TableType::hasMemo(TableType::FOXBASE), false);
+    }
+
+    /**
+     * @covers ::all
+     * @covers ::has
+     */
+    public function testAll(): void
+    {
+        $refClass = new \ReflectionClass(TableType::class);
+        foreach ($refClass->getConstants() as $type) {
+            self::assertTrue(TableType::has($type));
+        }
     }
 }

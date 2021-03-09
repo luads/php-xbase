@@ -1,18 +1,19 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Tests;
+namespace XBase\Tests\TableReader;
 
 use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableFlag;
 use XBase\Enum\TableType;
-use XBase\Table;
+use XBase\TableReader;
+use XBase\Tests\AbstractTestCase;
 
 class FoxproTest extends AbstractTestCase
 {
     public function testRead(): void
     {
-        $table = new Table(__DIR__.'/Resources/foxpro/1.dbf', ['encoding' => 'cp852']); //todo file to big need to reduce
+        $table = new TableReader(__DIR__.'/../Resources/foxpro/1.dbf', ['encoding' => 'cp852']); //todo file to big need to reduce
 
         self::assertSame(TableType::FOXPRO_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP852, $table->getCodepage());
@@ -54,7 +55,7 @@ class FoxproTest extends AbstractTestCase
 
     public function testFoxpro2(): void
     {
-        $table = new Table(__DIR__.'/Resources/foxpro/Foxpro2.dbf');
+        $table = new TableReader(__DIR__.'/../Resources/foxpro/Foxpro2.dbf');
 
         self::assertSame(8, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
@@ -125,7 +126,7 @@ class FoxproTest extends AbstractTestCase
         self::assertEquals('3', $record->get('general'));
     }
 
-    protected function assertMemoImg(Table $table): void
+    protected function assertMemoImg(TableReader $table): void
     {
         $record = $table->moveTo(1);
         $memoImg = $record->getMemoObject('image');

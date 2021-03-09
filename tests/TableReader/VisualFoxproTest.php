@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace XBase\Tests;
+namespace XBase\Tests\TableReader;
 
 use XBase\Enum\Codepage;
 use XBase\Enum\FieldType;
@@ -9,13 +9,14 @@ use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
 use XBase\Record\FoxproRecord;
 use XBase\Record\VisualFoxproRecord;
-use XBase\Table;
+use XBase\TableReader;
+use XBase\Tests\AbstractTestCase;
 
 class VisualFoxproTest extends AbstractTestCase
 {
     public function testRead(): void
     {
-        $table = new Table(__DIR__.'/Resources/foxpro/visual_fox_pro6.dbf');
+        $table = new TableReader(__DIR__.'/../Resources/foxpro/visual_fox_pro6.dbf');
 
         self::assertSame(TableType::VISUAL_FOXPRO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
@@ -53,7 +54,7 @@ class VisualFoxproTest extends AbstractTestCase
 
     public function testVfp(): void
     {
-        $table = new Table(__DIR__.'/Resources/foxpro/vfp.dbf');
+        $table = new TableReader(__DIR__.'/../Resources/foxpro/vfp.dbf');
 
         self::assertSame(20, $table->getColumnCount());
         self::assertSame(3, $table->getRecordCount());
@@ -351,7 +352,7 @@ TEXT;
 
     public function testCurrency(): void
     {
-        $table = new Table(__DIR__.'/Resources/foxpro/currency.dbf');
+        $table = new TableReader(__DIR__.'/../Resources/foxpro/currency.dbf');
 
         self::assertSame(1, $table->getColumnCount());
         self::assertSame(1, $table->getRecordCount());
@@ -372,7 +373,7 @@ TEXT;
      */
     public function test90(): void
     {
-        $table = new Table(__DIR__.'/Resources/foxpro/pr90.dbf');
+        $table = new TableReader(__DIR__.'/../Resources/foxpro/pr90.dbf');
         self::assertSame(TableType::FOXPRO_MEMO, $table->getVersion());
         self::assertSame(18, $table->getColumnCount());
         self::assertSame(5, $table->getRecordCount());

@@ -34,7 +34,7 @@ class Header
     /**
      * @var int
      */
-    public $recordByteLength = 20;
+    public $recordByteLength = 0;
 
     /**
      * @var bool
