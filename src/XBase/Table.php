@@ -14,6 +14,9 @@ use XBase\Record\RecordFactory;
 use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
 
+/**
+ * @deprecated since 1.4 and will be deleted in 2.0. Use TableReader instead.
+ */
 class Table
 {
     /** @var int Table header length in bytes */

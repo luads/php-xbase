@@ -14,6 +14,9 @@ use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
 use XBase\Traits\CloneTrait;
 
+/**
+ * @deprecated since 1.4 and will be deleted in 2.0. Use TableEditor instead.
+ */
 class WritableTable extends Table
 {
     use CloneTrait;
