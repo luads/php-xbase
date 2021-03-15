@@ -350,12 +350,12 @@ JSON;
         self::assertSame(6, $table->getRecordCount());
         self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
 
-        self::assertSame(1, $table->nextRecord()->getInt('int'));
-        self::assertSame(-1, $table->nextRecord()->getInt('int'));
-        self::assertSame(5000000, $table->nextRecord()->getInt('int'));
-        self::assertSame(-5000000, $table->nextRecord()->getInt('int'));
-        self::assertSame(2147483647, $table->nextRecord()->getInt('int'));
-        self::assertSame(-2147483647, $table->nextRecord()->getInt('int'));
+        self::assertSame(1, $table->nextRecord()->get('int'));
+        self::assertSame(-1, $table->nextRecord()->get('int'));
+        self::assertSame(5000000, $table->nextRecord()->get('int'));
+        self::assertSame(-5000000, $table->nextRecord()->get('int'));
+        self::assertSame(2147483647, $table->nextRecord()->get('int'));
+        self::assertSame(-2147483647, $table->nextRecord()->get('int'));
     }
 
     public function testDbase7double(): void
@@ -365,11 +365,11 @@ JSON;
         self::assertSame(5, $table->getRecordCount());
         self::assertSame(TableType::DBASE_7_NOMEMO, $table->getVersion());
 
-        self::assertSame(-199.99, $table->nextRecord()->getDouble('double'));
-        self::assertSame(-74.62, $table->nextRecord()->getDouble('double'));
-        self::assertSame(43.65, $table->nextRecord()->getDouble('double'));
-        self::assertSame(150.48, $table->nextRecord()->getDouble('double'));
-        self::assertSame(0.0, $table->nextRecord()->getDouble('double'));
+        self::assertSame(-199.99, $table->nextRecord()->get('double'));
+        self::assertSame(-74.62, $table->nextRecord()->get('double'));
+        self::assertSame(43.65, $table->nextRecord()->get('double'));
+        self::assertSame(150.48, $table->nextRecord()->get('double'));
+        self::assertSame(0.0, $table->nextRecord()->get('double'));
     }
 
     protected function assertMemoImg(TableReader $table)
