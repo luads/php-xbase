@@ -23,7 +23,7 @@ class DBase4Memo extends AbstractWritableMemo
         $this->nextFreeBlock = $this->fp->readUInt();
 
         $this->sizeOfBlock = unpack('N', $this->fp->read(4))[1];
-        $this->name = $this->fp->read(8);
+        $this->name = $this->fp->read(8); //dBaseII
 
         $this->fp->seek(20);
         $this->blockLengthInBytes = unpack('S', $this->fp->read(2))[1];

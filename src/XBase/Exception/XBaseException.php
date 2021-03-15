@@ -4,5 +4,4 @@ namespace XBase\Exception;
 
 class XBaseException extends \Exception
 {
-
 }

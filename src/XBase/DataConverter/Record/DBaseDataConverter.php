@@ -2,12 +2,12 @@
 
 namespace XBase\DataConverter\Record;
 
+use XBase\DataConverter\Field\DBase\CharConverter;
 use XBase\DataConverter\Field\DBase\DateConverter;
 use XBase\DataConverter\Field\DBase\IgnoreConverter;
 use XBase\DataConverter\Field\DBase\LogicalConverter;
 use XBase\DataConverter\Field\DBase\MemoConverter;
 use XBase\DataConverter\Field\DBase\NumberConverter;
-use XBase\DataConverter\Field\DBase\StringConverter;
 use XBase\DataConverter\Field\FieldDataConverterInterface;
 use XBase\Exception\InvalidColumnException;
 use XBase\Header\Column;
@@ -15,7 +15,7 @@ use XBase\Record\AbstractRecord;
 use XBase\Record\RecordInterface;
 use XBase\Table\Table;
 
-class DBaseDataConverter implements RecordDataConverterInterface, HasFieldConvertersInterface
+class DBaseDataConverter implements RecordDataConverterInterface
 {
     /** @var Table */
     protected $table;
@@ -28,7 +28,7 @@ class DBaseDataConverter implements RecordDataConverterInterface, HasFieldConver
     /**
      * @return FieldDataConverterInterface[]
      */
-    public static function getFieldConverters(): array
+    protected static function getFieldConverters(): array
     {
         return [
             DateConverter::class,
@@ -36,7 +36,7 @@ class DBaseDataConverter implements RecordDataConverterInterface, HasFieldConver
             LogicalConverter::class,
             MemoConverter::class,
             NumberConverter::class,
-            StringConverter::class,
+            CharConverter::class,
         ];
     }
 

@@ -37,17 +37,14 @@ class TableCreatorTest extends AbstractTestCase
             ->addColumn(new Column([
                 'name'   => 'birthday',
                 'type'   => FieldType::DATE,
-                'length' => 8, //todo strict
             ]))
             ->addColumn(new Column([
                 'name'   => 'is_man',
                 'type'   => FieldType::LOGICAL,
-                'length' => 1, //todo strict
             ]))
             ->addColumn(new Column([
                 'name'   => 'bio',
                 'type'   => FieldType::MEMO,
-                'length' => 10,
             ]))
             ->addColumn(new Column([
                 'name'         => 'money',
@@ -58,7 +55,6 @@ class TableCreatorTest extends AbstractTestCase
             ->addColumn(new Column([
                 'name'   => 'image',
                 'type'   => FieldType::MEMO,
-                'length' => 10,
             ]))
             ->save();
 

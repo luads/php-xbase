@@ -7,7 +7,7 @@ use XBase\DataConverter\Field\Foxpro\GeneralConverter;
 
 class FoxproDataConverter extends DBaseDataConverter
 {
-    public static function getFieldConverters(): array
+    protected static function getFieldConverters(): array
     {
         return array_merge([
             FloatConverter::class,

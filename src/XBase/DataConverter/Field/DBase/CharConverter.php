@@ -5,7 +5,7 @@ namespace XBase\DataConverter\Field\DBase;
 use XBase\DataConverter\Field\AbstractFieldDataConverter;
 use XBase\Enum\FieldType;
 
-class StringConverter extends AbstractFieldDataConverter
+class CharConverter extends AbstractFieldDataConverter
 {
     public static function getType(): string
     {

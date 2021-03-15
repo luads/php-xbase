@@ -15,7 +15,7 @@ use XBase\DataConverter\Field\VisualFoxpro\VarFieldConverter;
 
 class VisualFoxproDataConverter extends FoxproDataConverter
 {
-    public static function getFieldConverters(): array
+    protected static function getFieldConverters(): array
     {
         return array_merge([
             BlobConverter::class,

@@ -12,8 +12,12 @@ final class MemoCreatorFactory
         switch ($table->getVersion()) {
             case TableType::DBASE_III_PLUS_MEMO:
                 return new DBase3MemoCreator($table);
+            case TableType::DBASE_IV_SQL_SYSTEM_MEMO:
+            case TableType::DBASE_IV_SQL_TABLE_MEMO:
+            case TableType::DBASE_IV_MEMO:
+                return new DBase4MemoCreator($table);
             default:
-                throw new \Exception('Memo creator not relized for table version '.$table->getVersion());
+                throw new \Exception('Memo creator not realized for table version '.$table->getVersion());
         }
     }
 }

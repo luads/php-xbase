@@ -8,7 +8,7 @@ use XBase\DataConverter\Field\DBase4\OleConverter;
 
 class DBase4DataConverter extends DBaseDataConverter
 {
-    public static function getFieldConverters(): array
+    protected static function getFieldConverters(): array
     {
         return array_merge([
             BlobConverter::class,

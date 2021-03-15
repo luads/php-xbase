@@ -7,8 +7,8 @@ use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
 use XBase\Record\VisualFoxproRecord;
 use XBase\Stream\Stream;
-use XBase\TableReader;
 use XBase\TableEditor;
+use XBase\TableReader;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>

@@ -90,4 +90,15 @@ TEXT;
 //        self::assertSame(187811, strlen($memoImg->getData()));
 //        file_put_contents('./image.png', $memoImg->getData());
     }
+
+    protected function assertMemoImg(TableReader $table)
+    {
+        $record = $table->moveTo(1);
+        /** @var MemoObject $memoImg */
+        $memoImg = $record->getMemoObject('image');
+        self::assertSame($memoImg->getLength(), strlen($memoImg->getData())); //png
+        $record = $table->nextRecord();
+        $memoImg = $record->getMemoObject('image');
+        self::assertSame($memoImg->getLength(), strlen($memoImg->getData()));
+    }
 }

@@ -36,7 +36,7 @@ class Column
     public $length;
 
     /** @var int|null */
-    public $decimalCount;
+    public $decimalCount = 0;
 
     /** @var int Field address within record. */
     public $memAddress;
@@ -56,5 +56,4 @@ class Column
             $this->{$property} = $value;
         }
     }
-
 }

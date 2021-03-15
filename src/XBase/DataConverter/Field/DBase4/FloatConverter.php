@@ -19,6 +19,6 @@ class FloatConverter extends AbstractFieldDataConverter
 
     public function toBinaryString($value): string
     {
-        return str_pad($value ?? '', $this->column->length, ' ');
+        return str_pad((string) ($value ?? ''), $this->column->length);
     }
 }

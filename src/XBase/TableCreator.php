@@ -2,15 +2,14 @@
 
 namespace XBase;
 
-use XBase\DataConverter\Record\HasFieldConvertersInterface;
 use XBase\Enum\TableType;
 use XBase\Exception\ColumnException;
 use XBase\Exception\XBaseException;
 use XBase\Header\Column;
+use XBase\Header\Column\Validator\ColumnValidatorFactory;
 use XBase\Header\Header;
 use XBase\Memo\Creator\MemoCreatorFactory;
 use XBase\Memo\MemoFactory;
-use XBase\Record\RecordFactory;
 use XBase\Stream\Stream;
 use XBase\Table\Saver;
 use XBase\Table\Table;
@@ -91,8 +90,8 @@ class TableCreator
         $header->recordByteLength = 1; //deleted mark
         foreach ($header->columns as $column) {
             assert($column->length);
-            $header->recordByteLength += $column->length;
             $column->memAddress = $header->recordByteLength;
+            $header->recordByteLength += $column->length;
         }
     }
 
@@ -105,19 +104,10 @@ class TableCreator
             throw new XBaseException('The table must contain at least one column');
         }
 
-        $dataConverter = RecordFactory::createDataConverter($this->table);
-        assert($dataConverter instanceof HasFieldConvertersInterface);
-        // todo too heavy. better use collections of supported types
-        $supportedTypes = array_map(static function ($fqcn): string {
-            return $fqcn::getType();
-        }, $dataConverter->getFieldConverters());
+        $columnValidator = ColumnValidatorFactory::create($this->table->getVersion());
 
         foreach ($columns as $column) {
-            if (!in_array($column->type, $supportedTypes)) {
-                throw new ColumnException("Table not supports `{$column->type}` column type");
-            }
-            //todo strict properties
-            //todo validate
+            $columnValidator->validate($column);
         }
     }
 }

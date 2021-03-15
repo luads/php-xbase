@@ -4,8 +4,8 @@ namespace XBase\Tests\TableEditor;
 
 use PHPUnit\Framework\TestCase;
 use XBase\Record\FoxproRecord;
-use XBase\TableReader;
 use XBase\TableEditor;
+use XBase\TableReader;
 
 class DBase7Test extends TestCase
 {
