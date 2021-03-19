@@ -12,7 +12,7 @@ class DBase7HeaderWriter extends AbstractHeaderWriter
         parent::writeFirstBlock($header);
 
         if (in_array($header->version, [TableType::DBASE_7_MEMO, TableType::DBASE_7_NOMEMO])) {
-            $this->fp->write(str_pad($header->languageName, 36, chr(0)));
+            $this->fp->write(str_pad($header->languageName ?? '', 36, chr(0)));
         }
     }
 }

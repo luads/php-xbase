@@ -7,16 +7,24 @@ use XBase\Stream\StreamWrapper;
 
 class DBase7ColumnWriter implements ColumnWriterInterface
 {
+    const RAW_NAME_MAX_LENGTH = 32;
+
     public function write(StreamWrapper $fp, Column $column): void
     {
-        $fp->write($column->rawName);
+        $chr0 = chr(0);
+        $rawName = $column->rawName ?? str_pad($column->name, self::RAW_NAME_MAX_LENGTH, $chr0);
+        if (empty($rawName)) {
+            throw new \LogicException('Column rawName is not defined');
+        }
+
+        $fp->write($rawName);
         $fp->write($column->type);
         $fp->writeUChar($column->length);
         $fp->writeUChar($column->decimalCount);
-        $fp->write(str_pad('', 2, chr(0)));
-        $fp->writeUChar($column->mdxFlag);
-        $fp->write(str_pad('', 2, chr(0)));
-        $fp->writeInt($column->nextAI);
-        $fp->write(str_pad('', 4, chr(0)));
+        $fp->write(str_pad($column->reserved1 ?? '', 2, $chr0));
+        $fp->writeUChar($column->mdxFlag ?? 0);
+        $fp->write(str_pad($column->reserved1 ?? '', 2, $chr0));
+        $fp->writeInt($column->nextAI ?? 0);
+        $fp->write(str_pad($column->reserved1 ?? '', 4, $chr0));
     }
 }

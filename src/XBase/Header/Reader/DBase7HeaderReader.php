@@ -2,7 +2,7 @@
 
 namespace XBase\Header\Reader;
 
-use XBase\Header\Reader\Column\DBase7ColumnReader;
+use XBase\Header\Specification\HeaderSpecificationFactory;
 
 class DBase7HeaderReader extends AbstractHeaderReader
 {
@@ -20,11 +20,11 @@ class DBase7HeaderReader extends AbstractHeaderReader
      */
     protected function getLogicalFieldCount(int $terminatorLength = 1)
     {
-        $headerLength = $this->getHeaderLength() + $terminatorLength; // [Terminator](1)
-        $headerLength += 36; // [Language driver name](32) + [Reserved](4) +
-        $fieldLength = DBase7ColumnReader::getHeaderLength();
+        $spec = HeaderSpecificationFactory::create($this->header->version);
+
+        $headerLength = $spec->headerTopLength + $terminatorLength; // [Terminator](1)
         $extraSize = $this->header->length - $headerLength;
 
-        return $extraSize / $fieldLength;
+        return $extraSize / $spec->fieldLength;
     }
 }

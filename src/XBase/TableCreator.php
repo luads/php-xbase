@@ -8,6 +8,7 @@ use XBase\Exception\XBaseException;
 use XBase\Header\Column;
 use XBase\Header\Column\Validator\ColumnValidatorFactory;
 use XBase\Header\Header;
+use XBase\Header\Specification\HeaderSpecificationFactory;
 use XBase\Memo\Creator\MemoCreatorFactory;
 use XBase\Memo\MemoFactory;
 use XBase\Stream\Stream;
@@ -80,12 +81,12 @@ class TableCreator
 
     private function prepareHeader(): void
     {
-        $headerTopLength = 32; //todo HeaderSpecification
-        $fieldLength = 32; //todo HeaderSpecification
-
         $header = $this->getHeader();
+
+        $spec = HeaderSpecificationFactory::create($header->version);
+
         $this->validateColumns($header->columns);
-        $header->length = $headerTopLength + count($header->columns) * $fieldLength + 1;
+        $header->length = $spec->headerTopLength + count($header->columns) * $spec->fieldLength + 1;
 
         $header->recordByteLength = 1; //deleted mark
         foreach ($header->columns as $column) {

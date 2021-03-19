@@ -37,7 +37,12 @@ class ChainValidator
         return array_filter(
             $this->validators,
             static function (ColumnValidatorInterface $validator) use ($type): bool {
-                return $validator->getType() === $type;
+                $supportedTypes = $validator->getType();
+                if (!is_array($supportedTypes)) {
+                    $supportedTypes = [$supportedTypes];
+                }
+
+                return in_array($type, $supportedTypes);
             }
         );
     }

@@ -43,7 +43,7 @@ final class FieldType
         return in_array($type, self::all());
     }
 
-    protected static function all(): array
+    private static function all(): array
     {
         return [
             self::MEMO,

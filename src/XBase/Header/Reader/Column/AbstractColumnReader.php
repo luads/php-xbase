@@ -3,20 +3,26 @@
 namespace XBase\Header\Reader\Column;
 
 use XBase\Header\Column;
+use XBase\Header\Specification\Specification;
 use XBase\Stream\StreamWrapper;
 
 abstract class AbstractColumnReader implements ColumnReaderInterface
 {
-    public static function getHeaderLength(): int
+    /** @var Specification */
+    private $spec;
+
+    public function __construct()
     {
-        return 32;
+        $this->spec = $this->getSpecification();
     }
+
+    abstract protected function getSpecification(): Specification;
 
     public function read(StreamWrapper $fp): Column
     {
-        $memoryChunk = $fp->read(static::getHeaderLength());
-        if (($len = strlen($memoryChunk)) !== static::getHeaderLength()) {
-            throw new \LogicException('Column data expected length: '.static::getHeaderLength().' got: '.$len);
+        $memoryChunk = $fp->read($this->spec->fieldLength);
+        if (($len = strlen($memoryChunk)) !== $this->spec->fieldLength) {
+            throw new \LogicException('Column data expected length: '.$this->spec->fieldLength.' got: '.$len);
         }
 
         return $this->createColumn($memoryChunk);

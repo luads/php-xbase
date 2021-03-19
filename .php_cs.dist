@@ -8,6 +8,7 @@ $rules = [
         ],
     ],
     'blank_line_after_opening_tag' => false, // <?php declare(strict_types=1);
+    'linebreak_after_opening_tag'  => false, // <?php declare(strict_types=1);
     'single_quote'                 => true,
     'yoda_style'                   => true,
     'no_empty_phpdoc'              => true,

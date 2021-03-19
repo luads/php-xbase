@@ -17,4 +17,16 @@ class DBase4Record extends AbstractRecord
                 return parent::get($columnName);
         }
     }
+
+    public function set(string $columnName, $value): self
+    {
+        $column = $this->table->getColumn($columnName);
+
+        switch ($column->type) {
+            case FieldType::DBASE4_BLOB: //todo dbase7 or 5 or 4? need to find documentation
+                return $this->setMemo($column, $value);
+            default:
+                return parent::set($columnName, $value);
+        }
+    }
 }

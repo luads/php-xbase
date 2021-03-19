@@ -18,7 +18,7 @@ class CharValidator implements ColumnValidatorInterface
 
     public function validate(Column $column): void
     {
-        if (empty($column->type) || $column->length < 1 || $column->length > self::MAX_LENGTH) {
+        if (empty($column->length) || $column->length < 1 || $column->length > self::MAX_LENGTH) {
             throw new ColumnException(sprintf('Char column length must be in range [1, %s]', self::MAX_LENGTH));
         }
     }

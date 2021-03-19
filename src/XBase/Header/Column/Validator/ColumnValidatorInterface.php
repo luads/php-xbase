@@ -6,7 +6,10 @@ use XBase\Header\Column;
 
 interface ColumnValidatorInterface
 {
-    public function getType(): string;
+    /**
+     * @return string|array
+     */
+    public function getType();
 
     public function validate(Column $column): void;
 }

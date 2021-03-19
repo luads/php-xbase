@@ -3,6 +3,7 @@
 namespace XBase\Header\Reader;
 
 use XBase\Enum\TableType;
+use XBase\Header\Specification\HeaderSpecificationFactory;
 
 class VisualFoxproHeaderReader extends AbstractHeaderReader
 {
@@ -14,12 +15,13 @@ class VisualFoxproHeaderReader extends AbstractHeaderReader
      */
     protected function getLogicalFieldCount(int $terminatorLength = 1)
     {
-        $headerLength = static::getHeaderLength() + $terminatorLength; // [Terminator](1)
-        $fieldLength = static::getFieldLength();
+        $spec = HeaderSpecificationFactory::create($this->header->version);
+
+        $headerLength = $spec->headerTopLength + $terminatorLength; // [Terminator](1)
         //backlist
         $extraSize = $this->header->length - ($headerLength + self::VFP_BACKLIST_LENGTH);
 
-        return $extraSize / $fieldLength;
+        return $extraSize / $spec->fieldLength;
     }
 
     protected function readRest(): void

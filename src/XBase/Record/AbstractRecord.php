@@ -146,7 +146,7 @@ abstract class AbstractRecord implements RecordInterface
     //</editor-fold>
 
     //<editor-fold desc="setters">
-    public function set(string $columnName, $value): RecordInterface
+    public function set(string $columnName, $value): self
     {
         $column = $this->table->getColumn($columnName);
         switch ($column->type) {
@@ -156,9 +156,8 @@ abstract class AbstractRecord implements RecordInterface
             case FieldType::FLOAT:
                 return $this->setFloat($column, $value);
             case FieldType::DATE:
-                return $this->setDate($column, $value);
             case FieldType::DATETIME:
-//                $this->setDateTime($column, $value);
+                return $this->setDate($column, $value);
             case FieldType::LOGICAL:
                 return $this->setBoolean($column, $value);
             case FieldType::MEMO:
@@ -271,10 +270,8 @@ abstract class AbstractRecord implements RecordInterface
     /**
      * @param $value
      */
-    protected function setMemo(Column $column, $value): RecordInterface
+    protected function setMemo(Column $column, $value): self
     {
-        $this->checkType($column, FieldType::MEMO);
-
         if (empty($this->data[$column->name]) && $value) {
             $this->data[$column->name] = $this->table->memo->create($value); //todo
         } elseif (!empty($this->data[$column->name])) {

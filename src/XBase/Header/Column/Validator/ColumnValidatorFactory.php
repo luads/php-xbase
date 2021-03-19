@@ -9,6 +9,9 @@ use XBase\Header\Column\Validator\DBase\LogicalValidator;
 use XBase\Header\Column\Validator\DBase\MemoValidator;
 use XBase\Header\Column\Validator\DBase\NumberValidator;
 use XBase\Header\Column\Validator\DBase4\FloatValidator;
+use XBase\Header\Column\Validator\DBase7\BlobValidator;
+use XBase\Header\Column\Validator\DBase7\IntegerValidator;
+use XBase\Header\Column\Validator\DBase7\TimestampValidator;
 
 class ColumnValidatorFactory
 {
@@ -29,6 +32,13 @@ class ColumnValidatorFactory
             case TableType::DBASE_IV_SQL_TABLE_NOMEMO:
             case TableType::DBASE_IV_MEMO:
                 $validators[] = new FloatValidator();
+                break;
+            case TableType::DBASE_7_MEMO:
+                $validators = array_merge($validators, [
+                    new BlobValidator(),
+                    new IntegerValidator(),
+                    new TimestampValidator(),
+                ]);
                 break;
         }
 

@@ -4,15 +4,23 @@ namespace XBase\Header\Reader\Column;
 
 use XBase\Enum\FieldType;
 use XBase\Header\Column;
+use XBase\Header\Specification\HeaderSpecificationFactory;
+use XBase\Header\Specification\Specification;
 use XBase\Stream\Stream;
 
 class DBaseColumnReader extends AbstractColumnReader
 {
+    protected function getSpecification(): Specification
+    {
+        return HeaderSpecificationFactory::create();
+    }
+
     protected function createColumn(string $memoryChunk): Column
     {
         $header = parent::createColumn($memoryChunk);
 
-        $name = (false !== strpos($header->rawName, chr(0x00))) ? substr($header->rawName, 0, strpos($header->rawName, chr(0x00))) : trim($header->rawName);
+        $nameEndIndex = strpos($header->rawName, chr(0x00));
+        $name = (false !== $nameEndIndex) ? substr($header->rawName, 0, $nameEndIndex) : trim($header->rawName);
 
         // chop all garbage from 0x00
         $header->name = strtolower($name);

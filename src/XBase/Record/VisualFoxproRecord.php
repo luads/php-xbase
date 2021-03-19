@@ -24,7 +24,7 @@ class VisualFoxproRecord extends FoxproRecord
         }
     }
 
-    public function set(string $columnName, $value): RecordInterface
+    public function set(string $columnName, $value): self
     {
         $column = $this->table->getColumn($columnName);
         switch ($column->type) {
@@ -54,7 +54,7 @@ class VisualFoxproRecord extends FoxproRecord
     /**
      * @param $value
      */
-    protected function setMemo(Column $column, $value): RecordInterface
+    protected function setMemo(Column $column, $value): self
     {
         $this->checkType($column, [FieldType::BLOB, FieldType::MEMO]);
 

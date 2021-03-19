@@ -7,7 +7,5 @@ use XBase\Stream\StreamWrapper;
 
 interface ColumnReaderInterface
 {
-    public static function getHeaderLength(): int;
-
     public function read(StreamWrapper $fp): Column;
 }

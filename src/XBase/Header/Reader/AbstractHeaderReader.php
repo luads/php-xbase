@@ -5,6 +5,7 @@ namespace XBase\Header\Reader;
 use XBase\Exception\TableException;
 use XBase\Header\Header;
 use XBase\Header\Reader\Column\ColumnReaderFactory;
+use XBase\Header\Specification\HeaderSpecificationFactory;
 use XBase\Stream\Stream;
 
 abstract class AbstractHeaderReader implements HeaderReaderInterface
@@ -22,16 +23,6 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
     {
         $this->filepath = $filepath;
         $this->fp = Stream::createFromFile($filepath);
-    }
-
-    public static function getHeaderLength(): int
-    {
-        return 32;
-    }
-
-    public static function getFieldLength(): int
-    {
-        return 32;
     }
 
     public function read(): Header
@@ -130,10 +121,12 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
      */
     protected function getLogicalFieldCount(int $terminatorLength = 1)
     {
-        $headerLength = static::getHeaderLength() + $terminatorLength; // [Terminator](1)
+        $spec = HeaderSpecificationFactory::create($this->header->version);
+
+        $headerLength = $spec->headerTopLength + $terminatorLength; // [Terminator](1)
         $extraSize = $this->header->length - $headerLength;
 
-        return $extraSize / static::getFieldLength();
+        return $extraSize / $spec->fieldLength;
     }
 
     /**
