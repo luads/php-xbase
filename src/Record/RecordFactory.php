@@ -6,7 +6,6 @@ use XBase\DataConverter\Record\DBase4DataConverter;
 use XBase\DataConverter\Record\DBase7DataConverter;
 use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\DataConverter\Record\FoxproDataConverter;
-use XBase\DataConverter\Record\HasFieldConvertersInterface;
 use XBase\DataConverter\Record\RecordDataConverterInterface;
 use XBase\DataConverter\Record\VisualFoxproDataConverter;
 use XBase\Enum\TableType;
@@ -55,7 +54,7 @@ class RecordFactory
     }
 
     /**
-     * @return RecordDataConverterInterface|HasFieldConvertersInterface
+     * @return RecordDataConverterInterface
      */
     public static function createDataConverter(Table $table): RecordDataConverterInterface
     {

@@ -47,9 +47,6 @@ abstract class AbstractMemo implements MemoInterface
         return 'dbt';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function isOpen(): bool
     {
         return null !== $this->fp;
