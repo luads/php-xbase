@@ -2,10 +2,10 @@
     "name": "hisamu/php-xbase",
     "type": "library",
     "description": "A simple parser for *.dbf, *.fpt files using PHP",
-    "keywords": ["dbase", "dbf","foxpro"],
+    "keywords": ["dbase", "dbf", "foxpro"],
     "homepage": "https://github.com/luads/php-xbase",
     "license": "MIT",
-    "authors" : [
+    "authors": [
         {
             "name": "Luã de Souza",
             "email": "lsouza@codeinc.com.br"
@@ -13,6 +13,10 @@
         {
             "name": "Erwin Kooi",
             "email": "info@cyane.nl"
+        },
+        {
+            "name": "Alexander Strizhak",
+            "email": "gam6itko@gmail.com"
         }
     ],
     "require": {
@@ -21,8 +25,9 @@
     },
     "autoload": {
         "psr-4": {
-            "XBase\\": "src/XBase"
-        }
+            "XBase\\": "src"
+        },
+        "exclude-from-classmap": ["/tests"]
     },
     "require-dev": {
         "phpunit/phpunit": "^7.0||^8.0||^9.0",
@@ -35,7 +40,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "1.3.x-dev"
+            "dev-master": "2.0.x-dev"
         }
     }
 }

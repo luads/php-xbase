@@ -3,9 +3,9 @@
 namespace XBase\Tests\Record\DataConverter\Field\DBase7;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Field\DBase7\IntegerConverter;
-use XBase\Table;
+use XBase\Header\Column;
+use XBase\Table\Table;
 
 class IntegerConverterTest extends TestCase
 {
@@ -14,8 +14,8 @@ class IntegerConverterTest extends TestCase
      */
     public function test(string $binaryString, int $int): void
     {
-        $table = $this->createMock(Table::class);
-        $column = $this->createMock(ColumnInterface::class);
+        $table = new Table();
+        $column = new Column();
         $converter = new IntegerConverter($table, $column);
         self::assertSame($int, $converter->fromBinaryString($binaryString));
         self::assertEquals(unpack('C*', $binaryString), unpack('C*', $converter->toBinaryString($int)));

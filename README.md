@@ -1,5 +1,4 @@
-PHP XBase
------
+# PHP XBase
 
 [![Build Status](https://travis-ci.org/luads/php-xbase.svg?branch=master&t=202003171723)](https://travis-ci.org/luads/php-xbase)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/a3df6ca519b4cee98c6d/test_coverage)](https://codeclimate.com/github/hisamu/php-xbase/test_coverage)
@@ -9,21 +8,27 @@ PHP XBase
 
 A simple library for dealing with **dbf** databases like dBase and FoxPro. It's a port of PHPXbase class written by [Erwin Kooi](http://www.phpclasses.org/package/2673-PHP-Access-dbf-foxpro-files-without-PHP-ext-.html), updated to a PSR-2 compliant code and tweaked for performance and to solve some issues the original code had.
 
-Installation
------
+
+## Installation
+
 You can install it through [Composer](https://getcomposer.org):
-```
+
+```shell script
 $ composer require hisamu/php-xbase
 ```
 
-Sample usage
------
+
+## Sample usage
+
 More samples in `tests` folder.
 
-``` php
-use XBase\Table;
 
-$table = new Table('test.dbf');
+### Reading data
+
+```php
+use XBase\TableReader;
+
+$table = new TableReader('test.dbf');
 
 while ($record = $table->nextRecord()) {
     echo $record->get('my_column');
@@ -34,8 +39,10 @@ while ($record = $table->nextRecord()) {
 
 If the data in DB is not in UTF-8 you can specify a charset to convert the data from:
 
-``` php
-$table = new Table(
+```php
+use XBase\TableReader;
+
+$table = new TableReader(
     'test.dbf',
     [
         'encoding' => 'cp1251'
@@ -45,15 +52,21 @@ $table = new Table(
 
 It is also possible to read Memos from dedicated files. Just make sure that *.fpt* file with the same name as main database exists.
 
-Performance
------
 
-You can pass an array of the columns that you need to the constructor, then if your table has columns that you don't use they will not be loaded. This way the parser can run a lot faster.
+#### Performance
 
-``` php
-use XBase\Table;
+You can pass an array of the columns that you need to the constructor, then if your table has columns that you don't use they will not be loaded. 
+This way the parser can run a lot faster.
 
-$table = new Table('test.dbf', ['my_column', 'another_column']);
+```php
+use XBase\TableReader;
+
+$table = new TableReader(
+    'test.dbf', 
+    [
+        'columns' => ['my_column', 'another_column']
+    ]
+);
 
 while ($record = $table->nextRecord()) {
     echo $record->my_column;
@@ -63,22 +76,22 @@ while ($record = $table->nextRecord()) {
 
 If you know the column type already, you can also call the type-specific function for that field, which increases the speed too.
 
-``` php
+```php
 while ($record = $table->nextRecord()) {
-    echo $record->getChar('my_column');
-    echo $record->getDate('another_column');
+    echo $record->get('my_column');
+    echo $record->get('another_column');
 }
 ```
 
-Writing Data
------
 
-To open a table for writing, you have to use a `WritableTable` object, as on this example:
+### Editing Data
 
-``` php
-use XBase\WritableTable;
+To open a table for editing, you have to use a `TableEditor` object, as on this example:
 
-$table = new WritableTable('test.dbf');
+```php
+use XBase\TableEditor;
+
+$table = new TableEditor('test.dbf');
 
 for ($i = 0; $i < 10; $i++) {
     $record = $table->nextRecord();
@@ -95,16 +108,16 @@ $table
     ->close();
 ```
 
-Add new record
------
 
-``` php
-use XBase\WritableTable;
+#### Add new record
 
-$table = new WritableTable(
+```php
+use XBase\TableEditor;
+
+$table = new TableEditor(
     'file.dbf',
     [
-        'editMode' => WritableTable::EDIT_MODE_CLONE, //default
+        'editMode' => TableEditor::EDIT_MODE_CLONE, //default
     ]
 );
 $record = $table->appendRecord();
@@ -117,13 +130,13 @@ $table
     ->close();
 ```
 
-Delete record
------
 
-``` php
-use XBase\WritableTable;
+#### Delete record
 
-$table = new WritableTable('file.dbf');
+```php
+use XBase\TableEditor;
+
+$table = new TableEditor('file.dbf');
 
 while ($record = $table->nextRecord()) {
     if ($record->get('delete_this_row')) {
@@ -133,17 +146,69 @@ while ($record = $table->nextRecord()) {
 
 $table
     ->pack() //remove deleted rows
-    ->save() // save changes
+    ->save() //save changes
     ->close();
 ```
 
-Troubleshooting
------
+### Creating table
 
-I'm not an expert on dBase and I don't know all the specifics of the field types and versions, so the lib may not be able to handle some situations. If you find an error, please open an issue and send me a sample table that I can reproduce your problem and I'll try to help.
+To create a table file you need to use the `TableCreator` object.
 
-Useful links
------
+```php
+use XBase\Enum\FieldType;
+use XBase\Enum\TableType;
+use XBase\Header\Column;
+use XBase\Header\HeaderFactory;
+use XBase\TableCreator;
+use XBase\TableEditor;
+
+// you can specify any other database version from TableType
+$header = HeaderFactory::create(TableType::DBASE_III_PLUS_MEMO);
+$filepath = '/path/to/new/file.dbf';
+
+$tableCreator = new TableCreator($filepath, $header);
+$tableCreator
+    ->addColumn(new Column([
+        'name'   => 'name',
+        'type'   => FieldType::CHAR,
+        'length' => 20,
+    ]))
+    ->addColumn(new Column([
+        'name'   => 'birthday',
+        'type'   => FieldType::DATE,
+    ]))
+    ->addColumn(new Column([
+        'name'   => 'is_man',
+        'type'   => FieldType::LOGICAL,
+    ]))
+    ->addColumn(new Column([
+        'name'   => 'bio',
+        'type'   => FieldType::MEMO,
+    ]))
+    ->addColumn(new Column([
+        'name'         => 'money',
+        'type'         => FieldType::NUMERIC,
+        'length'       => 20,
+        'decimalCount' => 4,
+    ]))
+    ->addColumn(new Column([
+        'name'   => 'image',
+        'type'   => FieldType::MEMO,
+    ]))
+    ->save(); //creates file
+
+$table = new TableEditor($filepath);
+//... add records 
+```
+
+
+## Troubleshooting
+
+I'm not an expert on dBase and I don't know all the specifics of the field types and versions, so the lib may not be able to handle some situations. 
+If you find an error, please open an issue and send me a sample table that I can reproduce your problem, and I'll try to help.
+
+
+## Useful links
 
 [Xbase File Format Description](http://www.manmrk.net/tutorials/database/xbase/)
 

@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2.0
+
+### New features
+
+- add TableCreator;
+
+### Breaking changes
+
+- rename Table to TableReader;
+- rename WritableTable to TableEditor;
+- removed all Record methods like get*() except `get` and getDateTimeObject.
+- removed all Record methods like set*() except `set`.
+
+
 ## 1.3.5
 
 ### deprecations

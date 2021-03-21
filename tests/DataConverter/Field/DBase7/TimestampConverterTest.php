@@ -3,9 +3,9 @@
 namespace XBase\Tests\Record\DataConverter\Field\DBase7;
 
 use PHPUnit\Framework\TestCase;
-use XBase\Column\ColumnInterface;
 use XBase\DataConverter\Field\DBase7\TimestampConverter;
-use XBase\Table;
+use XBase\Header\Column;
+use XBase\Table\Table;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
@@ -19,8 +19,8 @@ class TimestampConverterTest extends TestCase
      */
     public function test(string $binaryString, int $int): void
     {
-        $table = $this->createMock(Table::class);
-        $column = $this->createMock(ColumnInterface::class);
+        $table = new Table();
+        $column = new Column();
         $converter = new TimestampConverter($table, $column);
         self::assertSame($int, $converter->fromBinaryString($binaryString));
         self::assertEquals(base64_encode($binaryString), base64_encode($converter->toBinaryString($int)));
