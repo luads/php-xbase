@@ -14,12 +14,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Cache vendor dir
-        uses: actions/cache@v2
-        with:
-          path: vendor
-          key: ${{ runner.os }}-phpstan
-
       - uses: php-actions/composer@v5
 
       - name: PHPStan
@@ -50,12 +44,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Cache vendor dir
-        uses: actions/cache@v2
-        with:
-          path: vendor
-          key: ${{ runner.os }}-${{ matrix.php-version }}-${{ matrix.dependencies }}
 
       - name: Install PHP
         uses: shivammathur/setup-php@v2
