@@ -50,6 +50,10 @@ class IntegerConverter extends AbstractFieldDataConverter
      */
     public function toBinaryString($value): string
     {
+        if (is_null($value)) {
+            $value = 0;
+        }
+
         if ($negative = $value < 0) {
             $value = -($value + 1);
         }
