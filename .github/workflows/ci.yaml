@@ -87,6 +87,10 @@ jobs:
     env:
       CC_TEST_REPORTER_ID: e33b74ed1f59947df361652193b6575db0afc663dcbc73af89a0cf16f2443d24
     steps:
+      - name: Download coverage files
+        uses: actions/download-artifact@v2
+        with:
+          path: coverage
       - name: Install Codeclimate binary
         run: |
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > cc-test-reporter
