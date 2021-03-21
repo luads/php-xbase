@@ -2,9 +2,6 @@
 
 namespace XBase\Traits;
 
-/**
- * @property $filepath
- */
 trait CloneTrait
 {
     /** @var string|null */
@@ -18,7 +15,7 @@ trait CloneTrait
         $info = pathinfo($this->getFilepath());
         $this->cloneFilepath = "{$info['dirname']}/~{$info['basename']}";
         if (!copy($this->getFilepath(), $this->cloneFilepath)) {
-            throw new \RuntimeException('Failed to clone original file: '.$this->filepath);
+            throw new \RuntimeException('Failed to clone original file: '.$this->getFilepath());
         }
     }
 }

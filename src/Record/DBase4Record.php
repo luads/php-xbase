@@ -18,7 +18,7 @@ class DBase4Record extends AbstractRecord
         }
     }
 
-    public function set(string $columnName, $value): self
+    public function set(string $columnName, $value): RecordInterface
     {
         $column = $this->table->getColumn($columnName);
 

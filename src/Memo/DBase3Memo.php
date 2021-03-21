@@ -68,10 +68,6 @@ class DBase3Memo extends AbstractWritableMemo
         return (int) ceil((strlen($data) + strlen($this->getBlockEndMarker())) / self::BLOCK_LENGTH_IN_BYTES);
     }
 
-    private function readBlocks(): string
-    {
-    }
-
     private function getBlockEndMarker(): string
     {
         return chr(0x1A).chr(0x1A).chr(0x00);

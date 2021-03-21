@@ -146,7 +146,7 @@ abstract class AbstractRecord implements RecordInterface
     //</editor-fold>
 
     //<editor-fold desc="setters">
-    public function set(string $columnName, $value): self
+    public function set(string $columnName, $value): RecordInterface
     {
         $column = $this->table->getColumn($columnName);
         switch ($column->type) {

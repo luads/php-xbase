@@ -7,7 +7,7 @@ use XBase\Header\Column;
 
 class DBase7Record extends DBase4Record
 {
-    public function set(string $columnName, $value): self
+    public function set(string $columnName, $value): RecordInterface
     {
         $column = $this->table->getColumn($columnName);
         switch ($column->type) {
