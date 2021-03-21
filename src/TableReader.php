@@ -86,7 +86,7 @@ class TableReader
 
     protected function readHeader(): void
     {
-        $this->table->header = HeaderReaderFactory::create($this->getFilepath())->read();
+        $this->table->header = HeaderReaderFactory::create($this->getFilepath(), $this->table->options)->read();
         $this->getStream()->seek($this->table->header->length);
 
         $this->recordPos = -1;
@@ -226,11 +226,9 @@ class TableReader
     }
 
     /**
-     * @param string $name
-     *
      * @return ColumnInterface
      */
-    public function getColumn($name)
+    public function getColumn(string $name)
     {
         foreach ($this->getHeader()->columns as $column) {
             if ($column->name === $name) {

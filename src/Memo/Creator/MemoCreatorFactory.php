@@ -18,7 +18,7 @@ final class MemoCreatorFactory
                 return new DBase4MemoCreator($table);
             case TableType::DBASE_7_MEMO:
                 return new DBase7MemoCreator($table);
-            //todo voxpro
+            //todo foxpro
             default:
                 throw new \Exception('Memo creator not realized for table version '.$table->getVersion());
         }

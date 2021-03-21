@@ -63,7 +63,6 @@ class FoxproTest extends AbstractTestCase
         self::assertSame(TableType::FOXPRO_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
         self::assertSame(true, $table->isFoxpro());
-        self::assertSame(true, $table->isFoxpro());
         self::assertSame(289, $table->getHeaderLength());
         self::assertSame(90, $table->getRecordByteLength());
         self::assertSame(false, $table->isInTransaction());

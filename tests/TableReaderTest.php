@@ -25,7 +25,6 @@ class TableReaderTest extends AbstractTestCase
         self::assertSame(TableType::DBASE_III_PLUS_NOMEMO, $table->getVersion());
         self::assertSame(Codepage::UNDEFINED, $table->getCodepage());
         self::assertSame(false, $table->isFoxpro());
-        self::assertSame(false, $table->isFoxpro());
         self::assertSame(1580774400, $table->getModifyDate());
         self::assertSame(609, $table->getHeaderLength());
         self::assertSame(225, $table->getRecordByteLength());
@@ -151,7 +150,6 @@ JSON;
 
         self::assertSame(TableType::DBASE_III_PLUS_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
-        self::assertSame(false, $table->isFoxpro()); //todo why true
         self::assertSame(false, $table->isFoxpro());
         self::assertSame(225, $table->getHeaderLength());
         self::assertSame(70, $table->getRecordByteLength());
@@ -202,7 +200,6 @@ JSON;
 
         self::assertSame(TableType::DBASE_IV_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
-        self::assertSame(false, $table->isFoxpro());
         self::assertSame(false, $table->isFoxpro());
         self::assertSame(257, $table->getHeaderLength());
         self::assertSame(80, $table->getRecordByteLength());

@@ -17,12 +17,6 @@ abstract class AbstractRecord implements RecordInterface
     protected $table;
     /** @var array */
     protected $data;
-    /**
-     * @var array
-     *
-     * @deprecated
-     */
-    protected $choppedData = [];
     /** @var bool */
     protected $deleted = false;
     /** @var int */
@@ -34,13 +28,11 @@ abstract class AbstractRecord implements RecordInterface
         $this->recordIndex = $recordIndex;
         $this->data = $data['data'] ?? [];
         $this->deleted = $data['deleted'] ?? false;
-        $this->choppedData = $data['choppedData'] ?? [];
     }
 
     public function destroy(): void
     {
         $this->table = null;
-        $this->choppedData = null;
     }
 
     public function __get(string $name)

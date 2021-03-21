@@ -19,10 +19,18 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
     /** @var Header|null */
     protected $header;
 
-    public function __construct(string $filepath)
+    /** @var array */
+    protected $options;
+
+    /**
+     * @param array $options Array of options:<br>
+     *                       columns - available columns<br>
+     */
+    public function __construct(string $filepath, array $options = [])
     {
         $this->filepath = $filepath;
         $this->fp = Stream::createFromFile($filepath);
+        $this->options = $options;
     }
 
     public function read(): Header
@@ -57,14 +65,18 @@ abstract class AbstractHeaderReader implements HeaderReaderInterface
             throw new TableException(sprintf('File %s is not DBF', $this->filepath));
         }
 
+        $targetColumns = $this->options['columns'] ?? [];
+
         $bytePos = 1;
         $columnReader = ColumnReaderFactory::create($this->header->version);
         for ($i = 0; $i < $columnsCount; $i++) {
             $column = $columnReader->read($this->fp);
-            $column->columnIndex = $i;
-            $column->bytePosition = $bytePos;
+            if (empty($targetColumns) || in_array($column->name, $targetColumns)) {
+                $column->columnIndex = $i;
+                $column->bytePosition = $bytePos;
 
-            $this->header->columns[] = $column;
+                $this->header->columns[] = $column;
+            }
 
             $bytePos += $column->length;
         }
