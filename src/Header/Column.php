@@ -3,8 +3,6 @@
 namespace XBase\Header;
 
 /**
- * @internal
- *
  * @property int $columnIndex
  *
  * DBase
