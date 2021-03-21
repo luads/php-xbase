@@ -2,9 +2,11 @@
 
 ## 1.4
 
+### New features
+
 - add TableCreator;
 
-## Breaking changes
+### Breaking changes
 
 - rename Table to TableReader;
 - rename WritableTable to TableEditor;
