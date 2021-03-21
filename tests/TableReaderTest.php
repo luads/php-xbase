@@ -35,7 +35,7 @@ class TableReaderTest extends AbstractTestCase
         self::assertSame(0, $table->getLanguageCode());
 
         $columns = $table->getColumns();
-        self::assertIsArray($columns);
+        self::assertTrue(is_array($columns));
         self::assertCount(18, $columns);
 
         //<editor-fold desc="columns">
@@ -151,7 +151,6 @@ JSON;
 
         self::assertSame(TableType::DBASE_III_PLUS_MEMO, $table->getVersion());
         self::assertSame(Codepage::CP1252, $table->getCodepage());
-        self::assertSame(false, $table->isFoxpro()); //todo why true
         self::assertSame(false, $table->isFoxpro());
         self::assertSame(225, $table->getHeaderLength());
         self::assertSame(70, $table->getRecordByteLength());

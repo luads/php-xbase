@@ -29,7 +29,7 @@ class FoxproTest extends AbstractTestCase
 //        self::assertSame(10, $table->getRecordCount());
 
         $columns = $table->getColumns();
-        self::assertIsArray($columns);
+        self::assertTrue(is_array($columns));
         self::assertCount(12, $columns);
 
         $c = $columns['poz'];
