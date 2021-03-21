@@ -74,7 +74,9 @@ jobs:
           path: clover.xml
 
       - name: Run Codeclimate format-coverage
-        run: ./cc-test-reporter format-coverage
+        run: |
+          ls
+          ./cc-test-reporter format-coverage
 
 
   codeclimate-upload:
