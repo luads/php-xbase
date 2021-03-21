@@ -54,7 +54,7 @@ class VisualFoxproRecord extends FoxproRecord
     /**
      * @param $value
      */
-    protected function setMemo(Column $column, $value): self
+    protected function setMemo(Column $column, $value): RecordInterface
     {
         $this->checkType($column, [FieldType::BLOB, FieldType::MEMO]);
 

@@ -270,7 +270,7 @@ abstract class AbstractRecord implements RecordInterface
     /**
      * @param $value
      */
-    protected function setMemo(Column $column, $value): self
+    protected function setMemo(Column $column, $value): RecordInterface
     {
         if (empty($this->data[$column->name]) && $value) {
             $this->data[$column->name] = $this->table->memo->create($value); //todo
