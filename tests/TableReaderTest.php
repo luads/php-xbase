@@ -35,7 +35,7 @@ class TableReaderTest extends AbstractTestCase
         self::assertSame(0, $table->getLanguageCode());
 
         $columns = $table->getColumns();
-        self::assertIsArray($columns);
+        self::assertTrue(is_array($columns));
         self::assertCount(18, $columns);
 
         //<editor-fold desc="columns">
