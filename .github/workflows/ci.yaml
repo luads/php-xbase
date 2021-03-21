@@ -13,8 +13,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
       - uses: php-actions/composer@v5
-      - uses: php-actions/phpstan@v2
+
+      - name: PHPStan
+        uses: chindit/actions-phpstan@master
+        with:
+          # Arguments to add to PHPStan
+          arguments: 'src/'
 
   phpunit:
     name: PHPUnit
@@ -28,11 +34,11 @@ jobs:
           - 7.3
           - 7.4
           - 8.0
-        composer-args:
-          - ''
+        dependencies:
+          - highest
         include:
           - php-version: 7.1
-            composer-args: '--prefer-lowest'
+            dependencies: lowest
 
     steps:
 
@@ -47,9 +53,9 @@ jobs:
           ini-values: zend.assertions=1
 
       - name: Install dependencies with Composer
-        uses: php-actions/composer@v5
+        uses: ramsey/composer-install@v1
         with:
-          args: ${{ matrix.dependencies }}
+          dependency-versions: ${{ matrix.dependencies }}
 
       - name: Run PHPUnit
         run: vendor/bin/phpunit --coverage-clover=clover.xml
