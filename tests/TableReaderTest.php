@@ -369,6 +369,34 @@ JSON;
         self::assertSame(0.0, $table->nextRecord()->get('double'));
     }
 
+    public function testColumnsOptions(): void
+    {
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseVII.dbf', [
+            'columns' => ['name', 'money'],
+        ]);
+
+        self::assertCount(2, $table->getColumns());
+
+        $record = $table->nextRecord();
+        self::assertSame('Groot', $record->get('name'));
+        self::assertSame(12.1235, $record->get('money'));
+    }
+
+    /**
+     * You cannot get data from unspecified columns.
+     */
+    public function testColumnsOptionsFail(): void
+    {
+        self::expectException(\Exception::class);
+
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseVII.dbf', [
+            'columns' => ['name', 'money'],
+        ]);
+
+        $record = $table->nextRecord();
+        self::assertSame('Groot', $record->get('bio'));
+    }
+
     protected function assertMemoImg(TableReader $table)
     {
         $record = $table->moveTo(1);
