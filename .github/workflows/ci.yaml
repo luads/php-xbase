@@ -43,12 +43,12 @@ jobs:
     steps:
       - name: Install Codeclimate binary
         run: |
-          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-          chmod +x ./cc-test-reporter
-          ./cc-test-reporter before-build
+          curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > /usr/bin/cc-test-reporter
+          chmod +x /usr/bin/cc-test-reporter
+          cc-test-reporter before-build
 
       - name: Run Codeclimate before-build
-        run: ./cc-test-reporter before-build
+        run: cc-test-reporter before-build
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -68,14 +68,14 @@ jobs:
       - name: Run PHPUnit
         run: vendor/bin/phpunit --coverage-clover=clover.xml
 
-      - name: Upload coverage file
+      - name: Upload coverage file artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.php-version }}-${{ matrix.composer-args }}
           path: clover.xml
 
       - name: Run Codeclimate format-coverage
-        run: ./cc-test-reporter format-coverage
+        run: cc-test-reporter format-coverage
 
 
   codeclimate-upload:
@@ -86,8 +86,8 @@ jobs:
     env:
       CC_TEST_REPORTER_ID: e33b74ed1f59947df361652193b6575db0afc663dcbc73af89a0cf16f2443d24
     steps:
-      - run: ./cc-test-reporter sum-coverage
-      - run: ./cc-test-reporter upload-coverage
+      - run: cc-test-reporter sum-coverage
+      - run: cc-test-reporter upload-coverage
 
 
   coveralls-upload:
