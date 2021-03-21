@@ -33,18 +33,19 @@ jobs:
           - 7.2
           - 7.3
           - 7.4
-          - 8.0
+#          - 8.0
         dependencies:
           - highest
-        include:
-          - php-version: 7.1
-            dependencies: lowest
+#        include:
+#          - php-version: 7.1
+#            dependencies: lowest
 
     steps:
       - name: Install Codeclimate binary
         run: |
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > cc-test-reporter
           chmod +x ./cc-test-reporter
+          pwd
           ls
           ./cc-test-reporter before-build
 
