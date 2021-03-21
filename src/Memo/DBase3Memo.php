@@ -30,16 +30,18 @@ class DBase3Memo extends AbstractWritableMemo
         $endMarker = $this->getBlockEndMarker();
         $result = '';
         $memoLength = 0;
-        while (!$this->fp->eof()) { //todo too slow need speedup
-            $memoLength++;
-            $result .= $this->fp->read(1);
+        while (!$this->fp->eof()) {
+            $chunk = $this->fp->read(self::BLOCK_LENGTH_IN_BYTES);
 
-            $substr = substr($result, -3);
-            if ($endMarker === $substr) {
-                $memoLength -= 3;
-                $result = substr($result, 0, -3);
+            if ($i = strpos($chunk, $endMarker)) {
+                $chunk = substr($chunk, 0, $i);
+                $memoLength += strlen($chunk);
+                $result .= $chunk;
                 break;
             }
+
+            $memoLength += self::BLOCK_LENGTH_IN_BYTES;
+            $result .= $chunk;
         }
 
         $info = $this->guessDataType($result);
@@ -64,6 +66,10 @@ class DBase3Memo extends AbstractWritableMemo
     protected function calculateBlockCount(string $data): int
     {
         return (int) ceil((strlen($data) + strlen($this->getBlockEndMarker())) / self::BLOCK_LENGTH_IN_BYTES);
+    }
+
+    private function readBlocks(): string
+    {
     }
 
     private function getBlockEndMarker(): string
