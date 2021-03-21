@@ -74,9 +74,13 @@ jobs:
           path: clover.xml
 
       - name: Run Codeclimate format-coverage
-        run: |
-          ls
-          ./cc-test-reporter format-coverage
+        run: ./cc-test-reporter format-coverage -o codeclimate.json
+
+      - name: Upload coverage file artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.php-version }}-${{ matrix.dependencies }}
+          path: codeclimate.json
 
 
   codeclimate-upload:
@@ -95,7 +99,7 @@ jobs:
         run: |
           curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > cc-test-reporter
           chmod +x ./cc-test-reporter
-      - run: ./cc-test-reporter sum-coverage
+      - run: ./cc-test-reporter sum-coverage coverage/*/codeclimate.json
       - run: ./cc-test-reporter upload-coverage
 
 
