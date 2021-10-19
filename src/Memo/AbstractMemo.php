@@ -2,6 +2,7 @@
 
 namespace XBase\Memo;
 
+use XBase\DataConverter\Encoder\EncoderInterface;
 use XBase\Stream\Stream;
 use XBase\Table\Table;
 
@@ -16,12 +17,16 @@ abstract class AbstractMemo implements MemoInterface
     /** @var string */
     protected $filepath;
 
+    /** @var EncoderInterface */
+    protected $encoder;
+
     /**
      * @param string $filepath Path to memo file
      */
-    public function __construct(Table $table, string $filepath)
+    public function __construct(Table $table, string $filepath, EncoderInterface $encoder)
     {
         $this->table = $table;
+        $this->encoder = $encoder;
 
         $this->filepath = $filepath;
         $this->open();

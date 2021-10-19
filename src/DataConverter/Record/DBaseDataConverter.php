@@ -2,6 +2,7 @@
 
 namespace XBase\DataConverter\Record;
 
+use XBase\DataConverter\Encoder\EncoderInterface;
 use XBase\DataConverter\Field\DBase\CharConverter;
 use XBase\DataConverter\Field\DBase\DateConverter;
 use XBase\DataConverter\Field\DBase\IgnoreConverter;
@@ -20,9 +21,13 @@ class DBaseDataConverter implements RecordDataConverterInterface
     /** @var Table */
     protected $table;
 
-    public function __construct(Table $table)
+    /** @var EncoderInterface */
+    protected $encoder;
+
+    public function __construct(Table $table, EncoderInterface $encoder)
     {
         $this->table = $table;
+        $this->encoder = $encoder;
     }
 
     /**
@@ -80,7 +85,7 @@ class DBaseDataConverter implements RecordDataConverterInterface
     {
         foreach (static::getFieldConverters() as $class) {
             if ($column->type === $class::getType()) {
-                return new $class($this->table, $column);
+                return new $class($this->table, $column, $this->encoder);
             }
         }
 

@@ -3,6 +3,7 @@
 namespace XBase\Tests\DataConverter\Record;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Record\VisualFoxproDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Header\Column;
@@ -154,7 +155,7 @@ class VisualFoxproDataConverterTest extends TestCase
         $table->header->columns = $columns;
         $table->header->recordByteLength = 164;
 
-        $converter = new VisualFoxproDataConverter($table);
+        $converter = new VisualFoxproDataConverter($table, new IconvEncoder());
         $array = $converter->fromBinaryString($rawData);
         $binaryString = $converter->toBinaryString(new VisualFoxproRecord($table, 1, $array));
         self::assertSame($rawData, $binaryString);

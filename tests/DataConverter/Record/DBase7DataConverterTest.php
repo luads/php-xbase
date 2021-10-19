@@ -3,6 +3,7 @@
 namespace XBase\Tests\DataConverter\Record;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Record\DBase7DataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
@@ -107,7 +108,7 @@ class DBase7DataConverterTest extends TestCase
         $table->header->columns = $columns;
         $table->header->recordByteLength = 126;
 
-        $converter = new DBase7DataConverter($table);
+        $converter = new DBase7DataConverter($table, new IconvEncoder());
         $array = $converter->fromBinaryString($rawData);
         $binaryString = $converter->toBinaryString(new DBase7Record($table, 1, $array));
         self::assertSame($rawData, $binaryString);

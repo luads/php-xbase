@@ -4,6 +4,8 @@ namespace XBase;
 
 use XBase\Column\ColumnInterface;
 use XBase\Column\XBaseColumn;
+use XBase\DataConverter\Encoder\EncoderInterface;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\Enum\Codepage;
 use XBase\Enum\TableType;
 use XBase\Exception\TableException;
@@ -36,6 +38,9 @@ class TableReader
     /** @var RecordInterface|null */
     protected $record;
 
+    /** @var EncoderInterface */
+    protected $encoder;
+
     /**
      * @var Table
      */
@@ -47,6 +52,7 @@ class TableReader
      * @param array $options Array of options:<br>
      *                       encoding - convert text data from<br>
      *                       columns - available columns<br>
+     *                       encoder - encoder class name, default: IconvEncoder::class<br>
      *
      * @throws \Exception
      */
@@ -55,6 +61,9 @@ class TableReader
         $this->table = new Table();
         $this->table->filepath = $filepath;
 
+        $this->encoder = isset($options['encoder']) && $options['encoder'] instanceof EncoderInterface ?
+            $options['encoder'] :
+            new IconvEncoder();
         $this->table->options = $this->resolveOptions($options);
 
         $this->open();
@@ -96,7 +105,7 @@ class TableReader
     protected function openMemo(): void
     {
         if (TableType::hasMemo($this->getVersion())) {
-            $this->table->memo = MemoFactory::create($this->table);
+            $this->table->memo = MemoFactory::create($this->table, $this->encoder);
         }
     }
 
@@ -137,7 +146,7 @@ class TableReader
             }
 
             $this->recordPos++;
-            $this->record = RecordFactory::create($this->table, $this->recordPos, $this->getStream()
+            $this->record = RecordFactory::create($this->table, $this->encoder, $this->recordPos, $this->getStream()
                 ->read($this->getHeader()->recordByteLength));
 
             if ($this->record->isDeleted()) {
@@ -167,7 +176,7 @@ class TableReader
             throw new TableException("Failed to pick row at position {$position}");
         }
 
-        $record = RecordFactory::create($this->table, $position, $this->getStream()
+        $record = RecordFactory::create($this->table, $this->encoder, $position, $this->getStream()
             ->read($this->getHeader()->recordByteLength));
         // revert pointer
         $this->getStream()->seek($curPos);
@@ -197,7 +206,12 @@ class TableReader
 
             $this->getStream()->seek($this->getHeader()->length + ($this->recordPos * $this->getHeader()->recordByteLength));
 
-            $this->record = RecordFactory::create($this->table, $this->recordPos, $this->getStream()->read($this->getRecordByteLength()));
+            $this->record = RecordFactory::create(
+                $this->table,
+                $this->encoder,
+                $this->recordPos,
+                $this->getStream()->read($this->getRecordByteLength())
+            );
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
@@ -219,7 +233,7 @@ class TableReader
 
         $this->getStream()->seek($this->getHeader()->length + ($index * $this->getHeader()->recordByteLength));
 
-        $this->record = RecordFactory::create($this->table, $this->recordPos, $this->getStream()
+        $this->record = RecordFactory::create($this->table, $this->encoder, $this->recordPos, $this->getStream()
             ->read($this->getHeader()->recordByteLength));
 
         return $this->record;

@@ -3,6 +3,7 @@
 namespace XBase\Tests\Record\DataConverter\Field\VisualFoxpro;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Field\VisualFoxpro\DateTimeConverter;
 use XBase\Header\Column;
 use XBase\Table\Table;
@@ -24,7 +25,7 @@ class DateTimeConverterTest extends TestCase
         $table = new Table();
         $column = new Column();
 
-        $converter = new DateTimeConverter($table, $column);
+        $converter = new DateTimeConverter($table, $column, new IconvEncoder());
         $binaryString = $converter->toBinaryString(\DateTime::createFromFormat('Y-m-d\TH:i:s.uP', $dtSting));
         $dt = $converter->fromBinaryString($binaryString);
         self::assertInstanceOf(\DateTimeInterface::class, $dt);
@@ -50,7 +51,7 @@ class DateTimeConverterTest extends TestCase
     {
         $table = new Table();
         $column = new Column();
-        $converter = new DateTimeConverter($table, $column);
+        $converter = new DateTimeConverter($table, $column, new IconvEncoder());
         self::assertNull($converter->fromBinaryString(base64_decode($base64Value)));
     }
 
