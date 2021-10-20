@@ -2,6 +2,7 @@
 
 namespace XBase\Record;
 
+use XBase\DataConverter\Encoder\EncoderInterface;
 use XBase\DataConverter\Record\DBase4DataConverter;
 use XBase\DataConverter\Record\DBase7DataConverter;
 use XBase\DataConverter\Record\DBaseDataConverter;
@@ -13,8 +14,12 @@ use XBase\Table\Table;
 
 class RecordFactory
 {
-    public static function create(Table $table, int $recordIndex, ?string $rawData = null): ?RecordInterface
-    {
+    public static function create(
+        Table $table,
+        EncoderInterface $encoder,
+        int $recordIndex,
+        ?string $rawData = null
+    ): ?RecordInterface {
         $class = self::getClass($table->getVersion());
         $refClass = new \ReflectionClass($class);
         if (!$refClass->implementsInterface(RecordInterface::class)) {
@@ -24,7 +29,7 @@ class RecordFactory
         return $refClass->newInstance(
             $table,
             $recordIndex,
-            self::createDataConverter($table)->fromBinaryString($rawData ?? '')
+            self::createDataConverter($table, $encoder)->fromBinaryString($rawData ?? '')
         );
     }
 
@@ -56,28 +61,28 @@ class RecordFactory
     /**
      * @return RecordDataConverterInterface
      */
-    public static function createDataConverter(Table $table): RecordDataConverterInterface
+    public static function createDataConverter(Table $table, EncoderInterface $encoder): RecordDataConverterInterface
     {
         switch ($table->getVersion()) {
             case TableType::DBASE_IV_MEMO:
-                return new DBase4DataConverter($table);
+                return new DBase4DataConverter($table, $encoder);
 
             case TableType::DBASE_7_NOMEMO:
             case TableType::DBASE_7_MEMO:
-                return new DBase7DataConverter($table);
+                return new DBase7DataConverter($table, $encoder);
 
             case TableType::FOXPRO_MEMO:
-                return new FoxproDataConverter($table);
+                return new FoxproDataConverter($table, $encoder);
 
             case TableType::VISUAL_FOXPRO:
             case TableType::VISUAL_FOXPRO_AI:
             case TableType::VISUAL_FOXPRO_VAR:
-                return new VisualFoxproDataConverter($table);
+                return new VisualFoxproDataConverter($table, $encoder);
 
             case TableType::DBASE_III_PLUS_MEMO:
             case TableType::DBASE_III_PLUS_NOMEMO:
             default:
-                return new DBaseDataConverter($table);
+                return new DBaseDataConverter($table, $encoder);
         }
     }
 }

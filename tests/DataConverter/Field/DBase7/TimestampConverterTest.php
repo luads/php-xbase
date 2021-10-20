@@ -3,6 +3,7 @@
 namespace XBase\Tests\Record\DataConverter\Field\DBase7;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Field\DBase7\TimestampConverter;
 use XBase\Header\Column;
 use XBase\Table\Table;
@@ -21,7 +22,7 @@ class TimestampConverterTest extends TestCase
     {
         $table = new Table();
         $column = new Column();
-        $converter = new TimestampConverter($table, $column);
+        $converter = new TimestampConverter($table, $column, new IconvEncoder());
         self::assertSame($int, $converter->fromBinaryString($binaryString));
         self::assertEquals(base64_encode($binaryString), base64_encode($converter->toBinaryString($int)));
     }

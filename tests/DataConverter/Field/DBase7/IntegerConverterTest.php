@@ -3,6 +3,7 @@
 namespace XBase\Tests\Record\DataConverter\Field\DBase7;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Field\DBase7\IntegerConverter;
 use XBase\Header\Column;
 use XBase\Table\Table;
@@ -16,7 +17,7 @@ class IntegerConverterTest extends TestCase
     {
         $table = new Table();
         $column = new Column();
-        $converter = new IntegerConverter($table, $column);
+        $converter = new IntegerConverter($table, $column, new IconvEncoder());
         self::assertSame($int, $converter->fromBinaryString($binaryString));
         self::assertEquals(unpack('C*', $binaryString), unpack('C*', $converter->toBinaryString($int)));
     }

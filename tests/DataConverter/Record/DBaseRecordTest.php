@@ -3,6 +3,7 @@
 namespace XBase\Tests\Record;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
@@ -88,7 +89,7 @@ class DBaseRecordTest extends TestCase
         $table->header->recordByteLength = 70;
         $table->memo = $memo;
 
-        $converter = new DBaseDataConverter($table);
+        $converter = new DBaseDataConverter($table, new IconvEncoder());
 
         $record1 = new DBaseRecord($table, 1, $converter->fromBinaryString(''));
         $record1

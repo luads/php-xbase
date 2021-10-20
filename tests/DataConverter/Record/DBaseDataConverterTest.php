@@ -3,6 +3,7 @@
 namespace XBase\Tests\DataConverter\Record;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Record\DBaseDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
@@ -69,7 +70,7 @@ class DBaseDataConverterTest extends TestCase
         $table->header->columns = $columns;
         $table->header->recordByteLength = 70;
 
-        $converter = new DBaseDataConverter($table);
+        $converter = new DBaseDataConverter($table, new IconvEncoder());
         $rawData = base64_decode($base64RowData);
         $array = $converter->fromBinaryString($rawData);
         self::assertNotEmpty($array);

@@ -3,6 +3,7 @@
 namespace XBase\Tests\DataConverter\Field\DBase;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Field\DBase\NumberConverter;
 use XBase\Header\Column;
 use XBase\Table\Table;
@@ -29,7 +30,7 @@ class NumberConverterTest extends TestCase
         $column->length = $length;
         $column->decimalCount = $decimalCount;
 
-        $fieldConverter = new NumberConverter($table, $column);
+        $fieldConverter = new NumberConverter($table, $column, new IconvEncoder());
         self::assertSame($out, $fieldConverter->toBinaryString($in));
     }
 

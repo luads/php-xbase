@@ -19,7 +19,7 @@ class VarFieldConverter extends AbstractFieldDataConverter
         }
 
         if ($inCharset = $this->table->options['encoding']) {
-            $value = iconv($inCharset, 'utf-8', $value);
+            $value = $this->encoder->encode($value, $inCharset, 'utf-8');
         }
 
         return $value;
@@ -32,7 +32,7 @@ class VarFieldConverter extends AbstractFieldDataConverter
     {
         $value = $value ?? '';
         if ($outCharset = $this->table->options['encoding']) {
-            $value = iconv('utf-8', $outCharset, $value);
+            $value = $this->encoder->encode($value, 'utf-8', $outCharset);
         }
 
         return str_pad($value, $this->column->length - 1, chr(0x00)).chr(0x03);

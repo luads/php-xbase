@@ -51,7 +51,7 @@ class DBase3Memo extends AbstractWritableMemo
                 $result = substr($result, 0, -1); // remove endline symbol (0x00)
             }
             if ($this->table->options['encoding']) {
-                $result = iconv($this->table->options['encoding'], 'utf-8', $result);
+                $result = $this->encoder->encode($result, $this->table->options['encoding'], 'utf-8');
             }
         }
 
