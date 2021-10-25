@@ -15,6 +15,9 @@ use XBase\TableEditor;
 use XBase\TableReader;
 use XBase\Tests\TableCreator\CleanupTrait;
 
+/**
+ * Common test cases
+ */
 class TableCreatorTest extends AbstractTestCase
 {
     use CleanupTrait;
@@ -214,5 +217,45 @@ TEXT;
     {
         yield [TableType::DBASE_III_PLUS_MEMO, FieldType::DBASE7_DOUBLE];
         yield [TableType::DBASE_III_PLUS_NOMEMO, FieldType::GENERAL];
+    }
+
+    /**
+     * Temp file should be removed
+     * @see https://github.com/luads/php-xbase/issues/110
+     */
+    public function testCreateAsTempFile()
+    {
+        $header = HeaderFactory::create(TableType::DBASE_III_PLUS_MEMO);
+
+        $tableCreator = new TableCreator('php://temp', $header);
+
+        $tableCreator
+            ->addColumn(new Column([
+                'name'   => "name",
+                'type'   => FieldType::CHAR,
+                'length' => 20,
+            ]))
+            ->addColumn(new Column([
+                'name' => "birthday",
+                'type' => FieldType::DATE,
+            ]))
+            ->addColumn(new Column([
+                'name' => "is_man",
+                'type' => FieldType::LOGICAL,
+            ]))
+            ->addColumn(new Column([
+                'name' => "bio",
+                'type' => FieldType::MEMO,
+            ]))
+            ->addColumn(new Column([
+                'name'         => "money",
+                'type'         => FieldType::NUMERIC,
+                'length'       => 20,
+                'decimalCount' => 4,
+            ]));
+
+        $tableCreator->save();
+
+        self::assertTrue($filepath);
     }
 }

@@ -16,6 +16,9 @@ use XBase\Table\Saver;
 use XBase\Table\Table;
 use XBase\Table\TableAwareTrait;
 
+/**
+ * Creates brand-new database file
+ */
 class TableCreator
 {
     use TableAwareTrait;
@@ -69,6 +72,7 @@ class TableCreator
         $saver->save();
 
         if (TableType::hasMemo($version = $this->getHeader()->version)) {
+            // just creates memo file with no data
             MemoCreatorFactory::create($this->table)->createFile();
             $this->table->memo = MemoFactory::create($this->table);
         }

@@ -7,6 +7,9 @@ use XBase\Table\Table;
 
 final class MemoCreatorFactory
 {
+    /**
+     * @return MemoCreatorInterface
+     */
     public static function create(Table $table)
     {
         switch ($table->getVersion()) {

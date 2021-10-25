@@ -17,7 +17,8 @@ class MemoFactory
 
         $memoExt = $refClass->getMethod('getExtension')->invoke(null);
         $fileInfo = pathinfo($table->filepath);
-        $memoExt = 'DBF' === $fileInfo['extension'] ? strtoupper($memoExt) : $memoExt;
+        // if file extension in UPPERCASE then memo file extension should be in upper case too
+        $memoExt = 'DBF' === ($fileInfo['extension'] ?? null) ? strtoupper($memoExt) : $memoExt;
         if ('.' !== substr($memoExt, 0, 1)) {
             $memoExt = '.'.$memoExt;
         }
