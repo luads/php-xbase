@@ -26,9 +26,6 @@ class TableReader
 {
     use TableAwareTrait;
 
-    /** @var Stream */
-    protected $fp;
-
     /** @var int Current record position. */
     protected $recordPos = -1;
 
