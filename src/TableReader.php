@@ -29,10 +29,17 @@ class TableReader
     /** @var int Current record position. */
     protected $recordPos = -1;
 
-    /** @var int */
+    /**
+     * @var int
+     * @deprecated
+     * @todo remove in next version
+     */
     protected $deleteCount = 0;
 
-    /** @var RecordInterface|null */
+    /**
+     * @var RecordInterface|null
+     * @todo unnecessary. get rid of this in next version
+     */
     protected $record;
 
     /** @var EncoderInterface */
@@ -323,9 +330,11 @@ class TableReader
 
     /**
      * @return int
+     * @deprecated this method is pointless
      */
     public function getDeleteCount()
     {
+        @trigger_error('Method `getDeleteCount` is useless and will be deleted soon. Do not use it!');
         return $this->deleteCount;
     }
 
