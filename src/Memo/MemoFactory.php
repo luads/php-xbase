@@ -2,12 +2,13 @@
 
 namespace XBase\Memo;
 
+use XBase\DataConverter\Encoder\EncoderInterface;
 use XBase\Enum\TableType;
 use XBase\Table\Table;
 
 class MemoFactory
 {
-    public static function create(Table $table): ?MemoInterface
+    public static function create(Table $table, EncoderInterface $encoder): ?MemoInterface
     {
         $class = self::getClass($table->getVersion());
         $refClass = new \ReflectionClass($class);
@@ -27,7 +28,7 @@ class MemoFactory
             return null; //todo create file?
         }
 
-        return $refClass->newInstance($table, $memoFilepath);
+        return $refClass->newInstance($table, $memoFilepath, $encoder);
     }
 
     private static function getClass(int $version): string

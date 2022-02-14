@@ -56,7 +56,7 @@ class FoxproMemo extends AbstractWritableMemo
         $info = $this->guessDataType($result);
         assert(isset($info['type']));
         if ($this->table->options['encoding']) {
-            $result = iconv($this->table->options['encoding'], 'utf-8', $result);
+            $result = $this->encoder->encode($result, $this->table->options['encoding'], 'utf-8');
         }
 
         return new MemoObject($result, $info['type'], $pointer, $memoLength[1], $info);

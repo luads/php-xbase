@@ -2,6 +2,7 @@
 
 namespace XBase\DataConverter\Field;
 
+use XBase\DataConverter\Encoder\EncoderInterface;
 use XBase\Header\Column;
 use XBase\Table\Table;
 
@@ -13,9 +14,13 @@ abstract class AbstractFieldDataConverter implements FieldDataConverterInterface
     /** @var Column */
     protected $column;
 
-    public function __construct(Table $table, Column $column)
+    /** @var EncoderInterface */
+    protected $encoder;
+
+    public function __construct(Table $table, Column $column, EncoderInterface $encoder)
     {
         $this->table = $table;
         $this->column = $column;
+        $this->encoder = $encoder;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace XBase;
 
+use XBase\DataConverter\Encoder\EncoderInterface;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\Enum\TableType;
 use XBase\Exception\ColumnException;
 use XBase\Exception\XBaseException;
@@ -23,7 +25,10 @@ class TableCreator
 {
     use TableAwareTrait;
 
-    public function __construct(string $filepath, Header $header)
+    /** @var EncoderInterface */
+    protected $encoder;
+
+    public function __construct(string $filepath, Header $header, EncoderInterface $encoder = null)
     {
         $this->checkFilepath($filepath);
         $this->checkHeader($header);
@@ -32,6 +37,7 @@ class TableCreator
         $this->table->filepath = $filepath;
         $this->table->header = $header;
         $this->table->options['create'] = true;
+        $this->encoder = $encoder ?? new IconvEncoder();
     }
 
     private function checkFilepath(string $filepath): void
@@ -74,7 +80,7 @@ class TableCreator
         if (TableType::hasMemo($version = $this->getHeader()->version)) {
             // just creates memo file with no data
             MemoCreatorFactory::create($this->table)->createFile();
-            $this->table->memo = MemoFactory::create($this->table);
+            $this->table->memo = MemoFactory::create($this->table, $this->encoder);
         }
 
         $this->table->stream->close();

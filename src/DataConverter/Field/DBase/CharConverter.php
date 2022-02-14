@@ -15,7 +15,7 @@ class CharConverter extends AbstractFieldDataConverter
     public function fromBinaryString(string $value)
     {
         if ($inCharset = $this->table->options['encoding']) {
-            $value = iconv($inCharset, 'utf-8', $value);
+            $value = $this->encoder->encode($value, $inCharset, 'utf-8');
         }
 
         return trim($value);
@@ -24,7 +24,7 @@ class CharConverter extends AbstractFieldDataConverter
     public function toBinaryString($value): string
     {
         if ($value && $outCharset = $this->table->options['encoding']) {
-            $value = iconv('utf-8', $outCharset, $value);
+            $value = $this->encoder->encode($value, 'utf-8', $outCharset);
         }
 
         return str_pad($value ?? '', $this->column->length);

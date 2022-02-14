@@ -3,6 +3,7 @@
 namespace XBase\Tests\DataConverter\Record;
 
 use PHPUnit\Framework\TestCase;
+use XBase\DataConverter\Encoder\IconvEncoder;
 use XBase\DataConverter\Record\FoxproDataConverter;
 use XBase\Enum\FieldType;
 use XBase\Enum\TableType;
@@ -83,7 +84,7 @@ class FoxproDataConverterTest extends TestCase
         $table->header->columns = $columns;
         $table->header->recordByteLength = 90;
 
-        $converter = new FoxproDataConverter($table);
+        $converter = new FoxproDataConverter($table, new IconvEncoder());
         $array = $converter->fromBinaryString($rawData);
         $binaryString = $converter->toBinaryString(new FoxproRecord($table, 1, $array));
         self::assertSame($rawData, $binaryString);

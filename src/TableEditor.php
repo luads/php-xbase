@@ -92,7 +92,7 @@ class TableEditor extends TableReader
     public function appendRecord(): RecordInterface
     {
         $this->recordPos = $this->getHeader()->recordCount;
-        $this->record = RecordFactory::create($this->table, $this->recordPos);
+        $this->record = RecordFactory::create($this->table, $this->encoder, $this->recordPos);
         $this->insertion = true;
 
         return $this->record;
@@ -107,7 +107,8 @@ class TableEditor extends TableReader
 
         $offset = $this->getHeader()->length + ($record->getRecordIndex() * $this->getHeader()->recordByteLength);
         $this->getStream()->seek($offset);
-        $this->getStream()->write(RecordFactory::createDataConverter($this->table)->toBinaryString($record));
+        $this->getStream()->write(RecordFactory::createDataConverter($this->table, $this->encoder)
+            ->toBinaryString($record));
 
         if ($this->insertion) {
             $this->table->header->recordCount++;
