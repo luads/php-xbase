@@ -120,6 +120,16 @@ JSON;
         $table->close();
     }
 
+    public function testColumnNameCaseIndifference(): void
+    {
+        $table = new TableReader(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
+        $record = $table->nextRecord();
+        self::assertSame(223717.0, $record->get('vitg'));
+        self::assertSame(223717.0, $record->get('VITG'));
+        self::assertSame(223717.0, $record->get('VitG'));
+        self::assertSame(223717.0, $record->get('vItG'));
+    }
+
     public function testColumnNotFound(): void
     {
         self::expectException(\Exception::class);
@@ -133,12 +143,12 @@ JSON;
     public function testReadColumns(): void
     {
         $table = new TableReader(__DIR__.'/Resources/dBase/dBaseIII_nomemo.dbf', ['encoding' => 'cp866']);
-        $processerResords = 0;
+        $processedRecords = 0;
         while ($record = $table->nextRecord()) {
             $data = $record->getData();
-            $processerResords++;
+            $processedRecords++;
         }
-        self::assertSame(10, $processerResords);
+        self::assertSame(10, $processedRecords);
     }
 
     public function testDbase3(): void

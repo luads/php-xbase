@@ -49,6 +49,7 @@ class Table
 
     public function getColumn(string $name): Column
     {
+        $name = strtolower($name);
         foreach ($this->header->columns as $column) {
             if ($column->name === $name) {
                 return $column;

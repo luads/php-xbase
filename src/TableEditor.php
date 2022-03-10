@@ -107,7 +107,8 @@ class TableEditor extends TableReader
 
         $offset = $this->getHeader()->length + ($record->getRecordIndex() * $this->getHeader()->recordByteLength);
         $this->getStream()->seek($offset);
-        $this->getStream()->write(RecordFactory::createDataConverter($this->table, $this->encoder)
+        $this->getStream()
+            ->write(RecordFactory::createDataConverter($this->table, $this->encoder)
             ->toBinaryString($record));
 
         if ($this->insertion) {
