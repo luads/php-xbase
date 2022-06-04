@@ -27,6 +27,6 @@ class CharConverter extends AbstractFieldDataConverter
             $value = $this->encoder->encode($value, 'utf-8', $outCharset);
         }
 
-        return str_pad($value ?? '', $this->column->length);
+        return str_pad((string) $value, $this->column->length);
     }
 }
