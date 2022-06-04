@@ -201,8 +201,8 @@ class Table
         $this->headerLength = $this->fp->readUShort();
         $this->recordByteLength = $this->fp->readUShort();
         $this->fp->read(2); //reserved
-        $this->inTransaction = 0 != $this->fp->read();
-        $this->encrypted = 0 != $this->fp->read();
+        $this->inTransaction = 0 != ord($this->fp->read());
+        $this->encrypted = 0 != ord($this->fp->read());
         $this->fp->read(4); //Free record thread
         $this->fp->read(8); //Reserved for multi-user dBASE
         $this->mdxFlag = $this->fp->read();
