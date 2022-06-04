@@ -280,7 +280,7 @@ abstract class AbstractRecord implements RecordInterface
     public function setString($columnName, $value): self
     {
         $column = $this->toColumn($columnName);
-        if (is_string($value) && strlen($value) > $column->getLength()) {
+        if (is_string($value) && mb_strlen($value) > $column->getLength()) {
             @trigger_error('Value length greater than column length');
             $value = substr($value, 0, $column->getLength());
         }
