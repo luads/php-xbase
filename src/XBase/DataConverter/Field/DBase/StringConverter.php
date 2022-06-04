@@ -27,6 +27,6 @@ class StringConverter extends AbstractFieldDataConverter
             $value = iconv('utf-8', $outCharset, $value);
         }
 
-        return str_pad($value ?? '', $this->column->getLength());
+        return str_pad((string) $value, $this->column->getLength());
     }
 }
