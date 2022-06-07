@@ -19,6 +19,6 @@ class IgnoreConverter extends AbstractFieldDataConverter
 
     public function toBinaryString($value): string
     {
-        return $value ?? chr(0x20).chr(0x0a);
+        return str_pad((string) $value, $this->column->length, chr(0x20));
     }
 }

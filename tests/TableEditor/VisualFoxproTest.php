@@ -3,6 +3,7 @@
 namespace XBase\Tests\TableEditor;
 
 use PHPUnit\Framework\TestCase;
+use XBase\Column\ColumnInterface;
 use XBase\Enum\TableType;
 use XBase\Memo\MemoObject;
 use XBase\Record\VisualFoxproRecord;
@@ -313,5 +314,47 @@ class VisualFoxproTest extends TestCase
             $actual[] = $record->zkratka;
         }
         self::assertEquals($data, $actual);
+    }
+
+    public function testIssue115(): void
+    {
+        $filename = __DIR__.'/../Resources/foxpro/issue115.dbf';
+        $table = new TableEditor($filename);
+
+        $record = $table->appendRecord();
+        $record->cod = 'a';
+        $record->denumire = 'b';
+        $record->cont_van = 'c';
+        $record->tel = 'd';
+        $record->bi_serie = 'e';
+        $record->bi_numar = 'f';
+        $record->bi_pol = 'g';
+        $record->masina = 'h';
+        $record->blocat = 1;
+
+        $table
+            ->writeRecord()
+            ->save()
+            ->close();
+        unset($record, $table);
+
+        $table = new TableReader($filename);
+        self::assertSame(
+            $table->getRecordByteLength(),
+            array_reduce($table->getColumns(), static function (int $carry, ColumnInterface $c) {
+                return $carry + $c->getLength();
+            }, 1)
+        );
+
+        $record = $table->pickRecord($table->getRecordCount() - 1);
+        self::assertSame($record->cod, 'a');
+        self::assertSame($record->denumire, 'b');
+        self::assertSame($record->cont_van, 'c');
+        self::assertSame($record->tel, 'd');
+        self::assertSame($record->bi_serie, 'e');
+        self::assertSame($record->bi_numar, 'f');
+        self::assertSame($record->bi_pol, 'g');
+        self::assertSame($record->masina, 'h');
+        self::assertSame($record->blocat, 1);
     }
 }
