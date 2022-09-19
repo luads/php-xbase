@@ -5,6 +5,7 @@ namespace XBase\Memo;
 use XBase\DataConverter\Encoder\EncoderInterface;
 use XBase\Enum\TableType;
 use XBase\Table\Table;
+use XBase\Memo\Creator\MemoCreatorFactory;
 
 class MemoFactory
 {
@@ -25,7 +26,8 @@ class MemoFactory
         }
         $memoFilepath = $fileInfo['dirname'].DIRECTORY_SEPARATOR.$fileInfo['filename'].$memoExt;
         if (!file_exists($memoFilepath)) {
-            return null; //todo create file?
+            $memo_creator = MemoCreatorFactory::create($table);
+            $memo_creator->createFile();
         }
 
         return $refClass->newInstance($table, $memoFilepath, $encoder);
