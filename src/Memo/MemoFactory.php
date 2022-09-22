@@ -26,8 +26,7 @@ class MemoFactory
         }
         $memoFilepath = $fileInfo['dirname'].DIRECTORY_SEPARATOR.$fileInfo['filename'].$memoExt;
         if (!file_exists($memoFilepath)) {
-            $memo_creator = MemoCreatorFactory::create($table);
-            $memo_creator->createFile();
+            return null; //todo create file?
         }
 
         return $refClass->newInstance($table, $memoFilepath, $encoder);
