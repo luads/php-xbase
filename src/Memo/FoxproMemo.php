@@ -51,6 +51,12 @@ class FoxproMemo extends AbstractWritableMemo
         $info = unpack('N', $this->fp->read(self::BLOCK_TYPE_LENGTH)); //todo figure out type-enums
 
         $memoLength = unpack('N', $this->fp->read(self::BLOCK_LENGTH_LENGTH));
+        
+        // Safety check: prevent reading corrupted/huge memo fields (max 100MB)
+        if ($memoLength[1] > 104857600) {
+            throw new \Exception("Corrupted FPT file: memo field size {$memoLength[1]} bytes exceeds 100MB limit");
+        }
+        
         $result = $this->fp->read($memoLength[1]);
 
         $info = $this->guessDataType($result);
