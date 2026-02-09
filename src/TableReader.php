@@ -18,6 +18,7 @@ use XBase\Record\RecordInterface;
 use XBase\Stream\Stream;
 use XBase\Table\Table;
 use XBase\Table\TableAwareTrait;
+use XBase\Traits\FilepathTrait;
 
 /**
  * @author Alexander Strizhak <gam6itko@gmail.com>
@@ -25,6 +26,7 @@ use XBase\Table\TableAwareTrait;
 class TableReader
 {
     use TableAwareTrait;
+    use FilepathTrait;
 
     /** @var int Current record position. */
     protected $recordPos = -1;
@@ -86,8 +88,12 @@ class TableReader
 
     protected function open(): void
     {
-        if (!file_exists($this->getFilepath())) {
+        if (false === $filepath = self::resolveFilepath($this->getFilepath())) {
             throw new \Exception(sprintf('File %s cannot be found', $this->getFilepath()));
+        }
+
+        if ($filepath !== $this->table->filepath) {
+            $this->table->filepath = $filepath;
         }
 
         if ($this->table->stream) {

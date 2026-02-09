@@ -5,9 +5,12 @@ namespace XBase\Memo;
 use XBase\DataConverter\Encoder\EncoderInterface;
 use XBase\Enum\TableType;
 use XBase\Table\Table;
+use XBase\Traits\FilepathTrait;
 
 class MemoFactory
 {
+    use FilepathTrait;
+
     public static function create(Table $table, EncoderInterface $encoder): ?MemoInterface
     {
         $class = self::getClass($table->getVersion());
@@ -18,17 +21,15 @@ class MemoFactory
 
         $memoExt = $refClass->getMethod('getExtension')->invoke(null);
         $fileInfo = pathinfo($table->filepath);
-        // if file extension in UPPERCASE then memo file extension should be in upper case too
-        $memoExt = 'DBF' === ($fileInfo['extension'] ?? null) ? strtoupper($memoExt) : $memoExt;
         if ('.' !== substr($memoExt, 0, 1)) {
             $memoExt = '.'.$memoExt;
         }
-        $memoFilepath = $fileInfo['dirname'].DIRECTORY_SEPARATOR.$fileInfo['filename'].$memoExt;
-        if (!file_exists($memoFilepath)) {
+        $memoFilePath = $fileInfo['dirname'] . DIRECTORY_SEPARATOR . $fileInfo['filename'] . $memoExt;
+        if (false === $memoFilePath = self::resolveFilepath($memoFilePath)) {
             return null; //todo create file?
         }
 
-        return $refClass->newInstance($table, $memoFilepath, $encoder);
+        return $refClass->newInstance($table, $memoFilePath, $encoder);
     }
 
     private static function getClass(int $version): string
