@@ -25,7 +25,7 @@ abstract class AbstractMemoCreator implements MemoCreatorInterface
     public function createFile(): string
     {
         $pi = pathinfo($this->table->filepath);
-        $memoFilepath = sprintf('%s/%s.%s', $pi['dirname'], $pi['filename'], self::getExtension());
+        $memoFilepath = sprintf('%s/%s.%s', $pi['dirname'], $pi['filename'], $this->getExtension());
 
         $stream = Stream::createFromFile($memoFilepath, 'wb+');
         $this->writeHeader($stream);

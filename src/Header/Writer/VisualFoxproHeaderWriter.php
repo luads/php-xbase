@@ -17,6 +17,6 @@ class VisualFoxproHeaderWriter extends AbstractHeaderWriter
 
         parent::writeRest($header);
 
-        $this->fp->write(str_pad($header->backlist, 263));
+        $this->fp->write(str_pad($header->backlist, 263, chr(0)));
     }
 }

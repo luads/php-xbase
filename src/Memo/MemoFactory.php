@@ -5,6 +5,7 @@ namespace XBase\Memo;
 use XBase\DataConverter\Encoder\EncoderInterface;
 use XBase\Enum\TableType;
 use XBase\Table\Table;
+use XBase\Memo\Creator\MemoCreatorFactory;
 
 class MemoFactory
 {
