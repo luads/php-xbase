@@ -81,6 +81,7 @@ class TableReader
             'columns'  => [],
             'encoding' => null,
             'editMode' => null,
+            'ignoreDeleted' => true,
         ], $options);
     }
 
@@ -155,6 +156,9 @@ class TableReader
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
+                if($this->table->options['ignoreDeleted'] === false) {
+                    $valid = true;
+                }
             } else {
                 $valid = true;
             }
@@ -219,6 +223,9 @@ class TableReader
 
             if ($this->record->isDeleted()) {
                 $this->deleteCount++;
+                if($this->table->options['ignoreDeleted'] === false) {
+                    $valid = true;
+                }
             } else {
                 $valid = true;
             }
